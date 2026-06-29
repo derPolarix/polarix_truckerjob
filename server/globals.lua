@@ -1,0 +1,3 @@
+LocalCache = {
+    table = {}
+}

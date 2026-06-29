@@ -1,0 +1,23 @@
+local debug = require("shared.debug")
+local server = require("config.server")
+local shared = require("shared.debug")
+local triggerEventHooks = require '@polarix_utils.server.hooks' -- Import triggerEventHooks function from hooks module
+
+
+RegisterCommand('debugprintserver', function()
+    Wait(1000) --Warte eine Sekunde, damit die Ausgabe im richtigen Reihenfolge erscheint
+    debug.DebugPrint("Dies ist ein Debug Print Test von commands.lua!")
+    Wait(1000)
+    debug.DebugPrint("Das ist eine"," weitere Zeile mit", "mehreren", "Argumenten.")
+    Wait(1000)
+    debug.DebugPrint("Das ist eine Zeile", {key = "value", number = 42, bool = true})
+    Wait(1000)
+    debug.DebugPrint({nested = {table = {with = {multiple = "levels"}}}})
+    Wait(1000)
+    debug.DebugPrint(nil)
+    Wait(1000)
+    debug.DebugPrint(12345)
+    Wait(1000)
+    debug.DebugPrint(true)
+    Wait(1000)
+end, false)
