@@ -37,4 +37,16 @@ return {
         local xPlayer = getESX().GetPlayerFromId(source)
         return xPlayer and xPlayer.job.name == jobName or false
     end,
+
+    OnPlayerLoaded = function(callback)
+        RegisterNetEvent("esx:playerLoaded", function(playerId)
+            callback(playerId)
+        end)
+    end,
+
+    OnPlayerUnload = function(callback)
+        RegisterNetEvent("esx:playerDropped", function(playerId)
+            callback(playerId)
+        end)
+    end,
 }

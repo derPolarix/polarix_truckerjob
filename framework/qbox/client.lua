@@ -1,9 +1,9 @@
 return {
     GetPlayerData = function()
-        return QBX.PlayerData
+        return exports.qbx_core:GetPlayerData()
     end,
 
     GetMoney = function()
-        return QBX.PlayerData.money.bank
+        return exports.qbx_core:GetPlayerData().money.bank
     end,
 }

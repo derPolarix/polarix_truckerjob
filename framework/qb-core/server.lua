@@ -37,4 +37,16 @@ return {
         local player = getQBCore().Functions.GetPlayer(source)
         return player and player.PlayerData.job.name == jobName or false
     end,
+
+    OnPlayerLoaded = function(callback)
+        RegisterNetEvent("QBCore:Server:PlayerLoaded", function(player)
+            callback(player.PlayerData.source)
+        end)
+    end,
+
+    OnPlayerUnload = function(callback)
+        RegisterNetEvent("QBCore:Server:OnPlayerUnload", function(source)
+            callback(source)
+        end)
+    end,
 }

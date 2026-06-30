@@ -11,7 +11,6 @@ use_experimental_fxv2_oal 'yes'
 
 shared_scripts {
     '@ox_lib/init.lua',
-    '@qbx_core/modules/lib.lua',
     'shared/debug.lua',
     "config/shared.lua",
     "framework/qbox/shared.lua",
@@ -21,7 +20,6 @@ shared_scripts {
 }
 
 client_scripts {
-    '@qbx_core/modules/playerdata.lua',
     "framework/qbox/client.lua",
     "framework/qb-core/client.lua",
     "framework/esx/client.lua",
