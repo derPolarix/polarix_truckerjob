@@ -2,7 +2,7 @@
 
 //Imports
 import { defineStore } from "pinia";
-import { nuiCallbackAsync, nuiCallback } from "@/nui/nuiCallbacks";
+import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 
 //Types
 type PersistantState = {

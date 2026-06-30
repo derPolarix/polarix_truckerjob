@@ -12,7 +12,6 @@
 
 <script setup lang="ts">
 import { getCurrentInstance } from "vue";
-import { nuiCallback, nuiCallbackAsync } from "@/nui/nuiCallbacks";
 // Hier werden die Komponents importiert, sodass sie verwendet werden können
 import IconifyTest from "@/components/defaultpage/TestIconify.vue";
 

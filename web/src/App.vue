@@ -21,6 +21,7 @@ import type { NuiMessage } from "./type";
 import { isDev } from "./main";
 import Sidebar from "@/components/app/Sidebar.vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
+import type { DashboardConfig } from "@/stores/dashboardStore";
 
 // Standard Zugriffe auf globale Properties welche den persistantStore und den Router bereitstellen ohne diese immer neu importieren zu müssen
 const proxy = getCurrentInstance()!.proxy!;
@@ -35,19 +36,19 @@ const handleMessage = (event: MessageEvent) => {
 	// Extrahiere die Action aus der Nachricht
 	// Setze die Nachrichtendaten in const data um sie einfacher verwenden zu können
 	// Entferne diese beiden nicht!
-	const raw = event.data as any;
-	const action = (raw?.action ?? "") as NuiMessage["action"];
+	const raw = event.data as NuiMessage;
+	const action = raw.action;
 
 	// Verarbeite die Nachricht basierend auf der Action
 	// Greife auf die Daten aus "data" zu, z.B. raw.data?.message
 	switch (action) {
 		case "openNui":
 			persistantStore.IsNuiOpen = true;
-			dashboardStore.open(raw.data ?? {});
+			dashboardStore.open(raw.data as Partial<DashboardConfig>);
 			router.push("/dashboard");
 			break;
 		case "updateMessage":
-			persistantStore.MessageData = raw.data?.message ?? null;
+			persistantStore.MessageData = (raw.data as { message?: string })?.message ?? null;
 			break;
 		default:
 			break;
