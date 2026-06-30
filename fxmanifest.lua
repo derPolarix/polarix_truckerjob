@@ -20,16 +20,18 @@ shared_scripts {
 client_scripts {
     '@qbx_core/modules/playerdata.lua',
     "framework/client.lua",
+    "config/client.lua",
+    "client/modules/*.lua",
     "client/*.lua",
     "client/nui/*.lua",
-    "config/client.lua"
 }
 
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
     "framework/server.lua",
+    "config/server.lua",
+    "server/modules/*.lua",
     "server/*.lua",
-    "config/server.lua"
 }
 
 files {
