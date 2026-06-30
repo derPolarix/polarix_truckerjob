@@ -38,7 +38,7 @@
             <div v-if="v.equipped" style="margin-top:14px;width:100%;text-align:center;padding:10px;border-radius:10px;background:rgba(47,158,99,0.12);color:#2f9e63;font-weight:700;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:7px">
               <iconify-icon icon="tabler:circle-check-filled" width="16"></iconify-icon>Equipped
             </div>
-            <button v-else class="equip-btn" @click="equipVehicle(v.slot)" style="margin-top:14px;width:100%;padding:10px;border-radius:10px;border:1px solid #dfe2e6;background:#fff;color:#3c424b;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer">Equip</button>
+            <button v-else class="equip-btn" style="margin-top:14px;width:100%;padding:10px;border-radius:10px;border:1px solid #dfe2e6;background:#fff;color:#3c424b;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="equipVehicle(v.slot)">Equip</button>
           </div>
         </div>
       </div>
@@ -73,7 +73,7 @@
             <div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:8px">
               <span style="font-size:15px;font-weight:800;color:#1b1f24">{{ v.price }}</span>
               <span v-if="v.locked" style="font-family:'IBM Plex Mono',monospace;font-size:10px;padding:7px 11px;border-radius:9px;background:#f1f2f4;color:#9aa1ab">{{ v.lvl }}</span>
-              <button v-else class="accent-btn" @click="buyVehicle(v.slot)" style="padding:8px 15px;font-size:12px">Buy</button>
+              <button v-else class="accent-btn" style="padding:8px 15px;font-size:12px" @click="buyVehicle(v.slot)">Buy</button>
             </div>
           </div>
         </div>

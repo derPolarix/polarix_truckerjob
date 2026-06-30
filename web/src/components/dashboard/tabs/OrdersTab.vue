@@ -16,9 +16,9 @@
     <button
       v-for="o in store.config.orders"
       :key="o.id"
-      @click="store.openOrder(o.id)"
       class="order-row"
       style="display:flex;align-items:center;gap:18px;width:100%;text-align:left;background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:16px 18px;cursor:pointer;font-family:inherit"
+      @click="store.openOrder(o.id)"
     >
       <div style="width:52px;height:52px;border-radius:13px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;flex-shrink:0">
         <iconify-icon :icon="o.icon" width="26" style="color:#5b626c"></iconify-icon>
@@ -43,7 +43,7 @@
   <!-- Order detail -->
   <div v-else style="display:grid;grid-template-columns:7fr 3fr;gap:16px;min-height:860px">
     <div style="background:#fff;border:1px solid #dfe2e6;border-radius:16px;padding:20px 22px;display:flex;flex-direction:column;overflow-y:auto">
-      <button @click="store.closeOrder()" style="align-self:flex-start;display:inline-flex;align-items:center;gap:7px;background:transparent;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:#6b7280;padding:0;margin-bottom:16px">
+      <button style="align-self:flex-start;display:inline-flex;align-items:center;gap:7px;background:transparent;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:#6b7280;padding:0;margin-bottom:16px" @click="store.closeOrder()">
         <iconify-icon icon="tabler:arrow-left" width="17"></iconify-icon> Back to list
       </button>
 
@@ -136,7 +136,7 @@
           </div>
         </div>
       </div>
-      <button class="accent-btn" @click="acceptOrder" style="margin-top:14px;width:100%;padding:15px;font-size:15px;justify-content:center">
+      <button class="accent-btn" style="margin-top:14px;width:100%;padding:15px;font-size:15px;justify-content:center" @click="acceptOrder">
         Accept challenge <iconify-icon icon="tabler:chevron-right" width="19"></iconify-icon>
       </button>
     </div>

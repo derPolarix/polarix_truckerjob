@@ -16,7 +16,7 @@
           </span>
         </div>
       </div>
-      <button @click="store.setTab('orders')" class="accent-btn" style="padding:13px 20px;font-size:14px;display:inline-flex;align-items:center;gap:9px;white-space:nowrap">
+      <button class="accent-btn" style="padding:13px 20px;font-size:14px;display:inline-flex;align-items:center;gap:9px;white-space:nowrap" @click="store.setTab('orders')">
         Browse orders <iconify-icon icon="tabler:arrow-right" width="18"></iconify-icon>
       </button>
     </div>
@@ -46,7 +46,7 @@
           </div>
           <div style="font-size:15px;font-weight:600;color:#3c424b;margin-top:16px">No active delivery</div>
           <div style="font-size:13px;color:#9aa1ab;margin-top:4px">Accept an order to start earning</div>
-          <button @click="store.setTab('orders')" style="margin-top:18px;background:#22262d;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:8px">
+          <button style="margin-top:18px;background:#22262d;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:8px" @click="store.setTab('orders')">
             Browse orders <iconify-icon icon="tabler:arrow-right" width="16"></iconify-icon>
           </button>
         </div>
@@ -56,7 +56,7 @@
       <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
           <div style="font-size:15px;font-weight:700;color:#1b1f24">Recent runs</div>
-          <button @click="store.setTab('orders')" style="background:transparent;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--accent);display:inline-flex;align-items:center;gap:4px">
+          <button style="background:transparent;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--accent);display:inline-flex;align-items:center;gap:4px" @click="store.setTab('orders')">
             View all <iconify-icon icon="tabler:chevron-right" width="14"></iconify-icon>
           </button>
         </div>

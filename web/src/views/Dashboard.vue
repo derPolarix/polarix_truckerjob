@@ -23,9 +23,9 @@
           <button
             v-for="item in navItems"
             :key="item.key"
-            @click="store.setTab(item.key)"
             style="position:relative;display:flex;align-items:center;gap:12px;width:100%;padding:10px 13px;border:none;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;text-align:left"
             :style="{ background: store.tab === item.key ? 'rgba(232,180,8,0.12)' : 'transparent', color: store.tab === item.key ? '#ffffff' : '#9aa1ab' }"
+            @click="store.setTab(item.key)"
           >
             <span style="position:absolute;left:-12px;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)" :style="{ opacity: store.tab === item.key ? '1' : '0' }"></span>
             <iconify-icon :icon="item.icon" width="19" :style="{ color: store.tab === item.key ? store.config.accentColor : '#7a818c', flexShrink: '0' }"></iconify-icon>
@@ -52,7 +52,7 @@
             </div>
           </div>
         </div>
-        <button @click="closeNui" style="margin:6px 12px 14px;display:flex;align-items:center;gap:10px;padding:10px 13px;border:none;background:transparent;color:#7a818c;font-family:inherit;font-size:13px;cursor:pointer;border-radius:10px">
+        <button style="margin:6px 12px 14px;display:flex;align-items:center;gap:10px;padding:10px 13px;border:none;background:transparent;color:#7a818c;font-family:inherit;font-size:13px;cursor:pointer;border-radius:10px" @click="closeNui">
           <iconify-icon icon="tabler:logout" width="18"></iconify-icon> Exit
         </button>
       </aside>
@@ -80,7 +80,7 @@
             <iconify-icon icon="tabler:bell" width="18"></iconify-icon>
             <span style="position:absolute;top:8px;right:9px;width:6px;height:6px;border-radius:50%;background:#d24b3a"></span>
           </button>
-          <button @click="closeNui" style="width:36px;height:36px;border-radius:10px;border:1px solid #e4e6e9;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280"><iconify-icon icon="tabler:x" width="18"></iconify-icon></button>
+          <button style="width:36px;height:36px;border-radius:10px;border:1px solid #e4e6e9;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280" @click="closeNui"><iconify-icon icon="tabler:x" width="18"></iconify-icon></button>
         </header>
 
         <!-- Content -->

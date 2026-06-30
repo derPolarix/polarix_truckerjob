@@ -27,9 +27,9 @@
       <button
         v-for="ct in ctabDefs"
         :key="ct.key"
-        @click="store.setCtab(ct.key as any)"
         style="position:relative;display:inline-flex;align-items:center;gap:7px;background:transparent;border:none;cursor:pointer;font-family:inherit;font-size:13px;padding:12px 14px"
         :style="{ color: store.ctab === ct.key ? '#1b1f24' : '#6b7280', fontWeight: store.ctab === ct.key ? '600' : '500' }"
+        @click="store.setCtab(ct.key as any)"
       >
         <iconify-icon :icon="ct.icon" width="16" :style="{ color: store.ctab === ct.key ? accentDark : '#9aa1ab' }"></iconify-icon>
         {{ ct.label }}
