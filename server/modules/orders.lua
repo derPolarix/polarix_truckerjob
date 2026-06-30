@@ -44,7 +44,7 @@ function Orders.Accept(source, orderId)
     return true, order
 end
 
-function Orders.Complete(source)
+function Orders.Complete(source, cargoDamage)
     local delivery = ActiveDeliveries[source]
     if not delivery then return false end
 
@@ -55,6 +55,11 @@ function Orders.Complete(source)
     end
 
     local reward, xp = order.reward_base, order.xp_base
+
+    -- Cargo-Schaden-Abzug, max 30% vom Reward
+    local damagePercent = math.min((cargoDamage or 0) / order.reward_base, 0.30)
+    local penalty = math.floor(reward * damagePercent)
+    reward = reward - penalty
 
     Framework.AddMoney(source, reward)
     Player.AddXP(source, xp)
@@ -67,7 +72,7 @@ function Orders.Complete(source)
     DB.CompleteDelivery(delivery.deliveryId, reward, xp)
     ActiveDeliveries[source] = nil
 
-    return true, reward, xp
+    return true, reward, xp, penalty
 end
 
 function Orders.Fail(source)
@@ -84,17 +89,31 @@ function Orders.Fail(source)
     ActiveDeliveries[source] = nil
 end
 
+-- Beim Player-Load: offene Delivery aus vorherigem Disconnect als fehlgeschlagen markieren
+function Orders.CleanupStaleDelivery(source)
+    local pData = Player.GetData(source)
+    if not pData then return end
+
+    local stale = DB.GetActiveDelivery(pData.identifier)
+    if not stale then return end
+
+    DB.FailDelivery(stale.id)
+    pData.failed_deliveries = pData.failed_deliveries + 1
+    Player.Save(source)
+    TriggerClientEvent("polarix_trucker:staleFailed", source)
+end
+
 lib.callback.register("polarix_trucker:acceptOrder", function(source, orderId)
     local success, result = Orders.Accept(source, orderId)
     if not success then return false, nil, result end
     return true, result
 end)
 
-RegisterNetEvent("polarix_trucker:completeDelivery", function()
+RegisterNetEvent("polarix_trucker:completeDelivery", function(cargoDamage)
     local src = source
-    local success, reward, xp = Orders.Complete(src)
+    local success, reward, xp, penalty = Orders.Complete(src, cargoDamage)
     if success then
-        TriggerClientEvent("polarix_trucker:deliveryCompleted", src, reward, xp)
+        TriggerClientEvent("polarix_trucker:deliveryCompleted", src, reward, xp, penalty)
     end
 end)
 

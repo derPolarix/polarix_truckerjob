@@ -71,6 +71,13 @@ function DB.FailDelivery(deliveryId)
     )
 end
 
+function DB.GetActiveDelivery(identifier)
+    return MySQL.single.await(
+        ("SELECT id FROM %s WHERE identifier = ? AND status = 'active'"):format(T.deliveries),
+        { identifier }
+    )
+end
+
 function DB.GetDeliveryHistory(identifier, limit)
     return MySQL.query.await(
         ("SELECT d.*, o.name, o.pickup_city, o.dropoff_city FROM %s d LEFT JOIN %s o ON d.order_id = o.id WHERE d.identifier = ? ORDER BY d.started_at DESC LIMIT ?"):format(T.deliveries, T.orders),

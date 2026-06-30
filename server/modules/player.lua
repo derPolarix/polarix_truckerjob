@@ -78,6 +78,7 @@ end
 
 Framework.OnPlayerLoaded(function(source)
     Player.Load(source)
+    Orders.CleanupStaleDelivery(source)
 end)
 
 Framework.OnPlayerUnload(function(source)
