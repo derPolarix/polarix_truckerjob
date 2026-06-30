@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 //Hier müssen die verschiedenen Vue Seiten importiert werden die der Router nutzen soll
 import Defaultpage from "../views/DefaultPage.vue";
 import TemplatePage from "../views/TemplatePage.vue";
+import Dashboard from "../views/Dashboard.vue";
 
 //Hier werden neue Seiten definiert die der Router nutzen kann
 //Um neue Routen anzulegen einfach ein neues Objekt in das routes Array hinzufügen
@@ -22,8 +23,14 @@ const router = createRouter({
       meta: { navLabel: "Vorlage / TemplatePage" },
     },
     {
-      path: "/", //Standard Pfad für den Router
-      redirect: "/defaultpage", //Leitet auf die Defaultpage weiter wenn nicht vorhanden
+      path: "/dashboard",
+      name: "dashboard",
+      component: Dashboard,
+      meta: { navLabel: "Dashboard" },
+    },
+    {
+      path: "/",
+      redirect: "/dashboard",
     },
   ],
 });

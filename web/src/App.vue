@@ -20,11 +20,13 @@ import { getCurrentInstance, onMounted } from "vue";
 import type { NuiMessage } from "./type";
 import { isDev } from "./main";
 import Sidebar from "@/components/app/Sidebar.vue";
+import { useDashboardStore } from "@/stores/dashboardStore";
 
 // Standard Zugriffe auf globale Properties welche den persistantStore und den Router bereitstellen ohne diese immer neu importieren zu müssen
 const proxy = getCurrentInstance()!.proxy!;
 const router = proxy.$router;
 const persistantStore = proxy.$persistantStore;
+const dashboardStore = useDashboardStore();
 
 // Einzige stelle an der handleMessage verwendet werden darf, sonst wird es später im Kompilierprozess immer wieder überschrieben
 // und damit bis auf in einer zufälligen Datei nutzbar, während alle anderne Unbrauchbar werden.
@@ -41,7 +43,8 @@ const handleMessage = (event: MessageEvent) => {
 	switch (action) {
 		case "openNui":
 			persistantStore.IsNuiOpen = true;
-			router.push("/defaultpage");
+			dashboardStore.open(raw.data ?? {});
+			router.push("/dashboard");
 			break;
 		case "updateMessage":
 			persistantStore.MessageData = raw.data?.message ?? null;

@@ -26,17 +26,7 @@ const navBarClick = (url: string) => {
 	// Standardmäßig wird nur die Defaultpage unterstützt
 	// Du kannst hier aber beliebig viele Routen hinzufügen und vorher eigenen Code ausführen
 	// Kopiere einfach den case Block von der Defaultpage und füge vor das router.push deinen eigenen Code ein
-	switch (url) {
-		case "/defaultpage":
-			router.push(url);
-			break;
-		case "/templatepage":
-			router.push(url);
-			break;
-		default:
-			console.log(`Versuch zu ${url} navigieren schlug fehl. Keine Route definiert.`);
-			break;
-	}
+	router.push(url);
 };
 </script>
 
