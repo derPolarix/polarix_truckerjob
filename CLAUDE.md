@@ -14,7 +14,13 @@ Supports **qbox**, **qb-core**, and **esx**. Active framework set in `config/sha
 
 ```
 config/          # shared, client, server config (Framework key lives in shared.lua)
-framework/       # framework adapters — shared.lua, client.lua, server.lua
+framework/       # framework adapters
+  shared.lua     # dispatcher — requires framework/<active>/shared.lua based on config Framework
+  client.lua     # dispatcher — requires framework/<active>/client.lua
+  server.lua     # dispatcher — requires framework/<active>/server.lua
+  qbox/          # qbox provider — shared.lua, client.lua, server.lua
+  qb-core/       # qb-core provider — shared.lua, client.lua, server.lua
+  esx/           # esx provider — shared.lua, client.lua, server.lua
 shared/          # utilities loaded on both sides (debug module)
 client/
   modules/       # self-contained logic modules (one concern per file)

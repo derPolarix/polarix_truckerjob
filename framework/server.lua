@@ -1,33 +1,12 @@
--- Framework adapter - server side (qbox)
+-- Framework adapter - server side
+-- Loads the active framework's server provider (config/shared.lua -> Framework)
+local config = require("config.shared")
 
-function Framework.GetPlayerIdentifier(source)
-    local player = exports.qbx_core:GetPlayer(source)
-    return player and player.PlayerData.citizenid or nil
+local ok, provider = pcall(require, "framework." .. config.Framework .. ".server")
+if not ok then
+    error(("[polarix_trucker] Unbekanntes Framework in config/shared.lua: %s"):format(tostring(config.Framework)))
 end
 
-function Framework.GetPlayerName(source)
-    local player = exports.qbx_core:GetPlayer(source)
-    if not player then return "Unknown" end
-    local d = player.PlayerData.charinfo
-    return d.firstname .. " " .. d.lastname
-end
-
-function Framework.AddMoney(source, amount)
-    local player = exports.qbx_core:GetPlayer(source)
-    if player then player.Functions.AddMoney("bank", amount) end
-end
-
-function Framework.RemoveMoney(source, amount)
-    local player = exports.qbx_core:GetPlayer(source)
-    if player then player.Functions.RemoveMoney("bank", amount) end
-end
-
-function Framework.GetMoney(source)
-    local player = exports.qbx_core:GetPlayer(source)
-    return player and player.PlayerData.money.bank or 0
-end
-
-function Framework.HasJob(source, jobName)
-    local player = exports.qbx_core:GetPlayer(source)
-    return player and player.PlayerData.job.name == jobName or false
+for fnName, fn in pairs(provider) do
+    Framework[fnName] = fn
 end

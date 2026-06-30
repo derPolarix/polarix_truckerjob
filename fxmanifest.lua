@@ -14,11 +14,17 @@ shared_scripts {
     '@qbx_core/modules/lib.lua',
     'shared/debug.lua',
     "config/shared.lua",
+    "framework/qbox/shared.lua",
+    "framework/qb-core/shared.lua",
+    "framework/esx/shared.lua",
     "framework/shared.lua"
 }
 
 client_scripts {
     '@qbx_core/modules/playerdata.lua',
+    "framework/qbox/client.lua",
+    "framework/qb-core/client.lua",
+    "framework/esx/client.lua",
     "framework/client.lua",
     "config/client.lua",
     "client/modules/*.lua",
@@ -28,6 +34,9 @@ client_scripts {
 
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
+    "framework/qbox/server.lua",
+    "framework/qb-core/server.lua",
+    "framework/esx/server.lua",
     "framework/server.lua",
     "config/server.lua",
     "server/modules/*.lua",
