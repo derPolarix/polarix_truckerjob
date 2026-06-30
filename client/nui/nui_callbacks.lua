@@ -9,3 +9,15 @@ RegisterNUICallback('closeNui', function(data, cb)
     print(json.encode(data))
     cb({ ok = true, message = 'NUI closed' })
 end)
+
+RegisterNUICallback('acceptOrder', function(data, cb)
+    lib.callback('polarix_trucker:acceptOrder', false, function(success, orderData, err)
+        if success then
+            Delivery.Start(orderData)
+            CloseNui()
+        else
+            Framework.Notify(err or 'Fehler beim Annehmen.', 'error')
+        end
+        cb({ ok = success })
+    end, data.orderId)
+end)

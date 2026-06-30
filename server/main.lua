@@ -112,6 +112,7 @@ AddEventHandler('onResourceStart', function(resourceName)
     print("[polarix_trucker] Schema initialisiert.")
 
     LoadDatabaseToCache()
+    Orders.SeedIfEmpty()
 end)
 
 AddEventHandler('onResourceStop', function(resourceName)

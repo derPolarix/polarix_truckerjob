@@ -28,6 +28,28 @@ function DB.GetAvailableOrders()
     return MySQL.query.await(("SELECT * FROM %s WHERE is_active = 1"):format(T.orders))
 end
 
+function DB.CountOrders()
+    return MySQL.scalar.await(("SELECT COUNT(*) FROM %s"):format(T.orders))
+end
+
+function DB.GetOrderById(orderId)
+    return MySQL.single.await(("SELECT * FROM %s WHERE id = ?"):format(T.orders), { orderId })
+end
+
+function DB.InsertOrder(order)
+    MySQL.insert.await(
+        ("INSERT INTO %s (id,name,cargo,cargo_type,weight_kg,distance_km,reward_base,xp_base,time_minutes,pickup_label,pickup_city,pickup_x,pickup_y,pickup_z,dropoff_label,dropoff_city,dropoff_x,dropoff_y,dropoff_z,comment,tag,tag_color,tag_bg,icon,level_required,requires_hazmat,requires_long_hauler) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"):format(T.orders),
+        {
+            order.id, order.name, order.cargo, order.cargo_type, order.weight_kg, order.distance_km,
+            order.reward_base, order.xp_base, order.time_minutes, order.pickup_label, order.pickup_city,
+            order.pickup_x, order.pickup_y, order.pickup_z, order.dropoff_label, order.dropoff_city,
+            order.dropoff_x, order.dropoff_y, order.dropoff_z, order.comment, order.tag, order.tag_color,
+            order.tag_bg, order.icon, order.level_required, order.requires_hazmat and 1 or 0,
+            order.requires_long_hauler and 1 or 0,
+        }
+    )
+end
+
 function DB.InsertDelivery(orderId, identifier)
     return MySQL.insert.await(
         ("INSERT INTO %s (order_id, identifier) VALUES (?, ?)"):format(T.deliveries),
