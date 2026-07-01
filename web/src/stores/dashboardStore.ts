@@ -246,7 +246,12 @@ export const useDashboardStore = defineStore("dashboard", {
   }),
   actions: {
     open(cfg?: Partial<DashboardConfig>) {
-      if (cfg) Object.assign(this.config, cfg);
+      if (cfg) {
+        Object.assign(this.config, cfg);
+        if (cfg.orders !== undefined) {
+          this.config.openOrders = this.config.orders.length;
+        }
+      }
       this.isOpen = true;
       this.tab = "dashboard";
       this.orderId = null;

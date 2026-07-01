@@ -28,12 +28,15 @@
           <span style="font-size:16px;font-weight:700;color:#1b1f24">{{ o.name }}</span>
           <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.06em;padding:2px 7px;border-radius:6px" :style="{ background: o.tagBg, color: o.tagColor }">{{ o.tag }}</span>
         </div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:5px">{{ o.lvlReq }} required</div>
+        <div v-if="o.lvlReq" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:5px">{{ o.lvlReq }} required</div>
       </div>
       <div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
         <div v-for="col in orderCols(o)" :key="col.label">
           <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab">{{ col.label }}</div>
-          <div style="font-size:14px;font-weight:700;margin-top:3px" :style="{ color: col.accent ? 'var(--accent)' : '#3c424b' }">{{ col.value }}</div>
+          <template v-if="col.pill">
+            <span style="display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.06em;font-weight:600;padding:3px 8px;border-radius:6px;margin-top:4px" :style="{ background: col.pillBg, color: col.pillColor }">{{ col.value }}</span>
+          </template>
+          <div v-else style="font-size:14px;font-weight:700;margin-top:3px" :style="{ color: col.accent ? 'var(--accent)' : '#3c424b' }">{{ col.value }}</div>
         </div>
       </div>
       <iconify-icon icon="tabler:chevron-right" width="22" style="color:#c2c7ce;flex-shrink:0"></iconify-icon>
@@ -57,7 +60,7 @@
 
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-top:18px">
         <div style="font-size:24px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24">{{ order.name }}</div>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;white-space:nowrap;margin-top:6px">{{ order.lvlReq }} required</span>
+        <span v-if="order.lvlReq" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;white-space:nowrap;margin-top:6px">{{ order.lvlReq }} required</span>
       </div>
       <div style="display:flex;align-items:center;gap:20px;margin-top:10px;color:#6b7280;font-size:13px">
         <span style="display:inline-flex;align-items:center;gap:7px"><iconify-icon icon="tabler:clock" width="16" style="color:#9aa1ab"></iconify-icon>{{ order.time }}</span>
@@ -91,7 +94,7 @@
             <div style="width:26px;height:26px;border-radius:50%;background:#f1f2f4;display:flex;align-items:center;justify-content:center"><iconify-icon icon="tabler:steering-wheel" width="15" style="color:#9aa1ab"></iconify-icon></div>
             <div style="width:2px;flex:1;background:repeating-linear-gradient(#cfd3d8 0 4px,transparent 4px 8px);margin:4px 0"></div>
           </div>
-          <div style="flex:1;padding-bottom:18px">
+          <div style="flex:1;padding-bottom:18px;min-height:56px">
             <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#9aa1ab">Drive</div>
             <div style="font-size:13px;font-weight:600;color:#6b7280;margin-top:3px">{{ order.driveKm }} · est. {{ order.driveTime }}</div>
           </div>
@@ -167,10 +170,10 @@ const order = computed(() => store.config.orders.find(o => o.id === store.orderI
 
 function orderCols(o: Order) {
   return [
-    { label: "Reward", value: o.reward, accent: true },
-    { label: "Cargo", value: o.cargo, accent: false },
-    { label: "Weight", value: o.weight, accent: false },
-    { label: "Distance", value: o.distance, accent: false },
+    { label: "Reward",   value: o.reward,   accent: true,  pill: false, pillBg: '',      pillColor: '' },
+    { label: "Type",     value: o.cargo,    accent: false, pill: true,  pillBg: o.tagBg, pillColor: o.tagColor },
+    { label: "Weight",   value: o.weight,   accent: false, pill: false, pillBg: '',      pillColor: '' },
+    { label: "Distance", value: o.distance, accent: false, pill: false, pillBg: '',      pillColor: '' },
   ];
 }
 

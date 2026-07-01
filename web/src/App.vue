@@ -21,13 +21,102 @@ import type { NuiMessage } from "./type";
 import { isDev } from "./main";
 import Sidebar from "@/components/app/Sidebar.vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
-import type { DashboardConfig } from "@/stores/dashboardStore";
+import type { DashboardConfig, Order, VehicleShop, SkillBranch, SkillNode } from "@/stores/dashboardStore";
 
 // Standard Zugriffe auf globale Properties welche den persistantStore und den Router bereitstellen ohne diese immer neu importieren zu müssen
 const proxy = getCurrentInstance()!.proxy!;
 const router = proxy.$router;
 const persistantStore = proxy.$persistantStore;
 const dashboardStore = useDashboardStore();
+
+function mapServerResponse(data: any): Partial<DashboardConfig> {
+	const p = data.player ?? {};
+	const rawOrders: any[] = data.orders ?? [];
+	const rawShop: any[] = data.vehicleShop ?? [];
+	const rawBranches: any[] = data.skillBranches ?? [];
+	const playerSkills: string[] = p.skills ?? [];
+	const xpThresholds: number[] = data.xpThresholds ?? [];
+
+	const fmtMoney = (v: number) => `$${(v ?? 0).toLocaleString()}`;
+	const fmtMin = (m: number) => {
+		if (!m) return '';
+		const h = Math.floor(m / 60), r = m % 60;
+		return h > 0 ? `${h}h${r > 0 ? ` ${r}m` : ''}` : `${r}m`;
+	};
+
+	const orders: Order[] = rawOrders.map((o: any) => ({
+		id: String(o.id),
+		name: o.name ?? '',
+		cargo: o.cargo ?? '',
+		weight: `${((o.weight_kg ?? 0) / 1000).toFixed(1)} t`,
+		distance: `${(o.distance_km ?? 0).toFixed(1)} km`,
+		reward: fmtMoney(o.reward_base),
+		xp: `+${o.xp_base ?? 0}`,
+		time: fmtMin(o.time_minutes),
+		perKm: o.distance_km ? `${fmtMoney(Math.round((o.reward_base ?? 0) / o.distance_km))} / km` : '',
+		lvlReq: `Lvl ${o.level_required ?? 1}`,
+		pickup: o.pickup_label ?? '',
+		pickupCity: o.pickup_city ?? '',
+		pickupKm: '',
+		driveKm: `${(o.distance_km ?? 0).toFixed(1)} km`,
+		driveTime: fmtMin(o.time_minutes),
+		dropoff: o.dropoff_label ?? '',
+		dropoffCity: o.dropoff_city ?? '',
+		dropoffKm: `${(o.distance_km ?? 0).toFixed(1)} km`,
+		comment: o.comment ?? '',
+		tag: o.tag ?? '',
+		tagColor: o.tag_color ?? '#9aa1ab',
+		tagBg: o.tag_bg ?? '#f1f2f4',
+		icon: o.icon ?? 'tabler:package',
+	}));
+
+	const vehiclesShop: VehicleShop[] = rawShop.map((v: any) => ({
+		name: v.name ?? '',
+		cls: v.cls ?? '',
+		slot: v.slot ?? '',
+		speed: String(v.speed ?? ''),
+		cap: `${((v.cap_kg ?? 0) / 1000).toFixed(0)} t`,
+		fuel: `${v.fuel_l ?? 0} L`,
+		price: fmtMoney(v.price),
+		locked: (p.level ?? 1) < (v.level_required ?? 1),
+		lvl: (v.level_required ?? 1) > 1 ? `Lvl ${v.level_required}` : '',
+	}));
+
+	const branches: SkillBranch[] = rawBranches.map((branch: any) => ({
+		name: branch.name ?? '',
+		icon: branch.icon ?? '',
+		skills: (branch.skills ?? []).map((skill: any) => {
+			const acquired = playerSkills.includes(skill.id);
+			const prereqMet = !skill.requires || playerSkills.includes(skill.requires);
+			return {
+				id: skill.id,
+				name: skill.name ?? '',
+				desc: skill.desc ?? '',
+				state: acquired ? 'acquired' : (prereqMet ? 'available' : 'locked'),
+			} as SkillNode;
+		}),
+	}));
+
+	const totalDeliveries = (p.total_deliveries ?? 0) + (p.failed_deliveries ?? 0);
+
+	return {
+		driverName: p.name ?? '',
+		driverLevel: p.level ?? 1,
+		driverXp: p.xp ?? 0,
+		driverXpMax: xpThresholds[p.level ?? 1] ?? (p.xp ?? 0),
+		skillPoints: p.skill_points ?? 0,
+		balance: p.balance ?? 0,
+		openOrders: orders.length,
+		completedOrders: p.total_deliveries ?? 0,
+		successRate: totalDeliveries > 0
+			? `${Math.round((p.total_deliveries / totalDeliveries) * 100)}%`
+			: '—',
+		earnings: fmtMoney(p.total_earnings),
+		orders,
+		vehiclesShop,
+		branches,
+	};
+}
 
 // Einzige stelle an der handleMessage verwendet werden darf, sonst wird es später im Kompilierprozess immer wieder überschrieben
 // und damit bis auf in einer zufälligen Datei nutzbar, während alle anderne Unbrauchbar werden.
@@ -44,8 +133,12 @@ const handleMessage = (event: MessageEvent) => {
 	switch (action) {
 		case "openNui":
 			persistantStore.IsNuiOpen = true;
-			dashboardStore.open(raw.data as Partial<DashboardConfig>);
 			router.push("/dashboard");
+			dashboardStore.open(
+				(raw.data as any)?.player !== undefined
+					? mapServerResponse(raw.data)
+					: (raw.data as Partial<DashboardConfig> | undefined)
+			);
 			break;
 		case "updateMessage":
 			persistantStore.MessageData = (raw.data as { message?: string })?.message ?? null;

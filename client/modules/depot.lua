@@ -8,7 +8,7 @@ local function openDashboard()
             Framework.Notify("Fehler beim Laden der Daten.", "error")
             return
         end
-        OpenNui()
+        SetFocus(true)
         SendMessage("openNui", data)
     end)
 end
