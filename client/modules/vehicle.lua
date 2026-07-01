@@ -8,6 +8,33 @@ LocalVehicle = {
 
 Vehicle = {}
 
+-- Wählt zufällig einen freien Spawn-Punkt (kein Fahrzeug innerhalb von 6 Einheiten).
+-- Fallback: erster Punkt der gemischten Liste wenn alle belegt.
+local function findFreeSpawnPoint()
+    local points = clientConfig.VehicleSpawnPoints
+    -- Fisher-Yates shuffle auf Kopie
+    local candidates = {}
+    for i = 1, #points do candidates[i] = points[i] end
+    for i = #candidates, 2, -1 do
+        local j = math.random(i)
+        candidates[i], candidates[j] = candidates[j], candidates[i]
+    end
+
+    local vehicles = GetGamePool("CVehicle")
+    for _, point in ipairs(candidates) do
+        local free = true
+        for _, veh in ipairs(vehicles) do
+            local pos = GetEntityCoords(veh)
+            if #(pos - vector3(point.x, point.y, point.z)) < 6.0 then
+                free = false
+                break
+            end
+        end
+        if free then return point end
+    end
+    return candidates[1]
+end
+
 function Vehicle.Spawn()
     if not LocalVehicle.model then
         Framework.Notify("Kein Fahrzeug ausgewählt.", "error")
@@ -16,7 +43,7 @@ function Vehicle.Spawn()
 
     Vehicle.Despawn()
 
-    local coords    = clientConfig.VehicleSpawnCoords
+    local coords    = findFreeSpawnPoint()
     local modelHash = GetHashKey(LocalVehicle.model)
 
     RequestModel(modelHash)
@@ -35,7 +62,9 @@ function Vehicle.Spawn()
     SetEntityAsMissionEntity(veh, true, true)
     SetModelAsNoLongerNeeded(modelHash)
 
-    TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
+    if clientConfig.TeleportIntoVehicle then
+        TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
+    end
     Framework.GiveVehicleKeys(veh, "TRUCKER")
 
     LocalVehicle.entity = veh
