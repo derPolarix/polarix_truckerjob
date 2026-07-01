@@ -24,6 +24,13 @@ function DB.GetPlayerVehicles(identifier)
     return MySQL.query.await(("SELECT * FROM %s WHERE identifier = ?"):format(T.vehicles), { identifier })
 end
 
+function DB.InsertVehicle(identifier, vehicleSlot, vehicleModel)
+    MySQL.insert.await(
+        ("INSERT INTO %s (identifier, vehicle_slot, vehicle_model) VALUES (?,?,?)"):format(T.vehicles),
+        { identifier, vehicleSlot, vehicleModel }
+    )
+end
+
 function DB.GetAvailableOrders()
     return MySQL.query.await(("SELECT * FROM %s WHERE is_active = 1"):format(T.orders))
 end

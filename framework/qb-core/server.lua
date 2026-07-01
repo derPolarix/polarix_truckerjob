@@ -49,4 +49,8 @@ return {
             callback(source)
         end)
     end,
+
+    -- qb-core: Schlüssel werden client-seitig via vehiclekeys:client:SetOwner vergeben — no-op
+    GiveVehicleKeys = function(_src, _vehicleNetId)
+    end,
 }

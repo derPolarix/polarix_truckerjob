@@ -13,20 +13,23 @@ lib.callback.register("polarix_trucker:openDashboard", function(source)
     end
     if not pData then return nil end
 
+    local ownedVehicles = DB.GetPlayerVehicles(pData.identifier)
+
     return {
         player = {
-            name             = pData.name,
-            level            = pData.level,
-            xp               = pData.xp,
-            skill_points     = pData.skill_points,
-            skills           = pData.skills,
-            total_earnings   = pData.total_earnings,
-            total_deliveries = pData.total_deliveries,
+            name              = pData.name,
+            level             = pData.level,
+            xp                = pData.xp,
+            skill_points      = pData.skill_points,
+            skills            = pData.skills,
+            total_earnings    = pData.total_earnings,
+            total_deliveries  = pData.total_deliveries,
             failed_deliveries = pData.failed_deliveries,
-            equipped_vehicle = pData.equipped_vehicle,
-            balance          = Framework.GetMoney(source),
+            equipped_vehicle  = pData.equipped_vehicle,
+            balance           = Framework.GetMoney(source),
         },
         orders        = Orders.GetAvailableForPlayer(source),
+        ownedVehicles = ownedVehicles,
         vehicleShop   = server.VehicleShop,
         skillBranches = sharedConfig.Skills.branches,
         levelTitles   = sharedConfig.LevelTitles,

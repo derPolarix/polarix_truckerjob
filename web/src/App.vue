@@ -21,7 +21,7 @@ import type { NuiMessage } from "./type";
 import { isDev } from "./main";
 import Sidebar from "@/components/app/Sidebar.vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
-import type { DashboardConfig, Order, VehicleShop, SkillBranch, SkillNode } from "@/stores/dashboardStore";
+import type { DashboardConfig, Order, VehicleOwned, VehicleShop, SkillBranch, SkillNode } from "@/stores/dashboardStore";
 
 // Standard Zugriffe auf globale Properties welche den persistantStore und den Router bereitstellen ohne diese immer neu importieren zu müssen
 const proxy = getCurrentInstance()!.proxy!;
@@ -32,9 +32,11 @@ const dashboardStore = useDashboardStore();
 function mapServerResponse(data: any): Partial<DashboardConfig> {
 	const p = data.player ?? {};
 	const rawOrders: any[] = data.orders ?? [];
+	const rawOwned: any[] = data.ownedVehicles ?? [];
 	const rawShop: any[] = data.vehicleShop ?? [];
 	const rawBranches: any[] = data.skillBranches ?? [];
 	const playerSkills: string[] = p.skills ?? [];
+	const equippedSlot: string = p.equipped_vehicle ?? '';
 	const xpThresholds: number[] = data.xpThresholds ?? [];
 
 	const fmtMoney = (v: number) => `$${(v ?? 0).toLocaleString()}`;
@@ -69,6 +71,19 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		tagBg: o.tag_bg ?? '#f1f2f4',
 		icon: o.icon ?? 'tabler:package',
 	}));
+
+	const vehiclesOwned: VehicleOwned[] = rawOwned.map((v: any) => {
+		const shopEntry = rawShop.find((s: any) => s.slot === v.vehicle_slot);
+		return {
+			name:     shopEntry?.name ?? v.vehicle_slot,
+			cls:      shopEntry?.cls ?? '',
+			slot:     v.vehicle_slot,
+			speed:    String(shopEntry?.speed ?? ''),
+			cap:      shopEntry?.cap_kg ? `${(shopEntry.cap_kg / 1000).toFixed(0)} t` : '',
+			fuel:     shopEntry?.fuel_l ? `${shopEntry.fuel_l} L` : '',
+			equipped: v.vehicle_slot === equippedSlot,
+		};
+	});
 
 	const vehiclesShop: VehicleShop[] = rawShop.map((v: any) => ({
 		name: v.name ?? '',
@@ -113,6 +128,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 			: '—',
 		earnings: fmtMoney(p.total_earnings),
 		orders,
+		vehiclesOwned,
 		vehiclesShop,
 		branches,
 	};
@@ -140,6 +156,23 @@ const handleMessage = (event: MessageEvent) => {
 					: (raw.data as Partial<DashboardConfig> | undefined)
 			);
 			break;
+		case "updateOwnedVehicles": {
+			const d = raw.data as { ownedVehicles: any[]; equippedSlot: string };
+			const slot = d.equippedSlot ?? '';
+			dashboardStore.config.vehiclesOwned = (d.ownedVehicles ?? []).map((v: any) => {
+				const shopEntry = dashboardStore.config.vehiclesShop.find(s => s.slot === v.vehicle_slot);
+				return {
+					name:     shopEntry?.name ?? v.vehicle_slot,
+					cls:      shopEntry?.cls ?? '',
+					slot:     v.vehicle_slot,
+					speed:    shopEntry?.speed ?? '',
+					cap:      shopEntry?.cap ?? '',
+					fuel:     shopEntry?.fuel ?? '',
+					equipped: v.vehicle_slot === slot,
+				} as VehicleOwned;
+			});
+			break;
+		}
 		case "updateMessage":
 			persistantStore.MessageData = (raw.data as { message?: string })?.message ?? null;
 			break;

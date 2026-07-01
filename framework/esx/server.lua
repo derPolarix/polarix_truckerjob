@@ -49,4 +49,8 @@ return {
             callback(playerId)
         end)
     end,
+
+    -- ESX: kein standardisiertes Key-System — no-op
+    GiveVehicleKeys = function(_src, _vehicleNetId)
+    end,
 }

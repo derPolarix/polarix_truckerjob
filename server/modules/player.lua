@@ -36,6 +36,17 @@ function Player.Load(source)
         level = data.level, xp = data.xp, skill_points = data.skill_points
     })
 
+    -- Ausgerüstetes Fahrzeug zum Client synchronisieren (für /getruck ohne UI-Open)
+    if data.equipped_vehicle then
+        local vehicles = DB.GetPlayerVehicles(identifier)
+        for _, v in ipairs(vehicles) do
+            if v.vehicle_slot == data.equipped_vehicle then
+                TriggerClientEvent("polarix_trucker:vehicleSync", source, data.equipped_vehicle, v.vehicle_model)
+                break
+            end
+        end
+    end
+
     return data
 end
 
