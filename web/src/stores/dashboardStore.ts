@@ -55,6 +55,8 @@ export interface SkillNode {
   id: string;
   name: string;
   desc: string;
+  cost: number;
+  requires: string | null;
   state: "acquired" | "available" | "locked";
 }
 
@@ -157,26 +159,7 @@ const defaultConfig: DashboardConfig = {
     { name: "Scania R730 V8", cls: "Premium", slot: "veh-shop-3", speed: "150", cap: "28 t", fuel: "800 L", price: "$1,250,000", locked: true, lvl: "Lvl 10" },
     { name: "Freightliner Cascadia", cls: "Long-haul", slot: "veh-shop-4", speed: "130", cap: "27 t", fuel: "720 L", price: "$610,000", locked: false, lvl: "" },
   ],
-  branches: [
-    { name: "Hauling", icon: "tabler:truck", skills: [
-      { id: "h1", name: "Steady Hands", desc: "Reduces cargo damage by 15% on rough roads.", state: "acquired" },
-      { id: "h2", name: "Heavy Hauler", desc: "Unlocks loads up to 20 tons.", state: "acquired" },
-      { id: "h3", name: "Hazmat License", desc: "Allows hazardous cargo contracts.", state: "available" },
-      { id: "h4", name: "Master Hauler", desc: "+25% reward on heavy-class loads.", state: "locked" },
-    ]},
-    { name: "Economy", icon: "tabler:coin", skills: [
-      { id: "e1", name: "Fuel Saver", desc: "Cuts fuel consumption by 10%.", state: "acquired" },
-      { id: "e2", name: "Negotiator", desc: "+8% on every delivery payout.", state: "available" },
-      { id: "e3", name: "Bulk Deals", desc: "25% cheaper vehicle maintenance.", state: "locked" },
-      { id: "e4", name: "Tycoon", desc: "+20% company dividend share.", state: "locked" },
-    ]},
-    { name: "Endurance", icon: "tabler:bolt", skills: [
-      { id: "d1", name: "Iron Will", desc: "+30 minutes before fatigue sets in.", state: "acquired" },
-      { id: "d2", name: "Night Owl", desc: "No handling penalty on night runs.", state: "available" },
-      { id: "d3", name: "Long Hauler", desc: "Unlocks cross-state delivery routes.", state: "locked" },
-      { id: "d4", name: "Unstoppable", desc: "+15% XP on all completed deliveries.", state: "locked" },
-    ]},
-  ],
+  branches: [],
   recentRuns: [
     { route: "Los Santos Port → Sandy Shores", code: "#OR-2024-001231", reward: "$12,500", tag: "FULL HAUL", icon: "tabler:building-warehouse", failed: false },
     { route: "Downtown → Mirror Park", code: "#OR-2024-001212", reward: "$8,750", tag: "HALF LOAD", icon: "tabler:road", failed: false },
@@ -276,6 +259,22 @@ export const useDashboardStore = defineStore("dashboard", {
     },
     setHoverSkill(id: string | null) {
       this.hoverSkill = id;
+    },
+    unlockSkill(skillId: string) {
+      for (const branch of this.config.branches) {
+        for (let i = 0; i < branch.skills.length; i++) {
+          const skill = branch.skills[i];
+          if (skill.id === skillId && skill.state === "available") {
+            this.config.skillPoints -= skill.cost ?? 1;
+            skill.state = "acquired";
+            const next = branch.skills[i + 1];
+            if (next && next.state === "locked") {
+              next.state = "available";
+            }
+            return;
+          }
+        }
+      }
     },
   },
 });

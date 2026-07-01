@@ -45,3 +45,12 @@ RegisterNUICallback('equipVehicle', function(data, cb)
         cb({ ok = success })
     end, data.slot)
 end)
+
+RegisterNUICallback('unlockSkill', function(data, cb)
+    lib.callback('polarix_trucker:unlockSkill', false, function(success, err)
+        if not success then
+            Framework.Notify(err or 'Skill-Freischaltung fehlgeschlagen.', 'error')
+        end
+        cb({ ok = success })
+    end, data.skillId)
+end)

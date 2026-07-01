@@ -31,7 +31,7 @@ lib.callback.register("polarix_trucker:openDashboard", function(source)
         orders        = Orders.GetAvailableForPlayer(source),
         ownedVehicles = ownedVehicles,
         vehicleShop   = server.VehicleShop,
-        skillBranches = sharedConfig.Skills.branches,
+        skillBranches = Skills.GetBranchesForPlayer(source),
         levelTitles   = sharedConfig.LevelTitles,
         xpThresholds  = sharedConfig.XPThresholds,
     }

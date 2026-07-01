@@ -33,7 +33,7 @@ function Player.Load(source)
     PlayerCache[source] = data
 
     TriggerClientEvent("polarix_trucker:playerUpdate", source, {
-        level = data.level, xp = data.xp, skill_points = data.skill_points
+        level = data.level, xp = data.xp, skill_points = data.skill_points, skills = data.skills
     })
 
     -- Ausgerüstetes Fahrzeug zum Client synchronisieren (für /getruck ohne UI-Open)

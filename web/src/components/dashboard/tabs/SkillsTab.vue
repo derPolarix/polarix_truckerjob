@@ -37,8 +37,10 @@
             @mouseleave="store.setHoverSkill(null)"
           >
             <div
-              style="width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;border-width:2px;border-style:solid;cursor:pointer"
+              style="width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;border-width:2px;border-style:solid"
               :style="nodeStyle(skill.state)"
+              :class="{ 'cursor-pointer': skill.state === 'available', 'cursor-default': skill.state !== 'available' }"
+              @click="onSkillClick(skill)"
             >
               <iconify-icon :icon="nodeIcon(skill.state)" width="22" :style="{ color: nodeIconColor(skill.state) }"></iconify-icon>
             </div>
@@ -73,8 +75,18 @@
 <script setup lang="ts">
 import { useDashboardStore } from "@/stores/dashboardStore";
 import type { SkillNode } from "@/stores/dashboardStore";
+import { nuiCallback } from "@/nui/nuiCallbacks";
 
 const store = useDashboardStore();
+
+async function onSkillClick(skill: SkillNode) {
+  if (skill.state !== "available") return;
+  if (store.config.skillPoints < skill.cost) return;
+  const res = await nuiCallback<{ ok: boolean }>("unlockSkill", { skillId: skill.id });
+  if (res?.ok) {
+    store.unlockSkill(skill.id);
+  }
+}
 
 function nodeStyle(state: SkillNode["state"]): Record<string, string> {
   const acc = store.config.accentColor;

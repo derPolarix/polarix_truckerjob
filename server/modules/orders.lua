@@ -54,7 +54,8 @@ function Orders.Complete(source, cargoDamage)
         return false
     end
 
-    local reward, xp = order.reward_base, order.xp_base
+    local reward, xp = Skills.ApplyRewardModifiers(source, order.reward_base, order.cargo_type, order)
+    xp = Skills.ApplyXPModifiers(source, xp)
 
     -- Cargo-Schaden-Abzug, max 30% vom Reward
     local damagePercent = math.min((cargoDamage or 0) / order.reward_base, 0.30)

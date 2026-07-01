@@ -107,6 +107,8 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 				id: skill.id,
 				name: skill.name ?? '',
 				desc: skill.desc ?? '',
+				cost: skill.cost ?? 1,
+				requires: skill.requires ?? null,
 				state: acquired ? 'acquired' : (prereqMet ? 'available' : 'locked'),
 			} as SkillNode;
 		}),
