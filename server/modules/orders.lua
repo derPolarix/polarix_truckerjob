@@ -3,6 +3,9 @@ local config = require("config.server")
 Orders = {}
 ActiveDeliveries = {} -- source -> { deliveryId, orderId }
 
+-- oxmysql returns TINYINT(1) as Lua boolean, not integer 1
+local function isTruthy(v) return v == 1 or v == true end
+
 -- TEMPORÄR: Seed initiale Orders aus Config wenn Tabelle leer.
 -- ZIEL: Orders ausschliesslich via Admin-Menü verwalten, dieser Seed entfällt dann.
 function Orders.SeedIfEmpty()
@@ -20,8 +23,8 @@ function Orders.GetAvailableForPlayer(source)
     for _, order in ipairs(DB.GetAvailableOrders()) do
         local visible = true
         if order.level_required > pData.level then visible = false end
-        if order.requires_hazmat == 1 and not Player.HasSkill(source, "h3") then visible = false end
-        if order.requires_long_hauler == 1 and not Player.HasSkill(source, "d3") then visible = false end
+        if isTruthy(order.requires_hazmat) and not Player.HasSkill(source, "h3") then visible = false end
+        if isTruthy(order.requires_long_hauler) and not Player.HasSkill(source, "d3") then visible = false end
         if visible then filtered[#filtered + 1] = order end
     end
     return filtered
@@ -34,10 +37,10 @@ function Orders.Accept(source, orderId)
     if not pData then return false, "Spielerdaten nicht gefunden." end
 
     local order = DB.GetOrderById(orderId)
-    if not order or order.is_active ~= 1 then return false, "Auftrag nicht verfügbar." end
+    if not order or not isTruthy(order.is_active) then return false, "Auftrag nicht verfügbar." end
     if order.level_required > pData.level then return false, "Level nicht ausreichend." end
-    if order.requires_hazmat == 1 and not Player.HasSkill(source, "h3") then return false, "Hazmat-Lizenz erforderlich." end
-    if order.requires_long_hauler == 1 and not Player.HasSkill(source, "d3") then return false, "Long-Hauler-Skill erforderlich." end
+    if isTruthy(order.requires_hazmat) and not Player.HasSkill(source, "h3") then return false, "Hazmat-Lizenz erforderlich." end
+    if isTruthy(order.requires_long_hauler) and not Player.HasSkill(source, "d3") then return false, "Long-Hauler-Skill erforderlich." end
 
     local deliveryId = DB.InsertDelivery(orderId, pData.identifier)
     ActiveDeliveries[source] = { deliveryId = deliveryId, orderId = orderId }

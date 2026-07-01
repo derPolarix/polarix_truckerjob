@@ -175,6 +175,9 @@ const handleMessage = (event: MessageEvent) => {
 			});
 			break;
 		}
+		case "closeNui":
+			persistantStore.IsNuiOpen = false;
+			break;
 		case "updateMessage":
 			persistantStore.MessageData = (raw.data as { message?: string })?.message ?? null;
 			break;

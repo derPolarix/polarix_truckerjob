@@ -33,7 +33,8 @@ function Delivery.Start(orderData)
     DeliveryState.pickupBlip  = CreateBlip(orderData.pickup_x, orderData.pickup_y, orderData.pickup_z, 1, 2, "Pickup: " .. orderData.pickup_label)
     DeliveryState.dropoffBlip = CreateBlip(orderData.dropoff_x, orderData.dropoff_y, orderData.dropoff_z, 1, 1, "Drop-off: " .. orderData.dropoff_label)
 
-    SetNewWaypoint(orderData.pickup_x, orderData.pickup_y)
+    SetBlipRoute(DeliveryState.pickupBlip, true)
+    SetBlipRouteColour(DeliveryState.pickupBlip, 5)
     Framework.Notify("Fahre zur Abholstelle: " .. orderData.pickup_label, "info")
 end
 
@@ -175,7 +176,9 @@ function Delivery.StartLoading()
     if success then
         DeliveryState.status = "delivering"
         DeliveryState.cargoDamage = 0
-        SetNewWaypoint(o.dropoff_x, o.dropoff_y)
+        SetBlipRoute(DeliveryState.pickupBlip, false)
+        SetBlipRoute(DeliveryState.dropoffBlip, true)
+        SetBlipRouteColour(DeliveryState.dropoffBlip, 5)
         Framework.Notify("Cargo geladen! Fahre nach " .. o.dropoff_label, "success")
         Delivery.HUD.Start()
         Delivery.StartDamageMonitor(veh)

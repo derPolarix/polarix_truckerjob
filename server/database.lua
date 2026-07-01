@@ -45,14 +45,14 @@ end
 
 function DB.InsertOrder(order)
     MySQL.insert.await(
-        ("INSERT INTO %s (id,name,cargo,cargo_type,weight_kg,distance_km,reward_base,xp_base,time_minutes,pickup_label,pickup_city,pickup_x,pickup_y,pickup_z,dropoff_label,dropoff_city,dropoff_x,dropoff_y,dropoff_z,comment,tag,tag_color,tag_bg,icon,level_required,requires_hazmat,requires_long_hauler) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"):format(T.orders),
+        ("INSERT INTO %s (id,name,cargo,cargo_type,weight_kg,distance_km,reward_base,xp_base,time_minutes,pickup_label,pickup_city,pickup_x,pickup_y,pickup_z,dropoff_label,dropoff_city,dropoff_x,dropoff_y,dropoff_z,comment,tag,tag_color,tag_bg,icon,level_required,requires_hazmat,requires_long_hauler,is_active) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"):format(T.orders),
         {
             order.id, order.name, order.cargo, order.cargo_type, order.weight_kg, order.distance_km,
             order.reward_base, order.xp_base, order.time_minutes, order.pickup_label, order.pickup_city,
             order.pickup_x, order.pickup_y, order.pickup_z, order.dropoff_label, order.dropoff_city,
             order.dropoff_x, order.dropoff_y, order.dropoff_z, order.comment, order.tag, order.tag_color,
             order.tag_bg, order.icon, order.level_required, order.requires_hazmat and 1 or 0,
-            order.requires_long_hauler and 1 or 0,
+            order.requires_long_hauler and 1 or 0, 1,
         }
     )
 end
