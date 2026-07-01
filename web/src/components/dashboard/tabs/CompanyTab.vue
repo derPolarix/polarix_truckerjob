@@ -134,9 +134,9 @@
           <div style="font-size:13px;color:#9aa1ab;margin-top:4px">Send a recruitment offer by username.</div>
           <div style="display:flex;align-items:center;gap:10px;margin-top:16px;padding:11px 14px;border-radius:11px;background:#f1f2f4;border:1px solid #e4e6e9">
             <iconify-icon icon="tabler:at" width="17" style="color:#9aa1ab"></iconify-icon>
-            <input placeholder="username" style="flex:1;border:none;background:transparent;outline:none;font-size:13px;color:#1b1f24;font-family:inherit" />
+            <input v-model="inviteUsername" placeholder="username" style="flex:1;border:none;background:transparent;outline:none;font-size:13px;color:#1b1f24;font-family:inherit" />
           </div>
-          <button class="accent-btn" style="margin-top:12px;width:100%;padding:12px;font-size:13px;justify-content:center">Send invitation</button>
+          <button class="accent-btn" style="margin-top:12px;width:100%;padding:12px;font-size:13px;justify-content:center" @click="sendInvite">Send invitation</button>
         </div>
         <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -196,9 +196,10 @@
             <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#9aa1ab">Company treasury</div>
             <div style="font-size:32px;font-weight:800;letter-spacing:-0.02em;color:#fff;margin-top:6px">{{ store.config.companyTreasury }}</div>
           </div>
-          <div style="display:flex;gap:10px">
-            <button class="accent-btn" style="padding:12px 20px;font-size:13px;gap:7px"><iconify-icon icon="tabler:arrow-down" width="16"></iconify-icon>Deposit</button>
-            <button style="background:#2e333b;color:#fff;border:1px solid #3a414b;border-radius:11px;padding:12px 20px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:7px"><iconify-icon icon="tabler:arrow-up" width="16"></iconify-icon>Withdraw</button>
+          <div style="display:flex;gap:10px;align-items:center">
+            <input v-model.number="bankAmount" type="number" min="1" placeholder="Amount" style="width:120px;padding:11px 14px;border-radius:10px;border:1px solid #3a414b;background:#2e333b;color:#fff;font-size:13px;outline:none;font-family:inherit" />
+            <button class="accent-btn" style="padding:12px 20px;font-size:13px;gap:7px" @click="deposit"><iconify-icon icon="tabler:arrow-down" width="16"></iconify-icon>Deposit</button>
+            <button style="background:#2e333b;color:#fff;border:1px solid #3a414b;border-radius:11px;padding:12px 20px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:7px" @click="withdraw"><iconify-icon icon="tabler:arrow-up" width="16"></iconify-icon>Withdraw</button>
           </div>
         </div>
         <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px">
@@ -224,12 +225,12 @@
         <div style="display:flex;flex-direction:column;gap:16px">
           <div>
             <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Company name</div>
-            <input :value="store.config.companyName" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
+            <input v-model="settingsName" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div>
               <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Tag</div>
-              <input :value="store.config.companyTag" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
+              <input v-model="settingsTag" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
             </div>
             <div>
               <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Min. level to join</div>
@@ -238,20 +239,20 @@
           </div>
           <div>
             <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Description</div>
-            <textarea :value="store.config.companyDescription" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;resize:none;height:72px;font-family:inherit"></textarea>
+            <textarea v-model="settingsDesc" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;resize:none;height:72px;font-family:inherit"></textarea>
           </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:11px;background:#f6f7f8;border:1px solid #eef0f2">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:11px;background:#f6f7f8;border:1px solid #eef0f2" @click="settingsOpenRec = !settingsOpenRec">
             <div>
               <div style="font-size:13px;font-weight:600;color:#1b1f24">Open recruitment</div>
               <div style="font-size:12px;color:#9aa1ab;margin-top:2px">Let drivers request to join.</div>
             </div>
-            <div style="width:42px;height:24px;border-radius:14px;background:var(--accent);position:relative;flex-shrink:0;cursor:pointer">
-              <div style="position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#fff"></div>
+            <div :style="{ background: settingsOpenRec ? 'var(--accent)' : '#cfd3d8' }" style="width:42px;height:24px;border-radius:14px;position:relative;flex-shrink:0;cursor:pointer;transition:background 0.2s">
+              <div :style="{ right: settingsOpenRec ? '3px' : 'auto', left: settingsOpenRec ? 'auto' : '3px' }" style="position:absolute;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left 0.2s,right 0.2s"></div>
             </div>
           </div>
           <div style="display:flex;gap:10px;margin-top:4px">
-            <button class="accent-btn" style="padding:12px 22px;font-size:13px">Save changes</button>
-            <button style="background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:11px;padding:12px 22px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer">Cancel</button>
+            <button class="accent-btn" style="padding:12px 22px;font-size:13px" @click="saveSettings">Save changes</button>
+            <button style="background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:11px;padding:12px 22px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="resetSettings">Cancel</button>
           </div>
         </div>
       </div>
@@ -260,11 +261,63 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
+import { nuiCallback } from "@/nui/nuiCallbacks";
 
 const store = useDashboardStore();
 const accentDark = "#b58a05";
+
+// Invite
+const inviteUsername = ref('');
+
+async function sendInvite() {
+  if (!inviteUsername.value.trim()) return;
+  await nuiCallback('inviteMember', { name: inviteUsername.value.trim() });
+  inviteUsername.value = '';
+}
+
+// Bank
+const bankAmount = ref<number | null>(null);
+
+async function deposit() {
+  if (!bankAmount.value || bankAmount.value <= 0) return;
+  await nuiCallback('depositBank', { amount: bankAmount.value });
+  bankAmount.value = null;
+}
+
+async function withdraw() {
+  if (!bankAmount.value || bankAmount.value <= 0) return;
+  await nuiCallback('withdrawBank', { amount: bankAmount.value });
+  bankAmount.value = null;
+}
+
+// Settings
+const settingsName    = ref(store.config.companyName);
+const settingsTag     = ref(store.config.companyTag);
+const settingsDesc    = ref(store.config.companyDescription);
+const settingsOpenRec = ref(store.config.companyOpenRecruitment);
+
+watch(() => store.config.companyName,    v => { settingsName.value    = v; });
+watch(() => store.config.companyTag,     v => { settingsTag.value     = v; });
+watch(() => store.config.companyDescription, v => { settingsDesc.value = v; });
+watch(() => store.config.companyOpenRecruitment, v => { settingsOpenRec.value = v; });
+
+async function saveSettings() {
+  await nuiCallback('saveCompanySettings', {
+    name: settingsName.value,
+    tag: settingsTag.value,
+    description: settingsDesc.value,
+    openRecruitment: settingsOpenRec.value,
+  });
+}
+
+function resetSettings() {
+  settingsName.value    = store.config.companyName;
+  settingsTag.value     = store.config.companyTag;
+  settingsDesc.value    = store.config.companyDescription;
+  settingsOpenRec.value = store.config.companyOpenRecruitment;
+}
 
 const ctabDefs = [
   { key: "overview", label: "Overview", icon: "tabler:layout-grid" },

@@ -92,6 +92,122 @@ function DB.GetDeliveryHistory(identifier, limit)
     )
 end
 
+-- Company queries
+
+function DB.GetMemberByPlayer(identifier)
+    return MySQL.single.await(("SELECT * FROM %s WHERE identifier = ?"):format(T.members), { identifier })
+end
+
+function DB.GetCompanyById(companyId)
+    return MySQL.single.await(("SELECT * FROM %s WHERE id = ?"):format(T.companies), { companyId })
+end
+
+function DB.CreateCompany(name, tag, description)
+    return MySQL.insert.await(
+        ("INSERT INTO %s (name, tag, description) VALUES (?,?,?)"):format(T.companies),
+        { name, tag, description }
+    )
+end
+
+function DB.AddCompanyMember(companyId, identifier, role)
+    MySQL.insert.await(
+        ("INSERT INTO %s (company_id, identifier, role) VALUES (?,?,?)"):format(T.members),
+        { companyId, identifier, role }
+    )
+end
+
+function DB.GetCompanyMembers(companyId)
+    return MySQL.query.await(("SELECT * FROM %s WHERE company_id = ?"):format(T.members), { companyId })
+end
+
+function DB.GetCompanyInvitations(companyId)
+    return MySQL.query.await(("SELECT * FROM %s WHERE company_id = ?"):format(T.invitations), { companyId })
+end
+
+function DB.InsertInvitation(companyId, targetIdentifier, invitedBy)
+    MySQL.insert.await(
+        ("INSERT IGNORE INTO %s (company_id, target_identifier, invited_by) VALUES (?,?,?)"):format(T.invitations),
+        { companyId, targetIdentifier, invitedBy }
+    )
+end
+
+function DB.DeleteInvitation(companyId, targetIdentifier)
+    MySQL.query.await(
+        ("DELETE FROM %s WHERE company_id = ? AND target_identifier = ?"):format(T.invitations),
+        { companyId, targetIdentifier }
+    )
+end
+
+function DB.UpdateMemberRole(identifier, companyId, newRole)
+    MySQL.update.await(
+        ("UPDATE %s SET role=? WHERE identifier=? AND company_id=?"):format(T.members),
+        { newRole, identifier, companyId }
+    )
+end
+
+function DB.DeleteMember(identifier, companyId)
+    MySQL.query.await(
+        ("DELETE FROM %s WHERE identifier=? AND company_id=?"):format(T.members),
+        { identifier, companyId }
+    )
+end
+
+function DB.UpdateCompanyTreasury(companyId, delta)
+    MySQL.update.await(
+        ("UPDATE %s SET treasury = treasury + ? WHERE id = ?"):format(T.companies),
+        { delta, companyId }
+    )
+end
+
+function DB.InsertTransaction(companyId, label, amount, isPositive, icon)
+    MySQL.insert.await(
+        ("INSERT INTO %s (company_id, label, amount, is_positive, icon) VALUES (?,?,?,?,?)"):format(T.transactions),
+        { companyId, label, amount, isPositive and 1 or 0, icon }
+    )
+end
+
+function DB.GetCompanyTransactions(companyId, limit)
+    return MySQL.query.await(
+        ("SELECT * FROM %s WHERE company_id = ? ORDER BY created_at DESC LIMIT ?"):format(T.transactions),
+        { companyId, limit or 20 }
+    )
+end
+
+function DB.UpdateCompanyStats(companyId, earnings)
+    MySQL.update.await(
+        ("UPDATE %s SET total_earnings = total_earnings + ?, total_deliveries = total_deliveries + 1 WHERE id = ?"):format(T.companies),
+        { earnings, companyId }
+    )
+end
+
+function DB.UpdateCompanyXP(companyId, amount)
+    MySQL.update.await(
+        ("UPDATE %s SET xp = xp + ? WHERE id = ?"):format(T.companies),
+        { amount, companyId }
+    )
+end
+
+function DB.UpdateCompanySettings(companyId, name, tag, description, openRecruitment)
+    MySQL.update.await(
+        ("UPDATE %s SET name=?, tag=?, description=?, open_recruitment=? WHERE id=?"):format(T.companies),
+        { name, tag, description, openRecruitment and 1 or 0, companyId }
+    )
+end
+
+function DB.UpdateMemberStats(identifier, companyId, earnings)
+    MySQL.update.await(
+        ("UPDATE %s SET deliveries = deliveries + 1, earnings = earnings + ? WHERE identifier = ? AND company_id = ?"):format(T.members),
+        { earnings, identifier, companyId }
+    )
+end
+
+function DB.GetPlayerByName(name)
+    return MySQL.single.await(
+        ("SELECT identifier, level FROM %s WHERE name = ?"):format(T.players),
+        { name }
+    )
+end
+
 function LoadDatabaseToCache()
     -- Aktuell kein globaler DB-Cache nötig (Spieler werden pro-Source in PlayerCache gehalten).
 end

@@ -72,6 +72,7 @@ function Orders.Complete(source, cargoDamage)
     pData.total_earnings = pData.total_earnings + reward
     pData.total_deliveries = pData.total_deliveries + 1
     Player.Save(source)
+    Company.OnDeliveryComplete(source, reward)
 
     DB.CompleteDelivery(delivery.deliveryId, reward, xp)
     ActiveDeliveries[source] = nil

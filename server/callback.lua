@@ -15,6 +15,12 @@ lib.callback.register("polarix_trucker:openDashboard", function(source)
 
     local ownedVehicles = DB.GetPlayerVehicles(pData.identifier)
 
+    local membership = Company.GetMembership(pData.identifier)
+    local companyData = nil
+    if membership then
+        companyData = Company.GetFull(membership.company_id, pData.identifier)
+    end
+
     return {
         player = {
             name              = pData.name,
@@ -34,5 +40,7 @@ lib.callback.register("polarix_trucker:openDashboard", function(source)
         skillBranches = Skills.GetBranchesForPlayer(source),
         levelTitles   = sharedConfig.LevelTitles,
         xpThresholds  = sharedConfig.XPThresholds,
+        company       = companyData,
+        myRole        = membership and membership.role or nil,
     }
 end)

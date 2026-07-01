@@ -116,6 +116,48 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 
 	const totalDeliveries = (p.total_deliveries ?? 0) + (p.failed_deliveries ?? 0);
 
+	const rawCompany = (data as any).company;
+	const companyFields: Partial<DashboardConfig> = rawCompany ? (() => {
+		const isTruthy = (v: unknown) => v === 1 || v === true;
+		return {
+			companyName:            rawCompany.name ?? '',
+			companyDescription:     rawCompany.description ?? '',
+			companyTag:             rawCompany.tag ?? '',
+			companyLevel:           rawCompany.level ?? 1,
+			companyXp:              rawCompany.xp ?? 0,
+			companyXpMax:           Math.max((rawCompany.level ?? 1) * 1000, (rawCompany.xp ?? 0) + 100),
+			companyFoundedDate:     rawCompany.founded_at ? String(rawCompany.founded_at).substring(0, 10) : '—',
+			companyMembers:         (rawCompany.members ?? []).length,
+			companyServerRank:      '—',
+			companyEarnings:        fmtMoney(rawCompany.total_earnings ?? 0),
+			companyDeliveries:      String(rawCompany.total_deliveries ?? 0),
+			companyDistance:        '—',
+			companyTreasury:        fmtMoney(rawCompany.treasury ?? 0),
+			companyOpenRecruitment: isTruthy(rawCompany.open_recruitment),
+			members: (rawCompany.members ?? []).map((m: any) => ({
+				name:       m.name ?? '',
+				role:       m.role ? (m.role.charAt(0).toUpperCase() + m.role.slice(1)) : 'Recruit',
+				deliveries: m.deliveries ?? 0,
+				earned:     fmtMoney(m.earned ?? 0),
+				status:     m.isOnline ? 'online' : 'offline',
+				lvl:        m.lvl ?? 1,
+				you:        m.isYou ?? false,
+			})),
+			invitations: (rawCompany.invitations ?? []).map((inv: any) => ({
+				name: inv.name ?? '',
+				lvl:  inv.lvl ?? 1,
+				sent: inv.created_at ? String(inv.created_at).substring(0, 10) : '—',
+			})),
+			transactions: (rawCompany.transactions ?? []).map((t: any) => ({
+				label: t.label ?? '',
+				amt:   (isTruthy(t.is_positive) ? '+' : '-') + fmtMoney(Math.abs(t.amount ?? 0)),
+				when:  t.created_at ? String(t.created_at).substring(0, 10) : '—',
+				pos:   isTruthy(t.is_positive),
+				icon:  t.icon ?? 'tabler:arrows-exchange',
+			})),
+		};
+	})() : { companyName: '' };
+
 	return {
 		driverName: p.name ?? '',
 		driverLevel: p.level ?? 1,
@@ -133,6 +175,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		vehiclesOwned,
 		vehiclesShop,
 		branches,
+		...companyFields,
 	};
 }
 
