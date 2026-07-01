@@ -1,6 +1,6 @@
 <template>
   <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px" :style="{ '--accent': store.config.accentColor }">
-    <div style="width:1366px;height:1024px;display:flex;background:#e7e9ec;border-radius:22px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,0.55),0 0 0 1px rgba(255,255,255,0.04);font-size:14px;color:#1b1f24;font-family:'Archivo',system-ui,sans-serif">
+    <div style="width:1434px;height:968px;display:flex;background:#e7e9ec;border-radius:22px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,0.55),0 0 0 1px rgba(255,255,255,0.04);font-size:14px;color:#1b1f24;font-family:'Archivo',system-ui,sans-serif">
 
       <!-- SIDEBAR -->
       <aside style="width:242px;flex-shrink:0;background:#22262d;display:flex;flex-direction:column;color:#c9ced6">
@@ -61,7 +61,7 @@
       <main class="px-main" style="flex:1;display:flex;flex-direction:column;min-width:0;background:#e7e9ec">
         <!-- Header -->
         <header style="height:62px;flex-shrink:0;display:flex;align-items:center;gap:14px;padding:0 22px;background:#fff;border-bottom:1px solid #dfe2e6">
-          <div style="display:flex;align-items:center;gap:10px;width:380px;max-width:42%;padding:9px 14px;border-radius:11px;background:#f1f2f4;border:1px solid #e4e6e9">
+          <div style="display:flex;align-items:center;gap:10px;height:38px;width:380px;max-width:42%;padding:9px 14px;border-radius:11px;background:#f1f2f4;border:1px solid #e4e6e9">
             <iconify-icon icon="tabler:search" width="17" style="color:#9aa1ab"></iconify-icon>
             <input placeholder="Search by order ID, cargo or city…" style="flex:1;border:none;background:transparent;outline:none;font-size:13px;color:#1b1f24;font-family:inherit" />
           </div>
