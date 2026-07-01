@@ -1,8 +1,35 @@
-local debug = require("shared.debug")
 local server = require("config.server")
-local shared = require("shared.debug")
+local sharedConfig = require("config.shared")
 
 -- lib.callback.register('polarix_template:getPlayerJob', function(source, item, metadata, target)
 --     local player = exports.qbx_core:GetPlayer(source)
 --     return player.PlayerData.job.name
 -- end)
+
+lib.callback.register("polarix_trucker:openDashboard", function(source)
+    local pData = Player.GetData(source)
+    if not pData then
+        pData = Player.Load(source)
+    end
+    if not pData then return nil end
+
+    return {
+        player = {
+            name             = pData.name,
+            level            = pData.level,
+            xp               = pData.xp,
+            skill_points     = pData.skill_points,
+            skills           = pData.skills,
+            total_earnings   = pData.total_earnings,
+            total_deliveries = pData.total_deliveries,
+            failed_deliveries = pData.failed_deliveries,
+            equipped_vehicle = pData.equipped_vehicle,
+            balance          = Framework.GetMoney(source),
+        },
+        orders        = Orders.GetAvailableForPlayer(source),
+        vehicleShop   = server.VehicleShop,
+        skillBranches = sharedConfig.Skills.branches,
+        levelTitles   = sharedConfig.LevelTitles,
+        xpThresholds  = sharedConfig.XPThresholds,
+    }
+end)

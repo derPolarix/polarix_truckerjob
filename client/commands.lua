@@ -25,3 +25,15 @@ RegisterCommand('sendmsg', function()
         message = 'Hallo von der Client Seite!'
     })
 end, false)
+
+-- Test-Command: UI mit echten Daten öffnen (entspricht NPC-Interaktion)
+RegisterCommand('truckerui', function()
+    lib.callback('polarix_trucker:openDashboard', false, function(data)
+        if not data then
+            Framework.Notify('Keine Spielerdaten verfügbar.', 'error')
+            return
+        end
+        OpenNui()
+        SendMessage('openNui', data)
+    end)
+end, false)

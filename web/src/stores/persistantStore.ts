@@ -26,7 +26,7 @@ export const usePersistantStore = defineStore<
 	"persistant",
 	{
 		state: (): PersistantState => ({
-			IsNuiOpen: true,
+			IsNuiOpen: false,
       MessageData: null,
 		}),
 		getters: {

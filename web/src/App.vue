@@ -8,7 +8,7 @@
 			<Sidebar />
 		</div>
 
-		<main class="w-full h-full">
+		<main v-if="persistantStore.IsNuiOpen || isDev" class="w-full h-full">
 			<router-view />
 		</main>
 	</div>

@@ -1,5 +1,5 @@
 <template>
-  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(120% 120% at 50% 0%,#1c1f25 0%,#101216 70%)" :style="{ '--accent': store.config.accentColor }">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px" :style="{ '--accent': store.config.accentColor }">
     <div style="width:1366px;height:1024px;display:flex;background:#e7e9ec;border-radius:22px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,0.55),0 0 0 1px rgba(255,255,255,0.04);font-size:14px;color:#1b1f24;font-family:'Archivo',system-ui,sans-serif">
 
       <!-- SIDEBAR -->
@@ -106,6 +106,7 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
+import { usePersistantStore } from "@/stores/persistantStore";
 import DashboardTab from "@/components/dashboard/tabs/DashboardTab.vue";
 import OrdersTab from "@/components/dashboard/tabs/OrdersTab.vue";
 import VehiclesTab from "@/components/dashboard/tabs/VehiclesTab.vue";
@@ -113,6 +114,7 @@ import SkillsTab from "@/components/dashboard/tabs/SkillsTab.vue";
 import CompanyTab from "@/components/dashboard/tabs/CompanyTab.vue";
 
 const store = useDashboardStore();
+const persistantStore = usePersistantStore();
 
 const now = ref(new Date());
 let timer: ReturnType<typeof setInterval>;
@@ -137,7 +139,7 @@ const navItems = computed(() => [
 async function closeNui() {
   store.close();
   try {
-    await nuiCallbackAsync("closeNui", {});
+    await persistantStore.closeNui();
   } catch { /* dev mode */ }
 }
 </script>

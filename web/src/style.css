@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body, #app {
+  background: transparent;
+}
+
 :root {
   font-size: 17px;
   font-family: "Chakra Petch", sans-serif;
