@@ -349,25 +349,25 @@
           <div style="display:flex;flex-direction:column;gap:16px">
             <div>
               <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Company name</div>
-              <input v-model="settingsName" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
+              <input v-model="settingsName" :readonly="!isOwner" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div>
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Tag</div>
-                <input v-model="settingsTag" maxlength="8" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
+                <input v-model="settingsTag" maxlength="8" :readonly="!isOwner" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
               </div>
               <div>
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Min. level to join</div>
-                <input value="Lvl 2" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
+                <input value="Lvl 2" readonly style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
               </div>
             </div>
             <div>
               <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Description</div>
-              <textarea v-model="settingsDesc" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;resize:none;height:72px;font-family:inherit"></textarea>
+              <textarea v-model="settingsDesc" :readonly="!isOwner" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;resize:none;height:72px;font-family:inherit"></textarea>
             </div>
             <div>
               <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Company tax <span style="color:#cfd3d8;font-style:normal">(0-25%, auto-deducted from every member's delivery reward)</span></div>
-              <template v-if="store.config.companyMyRole === 'owner'">
+              <template v-if="isOwner">
                 <input
                   v-model.number="settingsTaxRate"
                   type="number" min="0" max="25" step="1" class="no-spinner"
@@ -379,16 +379,16 @@
                 <div style="font-size:14px;font-weight:700;color:#1b1f24">{{ store.config.companyTaxRate }}%</div>
               </template>
             </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:11px;background:#f6f7f8;border:1px solid #eef0f2;cursor:pointer" @click="settingsOpenRec = !settingsOpenRec">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:11px;background:#f6f7f8;border:1px solid #eef0f2" :style="{ cursor: isOwner ? 'pointer' : 'default' }" @click="isOwner && (settingsOpenRec = !settingsOpenRec)">
               <div>
                 <div style="font-size:13px;font-weight:600;color:#1b1f24">Open recruitment</div>
                 <div style="font-size:12px;color:#9aa1ab;margin-top:2px">Let drivers request to join.</div>
               </div>
-              <div :style="{ background: settingsOpenRec ? 'var(--accent)' : '#cfd3d8' }" style="width:42px;height:24px;border-radius:14px;position:relative;flex-shrink:0;cursor:pointer;transition:background 0.2s">
+              <div :style="{ background: settingsOpenRec ? 'var(--accent)' : '#cfd3d8', cursor: isOwner ? 'pointer' : 'default' }" style="width:42px;height:24px;border-radius:14px;position:relative;flex-shrink:0;transition:background 0.2s">
                 <div :style="{ right: settingsOpenRec ? '3px' : 'auto', left: settingsOpenRec ? 'auto' : '3px' }" style="position:absolute;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left 0.2s,right 0.2s"></div>
               </div>
             </div>
-            <div style="display:flex;gap:10px;margin-top:4px">
+            <div v-if="isOwner" style="display:flex;gap:10px;margin-top:4px">
               <button class="accent-btn" style="padding:12px 22px;font-size:13px" @click="saveSettings">Save changes</button>
               <button style="background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:11px;padding:12px 22px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="resetSettings">Cancel</button>
             </div>
@@ -447,6 +447,7 @@ import { nuiCallback } from "@/nui/nuiCallbacks";
 
 const store = useDashboardStore();
 const accentDark = "#b58a05";
+const isOwner = computed(() => store.config.companyMyRole === 'owner');
 
 // --- No-company state ---
 const showCreate    = ref(false);
