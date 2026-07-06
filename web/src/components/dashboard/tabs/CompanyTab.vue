@@ -7,8 +7,14 @@
       <!-- Create company card (empty state + expandable form) -->
       <div style="background:#fff;border:1px solid #dfe2e6;border-radius:16px;padding:44px 24px;display:flex;flex-direction:column;align-items:center;text-align:center">
 
+        <!-- Loading spinner -->
+        <template v-if="isRefetching">
+          <div class="spin" style="width:44px;height:44px;border-radius:50%;border:3px solid #eef0f2;border-top-color:var(--accent)"></div>
+          <div style="font-size:15px;font-weight:700;color:#1b1f24;margin-top:18px">Setting up your company…</div>
+        </template>
+
         <!-- Empty state (default) -->
-        <template v-if="!showCreate && !createDone">
+        <template v-else-if="!showCreate">
           <div style="width:72px;height:72px;border-radius:18px;background:rgba(232,180,8,0.12);display:flex;align-items:center;justify-content:center">
             <iconify-icon icon="tabler:building-warehouse" width="38" style="color:var(--accent)"></iconify-icon>
           </div>
@@ -21,7 +27,7 @@
         </template>
 
         <!-- Create form -->
-        <template v-else-if="showCreate">
+        <template v-else>
           <div style="width:100%;max-width:460px;text-align:left">
             <div style="font-size:18px;font-weight:800;color:#1b1f24;margin-bottom:20px;text-align:center">Found a Company</div>
             <div style="display:flex;flex-direction:column;gap:14px">
@@ -60,15 +66,6 @@
               <button style="background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:11px;padding:12px 22px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="showCreate = false">Cancel</button>
             </div>
           </div>
-        </template>
-
-        <!-- Success state -->
-        <template v-else>
-          <div style="width:72px;height:72px;border-radius:18px;background:rgba(47,158,99,0.12);display:flex;align-items:center;justify-content:center">
-            <iconify-icon icon="tabler:circle-check" width="38" style="color:#2f9e63"></iconify-icon>
-          </div>
-          <div style="font-size:22px;font-weight:800;color:#1b1f24;margin-top:20px">Company founded!</div>
-          <div style="font-size:13px;color:#9aa1ab;margin-top:8px">Reopen the menu to manage your new fleet.</div>
         </template>
 
       </div>
@@ -399,13 +396,13 @@ const store = useDashboardStore();
 const accentDark = "#b58a05";
 
 // --- No-company state ---
-const showCreate  = ref(false);
-const createDone  = ref(false);
-const createName  = ref('');
-const createTag   = ref('');
-const createDesc  = ref('');
+const showCreate    = ref(false);
+const isRefetching  = ref(false);
+const createName    = ref('');
+const createTag     = ref('');
+const createDesc    = ref('');
 const createOpenRec = ref(false);
-const joinedId    = ref<number | null>(null);
+const joinedId      = ref<number | null>(null);
 
 async function createCompanyAction() {
   if (!createName.value.trim() || !createTag.value.trim()) return;
@@ -416,8 +413,10 @@ async function createCompanyAction() {
     openRecruitment: createOpenRec.value,
   });
   if (res?.ok) {
-    showCreate.value = false;
-    createDone.value = true;
+    showCreate.value   = false;
+    isRefetching.value = true;
+    await nuiCallback('refetchDashboard');
+    isRefetching.value = false;
   }
 }
 
@@ -425,7 +424,10 @@ async function requestJoinAction(company: OpenCompanyEntry) {
   if (joinedId.value === company.id) return;
   const res = await nuiCallback<{ ok: boolean }>('requestJoin', { companyId: company.id });
   if (res?.ok) {
-    joinedId.value = company.id;
+    joinedId.value     = company.id;
+    isRefetching.value = true;
+    await nuiCallback('refetchDashboard');
+    isRefetching.value = false;
   }
 }
 
@@ -522,3 +524,8 @@ function barHeight(v: number) {
   return Math.max(Math.round((v / maxChart.value) * 100), 1) + "%";
 }
 </script>
+
+<style scoped>
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.75s linear infinite; }
+</style>

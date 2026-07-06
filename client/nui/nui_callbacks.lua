@@ -143,11 +143,18 @@ end)
 
 RegisterNUICallback('requestJoin', function(data, cb)
     lib.callback('polarix_trucker:requestJoin', false, function(success, err)
-        if success then
-            Framework.Notify('Beigetreten! Öffne das Menü erneut.', 'success')
-        else
+        if not success then
             Framework.Notify(err or 'Beitreten fehlgeschlagen.', 'error')
         end
         cb({ ok = success })
     end, data.companyId)
+end)
+
+RegisterNUICallback('refetchDashboard', function(_, cb)
+    lib.callback('polarix_trucker:openDashboard', false, function(dashboardData)
+        if dashboardData then
+            SendNUIMessage({ action = "openNui", data = dashboardData })
+        end
+        cb({ ok = dashboardData ~= nil })
+    end)
 end)
