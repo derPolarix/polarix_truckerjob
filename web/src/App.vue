@@ -40,6 +40,17 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 	const xpThresholds: number[] = data.xpThresholds ?? [];
 
 	const fmtMoney = (v: number) => `$${(v ?? 0).toLocaleString()}`;
+	const fmtDate = (v: unknown, withTime = false): string => {
+		if (!v) return '—';
+		const d = typeof v === 'number'
+			? new Date(v < 1e12 ? v * 1000 : v)
+			: new Date(String(v).replace(' ', 'T'));
+		if (isNaN(d.getTime())) return '—';
+		const date = d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+		if (!withTime) return date;
+		const time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+		return `${date} ${time}`;
+	};
 	const fmtMin = (m: number) => {
 		if (!m) return '';
 		const h = Math.floor(m / 60), r = m % 60;
@@ -152,7 +163,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		tag: h.status === 'failed' ? 'FAILED' : (h.status === 'active' ? 'ACTIVE' : (h.name ?? 'DELIVERY')),
 		icon: h.status === 'failed' ? 'tabler:alert-triangle' : 'tabler:building-warehouse',
 		failed: h.status === 'failed',
-		when: String(h.completed_at ?? h.started_at ?? '').substring(0, 16).replace('T', ' '),
+		when: fmtDate(h.completed_at ?? h.started_at, true),
 	}));
 
 	const totalDeliveries = (p.total_deliveries ?? 0) + (p.failed_deliveries ?? 0);
@@ -167,7 +178,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 			companyLevel:           rawCompany.level ?? 1,
 			companyXp:              rawCompany.xp ?? 0,
 			companyXpMax:           Math.max((rawCompany.level ?? 1) * 1000, (rawCompany.xp ?? 0) + 100),
-			companyFoundedDate:     rawCompany.founded_at ? String(rawCompany.founded_at).substring(0, 10) : '—',
+			companyFoundedDate:     fmtDate(rawCompany.founded_at),
 			companyMembers:         (rawCompany.members ?? []).length,
 			companyServerRank:      '—',
 			companyEarnings:        fmtMoney(rawCompany.total_earnings ?? 0),
@@ -187,12 +198,12 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 			invitations: (rawCompany.invitations ?? []).map((inv: any) => ({
 				name: inv.name ?? '',
 				lvl:  inv.lvl ?? 1,
-				sent: inv.created_at ? String(inv.created_at).substring(0, 10) : '—',
+				sent: fmtDate(inv.created_at),
 			})),
 			transactions: (rawCompany.transactions ?? []).map((t: any) => ({
 				label: t.label ?? '',
 				amt:   (isTruthy(t.is_positive) ? '+' : '-') + fmtMoney(Math.abs(t.amount ?? 0)),
-				when:  t.created_at ? String(t.created_at).substring(0, 10) : '—',
+				when:  fmtDate(t.created_at),
 				pos:   isTruthy(t.is_positive),
 				icon:  t.icon ?? 'tabler:arrows-exchange',
 			})),
