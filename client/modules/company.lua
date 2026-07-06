@@ -5,3 +5,7 @@ AddEventHandler("polarix_trucker:inviteReceived", function(companyId, companyNam
         10000
     )
 end)
+
+AddEventHandler("polarix_trucker:companyDisbanded", function()
+    Framework.Notify("Deine Company wurde aufgelöst.", "error", 8000)
+end)

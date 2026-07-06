@@ -119,6 +119,28 @@ RegisterNUICallback('saveCompanySettings', function(data, cb)
     end, { name = data.name, tag = data.tag, description = data.description, openRecruitment = data.openRecruitment })
 end)
 
+RegisterNUICallback('disbandCompany', function(_, cb)
+    lib.callback('polarix_trucker:disbandCompany', false, function(success, err)
+        if not success then
+            Framework.Notify(err or 'Auflösen fehlgeschlagen.', 'error')
+        else
+            Framework.Notify('Company aufgelöst.', 'success')
+        end
+        cb({ ok = success })
+    end)
+end)
+
+RegisterNUICallback('leaveCompany', function(_, cb)
+    lib.callback('polarix_trucker:leaveCompany', false, function(success, err)
+        if not success then
+            Framework.Notify(err or 'Verlassen fehlgeschlagen.', 'error')
+        else
+            Framework.Notify('Company verlassen.', 'success')
+        end
+        cb({ ok = success })
+    end)
+end)
+
 RegisterNUICallback('depositBank', function(data, cb)
     lib.callback('polarix_trucker:depositBank', false, function(success, err)
         if not success then

@@ -186,6 +186,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 			companyDistance:        '—',
 			companyTreasury:        fmtMoney(rawCompany.treasury ?? 0),
 			companyOpenRecruitment: isTruthy(rawCompany.open_recruitment),
+			companyMyRole:          (data as any).myRole ?? '',
 			members: (rawCompany.members ?? []).map((m: any) => ({
 				name:       m.name ?? '',
 				role:       m.role ? (m.role.charAt(0).toUpperCase() + m.role.slice(1)) : 'Recruit',
@@ -236,6 +237,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		companyDistance:        '—',
 		companyTreasury:        '$0',
 		companyOpenRecruitment: false,
+		companyMyRole:          '',
 		members:      [],
 		invitations:  [],
 		transactions: [],

@@ -208,6 +208,13 @@ function DB.UpdateCompanySettings(companyId, name, tag, description, openRecruit
     )
 end
 
+function DB.DeleteCompany(companyId)
+    MySQL.query.await(("DELETE FROM %s WHERE company_id = ?"):format(T.members), { companyId })
+    MySQL.query.await(("DELETE FROM %s WHERE company_id = ?"):format(T.invitations), { companyId })
+    MySQL.query.await(("DELETE FROM %s WHERE company_id = ?"):format(T.transactions), { companyId })
+    MySQL.query.await(("DELETE FROM %s WHERE id = ?"):format(T.companies), { companyId })
+end
+
 function DB.UpdateMemberStats(identifier, companyId, earnings)
     MySQL.update.await(
         ("UPDATE %s SET deliveries = deliveries + 1, earnings = earnings + ? WHERE identifier = ? AND company_id = ?"):format(T.members),

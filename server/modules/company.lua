@@ -173,6 +173,48 @@ function Company.SaveSettings(source, settings)
     return true
 end
 
+function Company.Disband(source)
+    local pData = Player.GetData(source)
+    if not pData then return false, "Spielerdaten fehlen." end
+
+    local membership = Company.GetMembership(pData.identifier)
+    if not membership or membership.role ~= "owner" then
+        return false, "Keine Berechtigung."
+    end
+
+    local companyId = membership.company_id
+    local members = DB.GetCompanyMembers(companyId)
+
+    DB.DeleteCompany(companyId)
+
+    for _, m in ipairs(members) do
+        if m.identifier ~= pData.identifier then
+            for src, pd in pairs(PlayerCache) do
+                if pd.identifier == m.identifier then
+                    TriggerClientEvent("polarix_trucker:companyDisbanded", src)
+                    break
+                end
+            end
+        end
+    end
+
+    return true
+end
+
+function Company.Leave(source)
+    local pData = Player.GetData(source)
+    if not pData then return false, "Spielerdaten fehlen." end
+
+    local membership = Company.GetMembership(pData.identifier)
+    if not membership then return false, "Du bist in keiner Company." end
+    if membership.role == "owner" then
+        return false, "Als Owner musst du die Company auflösen."
+    end
+
+    DB.DeleteMember(pData.identifier, membership.company_id)
+    return true
+end
+
 function Company.AddXP(companyId, amount)
     DB.UpdateCompanyXP(companyId, amount)
 end
@@ -215,6 +257,14 @@ end)
 
 lib.callback.register("polarix_trucker:saveCompanySettings", function(source, settings)
     return Company.SaveSettings(source, settings)
+end)
+
+lib.callback.register("polarix_trucker:disbandCompany", function(source)
+    return Company.Disband(source)
+end)
+
+lib.callback.register("polarix_trucker:leaveCompany", function(source)
+    return Company.Leave(source)
 end)
 
 function Company.RequestJoin(source, companyId)

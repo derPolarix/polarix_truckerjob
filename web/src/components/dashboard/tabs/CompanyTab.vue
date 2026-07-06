@@ -379,9 +379,47 @@
             </div>
           </div>
         </div>
+
+        <!-- Danger zone -->
+        <div style="background:#fff;border:1px solid #f3d9d5;border-radius:15px;padding:22px 24px;max-width:640px;margin-top:14px">
+          <div style="font-size:15px;font-weight:700;color:#d24b3a;margin-bottom:6px">Danger zone</div>
+          <template v-if="store.config.companyMyRole === 'owner'">
+            <div style="font-size:13px;color:#6b7280;margin-bottom:14px">Disbanding kicks all members and permanently deletes the company. This cannot be undone.</div>
+            <button style="background:#fff;color:#d24b3a;border:1px solid #eecfc9;border-radius:11px;padding:11px 20px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer" @click="confirmMode = 'disband'">Disband company</button>
+          </template>
+          <template v-else>
+            <div style="font-size:13px;color:#6b7280;margin-bottom:14px">Leaving has no effect on the company's stats or treasury.</div>
+            <button style="background:#fff;color:#d24b3a;border:1px solid #eecfc9;border-radius:11px;padding:11px 20px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer" @click="confirmMode = 'leave'">Leave company</button>
+          </template>
+        </div>
       </template>
 
     </template>
+
+    <!-- Danger zone confirm modal -->
+    <div
+      v-if="confirmMode"
+      style="position:fixed;inset:0;background:rgba(15,17,21,0.55);display:flex;align-items:center;justify-content:center;z-index:50"
+      @click.self="confirmMode = null"
+    >
+      <div style="background:#fff;border-radius:16px;padding:26px 28px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.25)">
+        <div style="width:52px;height:52px;border-radius:14px;background:rgba(210,75,58,0.12);display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+          <iconify-icon icon="tabler:alert-triangle" width="26" style="color:#d24b3a"></iconify-icon>
+        </div>
+        <div style="font-size:17px;font-weight:800;color:#1b1f24">{{ confirmMode === 'disband' ? 'Disband company?' : 'Leave company?' }}</div>
+        <div style="font-size:13px;color:#6b7280;margin-top:8px;line-height:1.6">
+          {{ confirmMode === 'disband'
+            ? `This will kick all members and permanently delete "${store.config.companyName}". This action cannot be undone.`
+            : `You will leave "${store.config.companyName}". This has no effect on the company's stats or treasury.` }}
+        </div>
+        <div style="display:flex;gap:10px;margin-top:20px">
+          <button style="flex:1;background:#d24b3a;color:#fff;border:none;border-radius:11px;padding:12px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer" @click="confirmDanger">
+            {{ confirmMode === 'disband' ? 'Disband company' : 'Leave company' }}
+          </button>
+          <button style="flex:1;background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:11px;padding:12px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="confirmMode = null">Cancel</button>
+        </div>
+      </div>
+    </div>
 
   </div>
 </template>
@@ -480,6 +518,22 @@ function resetSettings() {
   settingsTag.value     = store.config.companyTag;
   settingsDesc.value    = store.config.companyDescription;
   settingsOpenRec.value = store.config.companyOpenRecruitment;
+}
+
+// --- Danger zone ---
+const confirmMode = ref<'disband' | 'leave' | null>(null);
+
+async function confirmDanger() {
+  const mode = confirmMode.value;
+  confirmMode.value = null;
+  if (mode === 'disband') {
+    await nuiCallback('disbandCompany');
+  } else if (mode === 'leave') {
+    await nuiCallback('leaveCompany');
+  }
+  isRefetching.value = true;
+  await nuiCallback('refetchDashboard');
+  isRefetching.value = false;
 }
 
 const ctabDefs = [

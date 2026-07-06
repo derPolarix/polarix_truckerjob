@@ -153,6 +153,7 @@ export interface DashboardConfig {
   companyDistance: string;
   companyTreasury: string;
   companyOpenRecruitment: boolean;
+  companyMyRole: string;
   members: Member[];
   invitations: Invitation[];
   transactions: Transaction[];
@@ -225,6 +226,7 @@ const defaultConfig: DashboardConfig = {
   companyDistance: "84,320 km",
   companyTreasury: "$18,450,000",
   companyOpenRecruitment: false,
+  companyMyRole: "owner",
   members: [
     { name: "IronMike", role: "Owner", deliveries: 412, earned: "$5.2M", status: "online", lvl: 24 },
     { name: "HaulerJane", role: "Manager", deliveries: 308, earned: "$3.8M", status: "online", lvl: 19 },
