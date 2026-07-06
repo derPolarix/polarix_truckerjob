@@ -96,6 +96,8 @@ AddEventHandler('onResourceStart', function(resourceName)
         founded_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )]]):format(T.companies))
 
+    MySQL.query.await(([[ALTER TABLE %s ADD COLUMN IF NOT EXISTS tax_rate TINYINT UNSIGNED DEFAULT 0]]):format(T.companies))
+
     MySQL.query.await(([[CREATE TABLE IF NOT EXISTS %s (
         id         INT AUTO_INCREMENT PRIMARY KEY,
         company_id INT,

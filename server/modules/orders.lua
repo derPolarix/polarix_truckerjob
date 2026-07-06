@@ -78,6 +78,9 @@ function Orders.Complete(source, cargoDamage)
     local penalty = math.floor(reward * damagePercent)
     reward = reward - penalty
 
+    local taxAmount
+    reward, taxAmount = Company.ApplyTax(source, reward)
+
     Framework.AddMoney(source, reward)
     Player.AddXP(source, xp)
 
@@ -90,7 +93,7 @@ function Orders.Complete(source, cargoDamage)
     DB.CompleteDelivery(delivery.deliveryId, reward, xp)
     ActiveDeliveries[source] = nil
 
-    return true, reward, xp, penalty
+    return true, reward, xp, penalty, taxAmount
 end
 
 function Orders.Fail(source)
@@ -128,9 +131,9 @@ end)
 
 RegisterNetEvent("polarix_trucker:completeDelivery", function(cargoDamage)
     local src = source
-    local success, reward, xp, penalty = Orders.Complete(src, cargoDamage)
+    local success, reward, xp, penalty, taxAmount = Orders.Complete(src, cargoDamage)
     if success then
-        TriggerClientEvent("polarix_trucker:deliveryCompleted", src, reward, xp, penalty)
+        TriggerClientEvent("polarix_trucker:deliveryCompleted", src, reward, xp, penalty, taxAmount)
     end
 end)
 

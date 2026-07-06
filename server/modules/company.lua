@@ -73,6 +73,7 @@ function Company.GetFull(companyId, selfIdentifier)
         total_earnings   = company.total_earnings,
         total_deliveries = company.total_deliveries,
         open_recruitment = company.open_recruitment,
+        tax_rate         = company.tax_rate or 0,
         founded_at       = company.founded_at,
         members          = enrichedMembers,
         invitations      = enrichedInvites,
@@ -102,7 +103,8 @@ function Company.Invite(source, targetName)
         if pd.identifier == targetRow.identifier then
             local companyRow = DB.GetCompanyById(membership.company_id)
             TriggerClientEvent("polarix_trucker:inviteReceived", src,
-                membership.company_id, companyRow and companyRow.name or "Unknown", pData.name)
+                membership.company_id, companyRow and companyRow.name or "Unknown", pData.name,
+                companyRow and companyRow.tax_rate or 0)
             break
         end
     end
@@ -166,9 +168,12 @@ function Company.SaveSettings(source, settings)
         return false, "Keine Berechtigung."
     end
 
+    local taxRate = tonumber(settings.taxRate) or 0
+    taxRate = math.floor(math.max(0, math.min(25, taxRate)))
+
     DB.UpdateCompanySettings(
         membership.company_id,
-        settings.name, settings.tag, settings.description, settings.openRecruitment
+        settings.name, settings.tag, settings.description, settings.openRecruitment, taxRate
     )
     return true
 end
@@ -217,6 +222,32 @@ end
 
 function Company.AddXP(companyId, amount)
     DB.UpdateCompanyXP(companyId, amount)
+end
+
+-- Zieht die Company-Abgabe (Steuer) vom Reward ab und bucht sie in die Kasse/Historie.
+-- Gibt den Netto-Reward und den abgezogenen Betrag zurück.
+function Company.ApplyTax(source, reward)
+    local pData = Player.GetData(source)
+    if not pData then return reward, 0 end
+
+    local membership = Company.GetMembership(pData.identifier)
+    if not membership then return reward, 0 end
+
+    local company = DB.GetCompanyById(membership.company_id)
+    local taxRate = company and (company.tax_rate or 0) or 0
+    if taxRate <= 0 then return reward, 0 end
+
+    local taxAmount = math.floor(reward * taxRate / 100)
+    if taxAmount <= 0 then return reward, 0 end
+
+    DB.UpdateCompanyTreasury(membership.company_id, taxAmount)
+    DB.InsertTransaction(
+        membership.company_id,
+        ("Abgabe von %s (%d%%)"):format(pData.name, taxRate),
+        taxAmount, true, "tabler:receipt-tax"
+    )
+
+    return reward - taxAmount, taxAmount
 end
 
 function Company.OnDeliveryComplete(source, reward)

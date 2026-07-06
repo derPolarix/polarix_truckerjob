@@ -143,7 +143,7 @@ RegisterNUICallback('saveCompanySettings', function(data, cb)
             Framework.Notify('Einstellungen gespeichert.', 'success')
         end
         cb({ ok = success })
-    end, { name = data.name, tag = data.tag, description = data.description, openRecruitment = data.openRecruitment })
+    end, { name = data.name, tag = data.tag, description = data.description, openRecruitment = data.openRecruitment, taxRate = data.taxRate })
 end)
 
 RegisterNUICallback('disbandCompany', function(_, cb)

@@ -93,6 +93,7 @@
             <span style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:medal" width="13"></iconify-icon>Lvl {{ c.level }}</span>
             <span style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:users" width="13"></iconify-icon>{{ c.members }}</span>
             <span style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:packages" width="13"></iconify-icon>{{ c.deliveries }}</span>
+            <span style="display:inline-flex;align-items:center;gap:5px" :style="{ color: c.taxRate > 0 ? '#d24b3a' : '#9aa1ab' }"><iconify-icon icon="tabler:receipt-tax" width="13"></iconify-icon>{{ c.taxRate }}% tax</span>
           </div>
           <button
             class="accent-btn"
@@ -364,6 +365,20 @@
               <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Description</div>
               <textarea v-model="settingsDesc" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;resize:none;height:72px;font-family:inherit"></textarea>
             </div>
+            <div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Company tax <span style="color:#cfd3d8;font-style:normal">(0-25%, auto-deducted from every member's delivery reward)</span></div>
+              <template v-if="store.config.companyMyRole === 'owner'">
+                <input
+                  v-model.number="settingsTaxRate"
+                  type="number" min="0" max="25" step="1" class="no-spinner"
+                  style="width:140px;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit"
+                  @change="settingsTaxRate = Math.max(0, Math.min(25, Math.round(settingsTaxRate || 0)))"
+                />
+              </template>
+              <template v-else>
+                <div style="font-size:14px;font-weight:700;color:#1b1f24">{{ store.config.companyTaxRate }}%</div>
+              </template>
+            </div>
             <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:11px;background:#f6f7f8;border:1px solid #eef0f2;cursor:pointer" @click="settingsOpenRec = !settingsOpenRec">
               <div>
                 <div style="font-size:13px;font-weight:600;color:#1b1f24">Open recruitment</div>
@@ -500,11 +515,13 @@ const settingsName    = ref(store.config.companyName);
 const settingsTag     = ref(store.config.companyTag);
 const settingsDesc    = ref(store.config.companyDescription);
 const settingsOpenRec = ref(store.config.companyOpenRecruitment);
+const settingsTaxRate = ref(store.config.companyTaxRate);
 
 watch(() => store.config.companyName,            v => { settingsName.value    = v; });
 watch(() => store.config.companyTag,             v => { settingsTag.value     = v; });
 watch(() => store.config.companyDescription,     v => { settingsDesc.value    = v; });
 watch(() => store.config.companyOpenRecruitment, v => { settingsOpenRec.value = v; });
+watch(() => store.config.companyTaxRate,         v => { settingsTaxRate.value = v; });
 
 async function saveSettings() {
   await nuiCallback('saveCompanySettings', {
@@ -512,6 +529,7 @@ async function saveSettings() {
     tag:             settingsTag.value,
     description:     settingsDesc.value,
     openRecruitment: settingsOpenRec.value,
+    taxRate:         Math.max(0, Math.min(25, Math.round(settingsTaxRate.value || 0))),
   });
 }
 
@@ -520,6 +538,7 @@ function resetSettings() {
   settingsTag.value     = store.config.companyTag;
   settingsDesc.value    = store.config.companyDescription;
   settingsOpenRec.value = store.config.companyOpenRecruitment;
+  settingsTaxRate.value = store.config.companyTaxRate;
 }
 
 // --- Danger zone ---

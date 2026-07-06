@@ -132,6 +132,7 @@ export interface OpenCompanyEntry {
   level: number;
   members: number;
   deliveries: number;
+  taxRate: number;
 }
 
 export interface DashboardConfig {
@@ -173,6 +174,7 @@ export interface DashboardConfig {
   companyDistance: string;
   companyTreasury: string;
   companyOpenRecruitment: boolean;
+  companyTaxRate: number;
   companyMyRole: string;
   members: Member[];
   invitations: Invitation[];
@@ -255,6 +257,7 @@ const defaultConfig: DashboardConfig = {
   companyDistance: "84,320 km",
   companyTreasury: "$18,450,000",
   companyOpenRecruitment: false,
+  companyTaxRate: 5,
   companyMyRole: "owner",
   members: [
     { name: "IronMike", role: "Owner", deliveries: 412, earned: "$5.2M", status: "online", lvl: 24 },

@@ -172,7 +172,7 @@ function Delivery.ForceFailure(reason)
     Framework.Notify("Lieferung fehlgeschlagen: " .. reason, "error")
 end
 
-RegisterNetEvent("polarix_trucker:deliveryCompleted", function(reward, xp, damagePenalty)
+RegisterNetEvent("polarix_trucker:deliveryCompleted", function(reward, xp, damagePenalty, companyTax)
     ClearBlips()
     if ResetMissionCargo then ResetMissionCargo(nil) end
     DeliveryState.status = "idle"
@@ -182,6 +182,9 @@ RegisterNetEvent("polarix_trucker:deliveryCompleted", function(reward, xp, damag
     local msg = ("Lieferung abgeschlossen! +$%s, +%s XP"):format(reward, xp)
     if damagePenalty and damagePenalty > 0 then
         msg = msg .. (" (-%s Schaden-Abzug)"):format(damagePenalty)
+    end
+    if companyTax and companyTax > 0 then
+        msg = msg .. (" (-$%s Company-Abgabe)"):format(companyTax)
     end
     Framework.Notify(msg, "success")
     SendMessage("deliveryComplete", { reward = reward, xp = xp })
