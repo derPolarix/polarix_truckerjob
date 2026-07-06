@@ -28,6 +28,17 @@ AddEventHandler('onResourceStart', function(resourceName)
     )]]):format(T.vehicles))
 
     MySQL.query.await(([[CREATE TABLE IF NOT EXISTS %s (
+        id            INT AUTO_INCREMENT PRIMARY KEY,
+        identifier    VARCHAR(60),
+        trailer_slot  VARCHAR(50),
+        trailer_model VARCHAR(50),
+        purchased_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_player_trailer (identifier, trailer_slot)
+    )]]):format(T.trailers))
+
+    MySQL.query.await(([[ALTER TABLE %s ADD COLUMN IF NOT EXISTS equipped_trailer VARCHAR(50) DEFAULT NULL]]):format(T.players))
+
+    MySQL.query.await(([[CREATE TABLE IF NOT EXISTS %s (
         id                   VARCHAR(36)  PRIMARY KEY,
         name                 VARCHAR(100),
         cargo                VARCHAR(50),
@@ -53,6 +64,10 @@ AddEventHandler('onResourceStart', function(resourceName)
         requires_long_hauler TINYINT(1) DEFAULT 0,
         is_active            TINYINT(1) DEFAULT 1
     )]]):format(T.orders))
+
+    MySQL.query.await(([[ALTER TABLE %s ADD COLUMN IF NOT EXISTS pickup_heading  FLOAT DEFAULT 0]]):format(T.orders))
+    MySQL.query.await(([[ALTER TABLE %s ADD COLUMN IF NOT EXISTS dropoff_heading FLOAT DEFAULT 0]]):format(T.orders))
+    MySQL.query.await(([[ALTER TABLE %s ADD COLUMN IF NOT EXISTS pickup_pallet_coords JSON DEFAULT NULL]]):format(T.orders))
 
     MySQL.query.await(([[CREATE TABLE IF NOT EXISTS %s (
         id           INT AUTO_INCREMENT PRIMARY KEY,

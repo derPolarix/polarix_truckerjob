@@ -39,7 +39,35 @@ end)
 
 RegisterNUICallback('equipVehicle', function(data, cb)
     lib.callback('polarix_trucker:equipVehicle', false, function(success, err)
-        if not success then
+        if success then
+            SendMessage('equippedVehicleSlot', { slot = data.slot })
+        else
+            Framework.Notify(err or 'Equip fehlgeschlagen.', 'error')
+        end
+        cb({ ok = success })
+    end, data.slot)
+end)
+
+RegisterNUICallback('buyTrailer', function(data, cb)
+    lib.callback('polarix_trucker:buyTrailer', false, function(success, price, err, ownedTrailers)
+        if success then
+            Framework.Notify(('Trailer gekauft für $%s!'):format(lib.math.groupdigits(price, ',')), 'success')
+            SendMessage('updateOwnedTrailers', {
+                ownedTrailers = ownedTrailers,
+                equippedSlot  = LocalTrailer.slot,
+            })
+        else
+            Framework.Notify(err or 'Kauf fehlgeschlagen.', 'error')
+        end
+        cb({ ok = success })
+    end, data.slot)
+end)
+
+RegisterNUICallback('equipTrailer', function(data, cb)
+    lib.callback('polarix_trucker:equipTrailer', false, function(success, err)
+        if success then
+            SendMessage('equippedTrailerSlot', { slot = data.slot })
+        else
             Framework.Notify(err or 'Equip fehlgeschlagen.', 'error')
         end
         cb({ ok = success })

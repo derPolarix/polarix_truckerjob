@@ -16,6 +16,7 @@ local function buildPlayerData(identifier, row)
         total_deliveries   = row.total_deliveries,
         failed_deliveries  = row.failed_deliveries,
         equipped_vehicle   = row.equipped_vehicle,
+        equipped_trailer   = row.equipped_trailer,
     }
 end
 
@@ -42,6 +43,16 @@ function Player.Load(source)
         for _, v in ipairs(vehicles) do
             if v.vehicle_slot == data.equipped_vehicle then
                 TriggerClientEvent("polarix_trucker:vehicleSync", source, data.equipped_vehicle, v.vehicle_model)
+                break
+            end
+        end
+    end
+
+    if data.equipped_trailer then
+        local trailers = DB.GetPlayerTrailers(identifier)
+        for _, t in ipairs(trailers) do
+            if t.trailer_slot == data.equipped_trailer then
+                TriggerClientEvent("polarix_trucker:trailerSync", source, data.equipped_trailer, t.trailer_model)
                 break
             end
         end

@@ -11,6 +11,8 @@
 		<main v-if="persistantStore.IsNuiOpen || isDev" class="w-full h-full">
 			<router-view />
 		</main>
+
+		<GameHud />
 	</div>
 </template>
 
@@ -20,13 +22,16 @@ import { getCurrentInstance, onMounted } from "vue";
 import type { NuiMessage } from "./type";
 import { isDev } from "./main";
 import Sidebar from "@/components/app/Sidebar.vue";
+import GameHud from "@/components/app/GameHud.vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
-import type { DashboardConfig, Order, VehicleOwned, VehicleShop, SkillBranch, SkillNode, LeaderboardEntry, CompanyLeaderboardEntry, OpenCompanyEntry } from "@/stores/dashboardStore";
+import type { DashboardConfig, Order, VehicleOwned, VehicleShop, TrailerOwned, TrailerShop, SkillBranch, SkillNode, LeaderboardEntry, CompanyLeaderboardEntry, OpenCompanyEntry } from "@/stores/dashboardStore";
+import { useGameHudStore } from "@/stores/gameHudStore";
 
 // Standard Zugriffe auf globale Properties welche den persistantStore und den Router bereitstellen ohne diese immer neu importieren zu müssen
 const proxy = getCurrentInstance()!.proxy!;
 const router = proxy.$router;
 const persistantStore = proxy.$persistantStore;
+const gameHudStore = useGameHudStore();
 const dashboardStore = useDashboardStore();
 
 function mapServerResponse(data: any): Partial<DashboardConfig> {
@@ -34,9 +39,12 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 	const rawOrders: any[] = data.orders ?? [];
 	const rawOwned: any[] = data.ownedVehicles ?? [];
 	const rawShop: any[] = data.vehicleShop ?? [];
+	const rawOwnedTrailers: any[] = data.ownedTrailers ?? [];
+	const rawTrailerShop: any[] = data.trailerShop ?? [];
 	const rawBranches: any[] = data.skillBranches ?? [];
 	const playerSkills: string[] = p.skills ?? [];
 	const equippedSlot: string = p.equipped_vehicle ?? '';
+	const equippedTrailerSlot: string = p.equipped_trailer ?? '';
 	const xpThresholds: number[] = data.xpThresholds ?? [];
 
 	const fmtMoney = (v: number) => `$${(v ?? 0).toLocaleString()}`;
@@ -106,6 +114,25 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		price: fmtMoney(v.price),
 		locked: (p.level ?? 1) < (v.level_required ?? 1),
 		lvl: (v.level_required ?? 1) > 1 ? `Lvl ${v.level_required}` : '',
+	}));
+
+	const trailersOwned: TrailerOwned[] = rawOwnedTrailers.map((t: any) => {
+		const shopEntry = rawTrailerShop.find((s: any) => s.slot === t.trailer_slot);
+		return {
+			name:       shopEntry?.name ?? t.trailer_slot,
+			slot:       t.trailer_slot,
+			maxPallets: shopEntry?.maxPallets ?? 0,
+			equipped:   t.trailer_slot === equippedTrailerSlot,
+		};
+	});
+
+	const trailersShop: TrailerShop[] = rawTrailerShop.map((t: any) => ({
+		name:       t.name ?? '',
+		slot:       t.slot ?? '',
+		maxPallets: t.maxPallets ?? 0,
+		price:      fmtMoney(t.price),
+		locked:     (p.level ?? 1) < (t.level_required ?? 1),
+		lvl:        (t.level_required ?? 1) > 1 ? `Lvl ${t.level_required}` : '',
 	}));
 
 	const branches: SkillBranch[] = rawBranches.map((branch: any) => ({
@@ -262,6 +289,8 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		orders,
 		vehiclesOwned,
 		vehiclesShop,
+		trailersOwned,
+		trailersShop,
 		branches,
 		recentRuns,
 		leaderboard,
@@ -310,6 +339,49 @@ const handleMessage = (event: MessageEvent) => {
 			});
 			break;
 		}
+		case "updateOwnedTrailers": {
+			const d = raw.data as { ownedTrailers: any[]; equippedSlot: string };
+			const slot = d.equippedSlot ?? '';
+			dashboardStore.config.trailersOwned = (d.ownedTrailers ?? []).map((t: any) => {
+				const shopEntry = dashboardStore.config.trailersShop.find(s => s.slot === t.trailer_slot);
+				return {
+					name:       shopEntry?.name ?? t.trailer_slot,
+					slot:       t.trailer_slot,
+					maxPallets: shopEntry?.maxPallets ?? 0,
+					equipped:   t.trailer_slot === slot,
+				} as TrailerOwned;
+			});
+			break;
+		}
+		case "equippedVehicleSlot": {
+			const slot = (raw.data as { slot: string }).slot;
+			dashboardStore.config.vehiclesOwned = dashboardStore.config.vehiclesOwned.map(v => ({ ...v, equipped: v.slot === slot }));
+			break;
+		}
+		case "equippedTrailerSlot": {
+			const slot = (raw.data as { slot: string }).slot;
+			dashboardStore.config.trailersOwned = dashboardStore.config.trailersOwned.map(t => ({ ...t, equipped: t.slot === slot }));
+			break;
+		}
+		case "vehicleSpawnState": {
+			const d = raw.data as { slot: string | null; spawned: boolean };
+			dashboardStore.config.spawnedVehicleSlot = d.spawned ? d.slot : null;
+			break;
+		}
+		case "trailerSpawnState": {
+			const d = raw.data as { slot: string | null; spawned: boolean };
+			dashboardStore.config.spawnedTrailerSlot = d.spawned ? d.slot : null;
+			break;
+		}
+		case "gameHud":
+			gameHudStore.update((raw.data as any) ?? { visible: false });
+			break;
+		case "setHeldAction":
+			persistantStore.setHeldAction((raw.data as any) ?? null);
+			break;
+		case "clearHeldAction":
+			persistantStore.clearHeldAction();
+			break;
 		case "closeNui":
 			persistantStore.IsNuiOpen = false;
 			break;

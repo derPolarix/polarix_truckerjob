@@ -1,3 +1,5 @@
+local cargo = require("shared.cargo")
+
 DeliveryState = {
     status = "idle", -- idle | awaiting_pickup | delivering
     orderData = nil,
@@ -35,168 +37,55 @@ function Delivery.Start(orderData)
 
     SetBlipRoute(DeliveryState.pickupBlip, true)
     SetBlipRouteColour(DeliveryState.pickupBlip, 5)
-    Framework.Notify("Fahre zur Abholstelle: " .. orderData.pickup_label, "info")
+
+    if ResetMissionCargo then ResetMissionCargo(orderData) end
+    Delivery.HUD.Start()
+
+    Framework.Notify(("Fahre zur Abholstelle: %s (%d Paletten benötigt)"):format(orderData.pickup_label, cargo.CalcPalletCount(orderData.weight_kg)), "info")
 end
 
 function Delivery.Cancel()
     ClearBlips()
+    if ResetMissionCargo then ResetMissionCargo(nil) end
     DeliveryState.status = "idle"
     DeliveryState.orderData = nil
     TriggerServerEvent("polarix_trucker:failDelivery")
     Framework.Notify("Lieferung abgebrochen.", "error")
 end
 
-local PICKUP_RADIUS  = 12.0
-local DROPOFF_RADIUS = 12.0
-local ZONE_CHECK_MS  = 500
+function Delivery.EnterTransitPhase()
+    if DeliveryState.status ~= "awaiting_pickup" then return end
+
+    DeliveryState.status = "delivering"
+    DeliveryState.cargoDamage = 0
+
+    SetBlipRoute(DeliveryState.pickupBlip, false)
+    SetBlipRoute(DeliveryState.dropoffBlip, true)
+    SetBlipRouteColour(DeliveryState.dropoffBlip, 5)
+
+    Framework.Notify("Fahre zum Drop-off: " .. DeliveryState.orderData.dropoff_label, "success")
+
+    if LocalVehicle.entity and DoesEntityExist(LocalVehicle.entity) then
+        Delivery.StartDamageMonitor(LocalVehicle.entity)
+    end
+end
 
 local SPEED_LIMIT_FRAGILE = 25.0 -- m/s ≈ 90 km/h
 local SPEED_LIMIT_LIVE    = 20.0 -- m/s ≈ 72 km/h
 
-local isLoading = false
-local promptVisible = false
-
-local function IsInTruck()
-    local veh = GetVehiclePedIsIn(PlayerPedId(), false)
-    if veh == 0 then return false end
-    local cls = GetVehicleClass(veh)
-    -- Commercial (Hauler/Packer/Phantom) + Industrial (Flatbed/Mixer) Trucks
-    return cls == 20 or cls == 10
-end
-
-function Delivery.ShowPickupPrompt()
-    if promptVisible then return end
-    promptVisible = true
-    lib.showTextUI("[E] Cargo aufnehmen", { position = "bottom-center", icon = "box-open" })
-end
-
-function Delivery.ShowDropoffPrompt()
-    if promptVisible then return end
-    promptVisible = true
-    lib.showTextUI("[E] Cargo abliefern", { position = "bottom-center", icon = "flag-checkered" })
-end
-
-function Delivery.HidePrompt()
-    if not promptVisible then return end
-    promptVisible = false
-    lib.hideTextUI()
-end
-
--- Zone-Check (Proximity-Thread, ersetzt simplen Distanz-Check aus Phase 3)
-CreateThread(function()
-    while true do
-        Wait(ZONE_CHECK_MS)
-        if DeliveryState.status ~= "idle" and DeliveryState.orderData then
-            local o   = DeliveryState.orderData
-            local pos = GetEntityCoords(PlayerPedId())
-
-            if DeliveryState.status == "awaiting_pickup" then
-                local dist = #(pos - vector3(o.pickup_x, o.pickup_y, o.pickup_z))
-                if dist < PICKUP_RADIUS and not isLoading then
-                    Delivery.ShowPickupPrompt()
-                else
-                    Delivery.HidePrompt()
-                end
-            elseif DeliveryState.status == "delivering" then
-                local dist = #(pos - vector3(o.dropoff_x, o.dropoff_y, o.dropoff_z))
-                if dist < DROPOFF_RADIUS and not isLoading then
-                    Delivery.ShowDropoffPrompt()
-                else
-                    Delivery.HidePrompt()
-                end
-            end
-        end
-    end
-end)
-
--- Marker-Render-Thread (läuft nur bei aktiver Delivery)
-CreateThread(function()
-    while true do
-        Wait(0)
-        if DeliveryState.status == "awaiting_pickup" and DeliveryState.orderData then
-            local o = DeliveryState.orderData
-            DrawMarker(2, o.pickup_x, o.pickup_y, o.pickup_z, 0, 0, 0, 0, 0, 0, 2.0, 2.0, 1.0, 47, 199, 114, 150, false, true, 2, nil, nil, false)
-        elseif DeliveryState.status == "delivering" and DeliveryState.orderData then
-            local o = DeliveryState.orderData
-            DrawMarker(2, o.dropoff_x, o.dropoff_y, o.dropoff_z, 0, 0, 0, 0, 0, 0, 2.0, 2.0, 1.0, 210, 75, 58, 150, false, true, 2, nil, nil, false)
-        else
-            Wait(450) -- spart Frames, wenn keine Delivery aktiv ist
-        end
-    end
-end)
-
--- Key-Handler für E im Nahbereich
-CreateThread(function()
-    while true do
-        Wait(0)
-        if IsControlJustReleased(0, 38) then -- E
-            if DeliveryState.status == "awaiting_pickup" and promptVisible and not isLoading then
-                Delivery.StartLoading()
-            elseif DeliveryState.status == "delivering" and promptVisible and not isLoading then
-                Delivery.StartUnloading()
-            end
-        end
-    end
-end)
-
--- Ladezeit in Sekunden basierend auf Gewicht
-local function CalcLoadingTime(weightKg)
-    local base = 8 -- Sekunden
-    local perTon = 1.5
-    return math.min(base + math.floor(weightKg / 1000) * perTon, 45)
-end
-
-function Delivery.StartLoading()
-    if not IsInTruck() then
-        Framework.Notify("Du musst im Fahrzeug sitzen!", "error")
-        return
-    end
-    isLoading = true
-    Delivery.HidePrompt()
-
-    local o = DeliveryState.orderData
-    local duration = CalcLoadingTime(o.weight_kg) * 1000 -- ms
-
-    -- Fahrzeug blockieren bis Laden fertig
-    local veh = GetVehiclePedIsIn(PlayerPedId(), false)
-    SetVehicleEngineOn(veh, false, true, false)
-
-    local success = lib.progressBar({
-        duration = duration,
-        label = "Cargo wird geladen: " .. o.name,
-        useWhileDead = false,
-        canCancel = true,
-        disable = { car = true, combat = true },
-        anim = { dict = "anim@heists@box_carry@", clip = "idle" },
-    })
-
-    SetVehicleEngineOn(veh, true, true, false)
-    isLoading = false
-
-    if success then
-        DeliveryState.status = "delivering"
-        DeliveryState.cargoDamage = 0
-        SetBlipRoute(DeliveryState.pickupBlip, false)
-        SetBlipRoute(DeliveryState.dropoffBlip, true)
-        SetBlipRouteColour(DeliveryState.dropoffBlip, 5)
-        Framework.Notify("Cargo geladen! Fahre nach " .. o.dropoff_label, "success")
-        Delivery.HUD.Start()
-        Delivery.StartDamageMonitor(veh)
-    else
-        Framework.Notify("Laden abgebrochen.", "error")
-    end
-end
+local isUnloading = false
 
 function Delivery.StartUnloading()
-    if not IsInTruck() then
-        Framework.Notify("Du musst im Fahrzeug sitzen!", "error")
+    if isUnloading then return end
+    if DeliveryState.status ~= "delivering" then return end
+    if not IsTrailerParkedCorrectly(DeliveryState.orderData) then
+        Framework.Notify("Trailer ist nicht richtig eingeparkt.", "error")
         return
     end
-    isLoading = true
-    Delivery.HidePrompt()
+
+    isUnloading = true
 
     local o = DeliveryState.orderData
-
     local success = lib.progressBar({
         duration = 8000,
         label = "Cargo wird entladen: " .. o.name,
@@ -206,7 +95,7 @@ function Delivery.StartUnloading()
         anim = { dict = "anim@heists@box_carry@", clip = "idle" },
     })
 
-    isLoading = false
+    isUnloading = false
 
     if success then
         Delivery.HUD.Stop()
@@ -273,8 +162,8 @@ end
 function Delivery.ForceFailure(reason)
     if DeliveryState.status == "idle" then return end
     Delivery.HUD.Stop()
-    Delivery.HidePrompt()
     ClearBlips()
+    if ResetMissionCargo then ResetMissionCargo(nil) end
     DeliveryState.status = "idle"
     DeliveryState.orderData = nil
     DeliveryState.cargoDamage = nil
@@ -284,6 +173,7 @@ end
 
 RegisterNetEvent("polarix_trucker:deliveryCompleted", function(reward, xp, damagePenalty)
     ClearBlips()
+    if ResetMissionCargo then ResetMissionCargo(nil) end
     DeliveryState.status = "idle"
     DeliveryState.orderData = nil
     DeliveryState.cargoDamage = nil

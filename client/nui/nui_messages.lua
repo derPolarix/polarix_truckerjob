@@ -28,3 +28,16 @@ function SendMessage(action, data)
         data = data
     })
 end
+
+function SetHeldAction(actionData)
+    SendNUIMessage({
+        action = 'setHeldAction',
+        data = actionData,
+    })
+end
+
+function ClearHeldAction()
+    SendNUIMessage({
+        action = 'clearHeldAction',
+    })
+end

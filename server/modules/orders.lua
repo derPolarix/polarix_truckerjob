@@ -1,4 +1,5 @@
 local config = require("config.server")
+local cargo = require("shared.cargo")
 
 Orders = {}
 ActiveDeliveries = {} -- source -> { deliveryId, orderId }
@@ -11,6 +12,9 @@ local function isTruthy(v) return v == 1 or v == true end
 function Orders.SeedIfEmpty()
     if (DB.CountOrders() or 0) > 0 then return end
     for _, order in ipairs(config.SeedOrders or {}) do
+        local anchor = vector3(order.pickup_x, order.pickup_y, order.pickup_z)
+        local count = cargo.CalcPalletCount(order.weight_kg)
+        order.pickup_pallet_coords = cargo.GenerateGridCoords(anchor, order.pickup_heading, count)
         DB.InsertOrder(order)
     end
 end
@@ -41,6 +45,15 @@ function Orders.Accept(source, orderId)
     if order.level_required > pData.level then return false, "Level nicht ausreichend." end
     if isTruthy(order.requires_hazmat) and not Player.HasSkill(source, "h3") then return false, "Hazmat-Lizenz erforderlich." end
     if isTruthy(order.requires_long_hauler) and not Player.HasSkill(source, "d3") then return false, "Long-Hauler-Skill erforderlich." end
+
+    local maxPallets = Trailers.GetEquippedMaxPallets(source)
+    if maxPallets and cargo.CalcPalletCount(order.weight_kg) > maxPallets then
+        return false, "Dein Trailer fasst diese Ladung nicht."
+    end
+
+    if type(order.pickup_pallet_coords) == "string" then
+        order.pickup_pallet_coords = json.decode(order.pickup_pallet_coords)
+    end
 
     local deliveryId = DB.InsertDelivery(orderId, pData.identifier)
     ActiveDeliveries[source] = { deliveryId = deliveryId, orderId = orderId }

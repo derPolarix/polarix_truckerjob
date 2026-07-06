@@ -34,4 +34,46 @@ return {
         "Rookie", "Apprentice", "Driver", "Pro Driver", "Senior Driver",
         "Expert", "Road Master", "Elite", "Legend", "Grand Champion", "Titan"
     },
+
+    PalletWeightKg     = 1000,
+    MaxPalletsPerOrder = 10,
+
+    ParkingTolerance = {
+        distance = 1.5,
+        heading  = 12.0,
+    },
+
+    ForkliftModel         = "forklift",
+    ForkliftAttachBone    = "forks_attach",
+    ForkliftAttachOffset  = { x = 0.0, y = 0.0, z = 0.05, rx = 0.0, ry = 0.0, rz = 0.0 },
+    ForkliftDropMaxHeight = 0.12,
+
+    PalletModel = "sm3d_prop_pallet_1",
+
+    CompatibleTrailers = {
+        ["trailers2"] = {
+            maxPallets = 8,
+            length = 10.5, width = 2.6,
+            attachOffsets = {
+                { x = -0.55, y =  3.6, z = 0.85, rx = 0.0, ry = 0.0, rz = 0.0 },
+                { x =  0.55, y =  3.6, z = 0.85, rx = 0.0, ry = 0.0, rz = 0.0 },
+                { x = -0.55, y =  1.2, z = 0.85, rx = 0.0, ry = 0.0, rz = 0.0 },
+                { x =  0.55, y =  1.2, z = 0.85, rx = 0.0, ry = 0.0, rz = 0.0 },
+                { x = -0.55, y = -1.2, z = 0.85, rx = 0.0, ry = 0.0, rz = 0.0 },
+                { x =  0.55, y = -1.2, z = 0.85, rx = 0.0, ry = 0.0, rz = 0.0 },
+                { x = -0.55, y = -3.6, z = 0.85, rx = 0.0, ry = 0.0, rz = 0.0 },
+                { x =  0.55, y = -3.6, z = 0.85, rx = 0.0, ry = 0.0, rz = 0.0 },
+            },
+        },
+        ["trailers"] = {
+            maxPallets = 4,
+            length = 11.0, width = 2.6,
+            attachOffsets = {
+                { x = 0.0, y =  3.0, z = 1.9, rx = 0.0, ry = 0.0, rz = 0.0 },
+                { x = 0.0, y =  1.0, z = 1.9, rx = 0.0, ry = 0.0, rz = 0.0 },
+                { x = 0.0, y = -1.0, z = 1.9, rx = 0.0, ry = 0.0, rz = 0.0 },
+                { x = 0.0, y = -3.0, z = 1.9, rx = 0.0, ry = 0.0, rz = 0.0 },
+            },
+        },
+    },
 }

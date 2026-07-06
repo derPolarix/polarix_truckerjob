@@ -51,6 +51,22 @@ export interface VehicleShop {
   lvl: string;
 }
 
+export interface TrailerOwned {
+  name: string;
+  slot: string;
+  maxPallets: number;
+  equipped: boolean;
+}
+
+export interface TrailerShop {
+  name: string;
+  slot: string;
+  maxPallets: number;
+  price: string;
+  locked: boolean;
+  lvl: string;
+}
+
 export interface SkillNode {
   id: string;
   name: string;
@@ -134,6 +150,10 @@ export interface DashboardConfig {
   orders: Order[];
   vehiclesOwned: VehicleOwned[];
   vehiclesShop: VehicleShop[];
+  trailersOwned: TrailerOwned[];
+  trailersShop: TrailerShop[];
+  spawnedVehicleSlot: string | null;
+  spawnedTrailerSlot: string | null;
   branches: SkillBranch[];
   recentRuns: { route: string; code: string; reward: string; tag: string; icon: string; failed: boolean; when: string }[];
   leaderboard: LeaderboardEntry[];
@@ -192,6 +212,15 @@ const defaultConfig: DashboardConfig = {
     { name: "Scania R730 V8", cls: "Premium", slot: "veh-shop-3", speed: "150", cap: "28 t", fuel: "800 L", price: "$1,250,000", locked: true, lvl: "Lvl 10" },
     { name: "Freightliner Cascadia", cls: "Long-haul", slot: "veh-shop-4", speed: "130", cap: "27 t", fuel: "720 L", price: "$610,000", locked: false, lvl: "" },
   ],
+  trailersOwned: [
+    { name: "Flatbed Standard", slot: "trl-owned-1", maxPallets: 8, equipped: true },
+  ],
+  trailersShop: [
+    { name: "Flatbed Standard", slot: "trl-shop-1", maxPallets: 8, price: "$180,000", locked: false, lvl: "" },
+    { name: "Container Standard", slot: "trl-shop-2", maxPallets: 4, price: "$220,000", locked: true, lvl: "Lvl 3" },
+  ],
+  spawnedVehicleSlot: "veh-owned-1",
+  spawnedTrailerSlot: "trl-owned-1",
   branches: [],
   recentRuns: [
     { route: "Los Santos Port → Sandy Shores", code: "#OR-2024-001231", reward: "$12,500", tag: "FULL HAUL", icon: "tabler:building-warehouse", failed: false, when: "2h ago" },

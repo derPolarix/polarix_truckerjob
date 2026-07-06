@@ -69,6 +69,7 @@ function Vehicle.Spawn()
 
     LocalVehicle.entity = veh
     Framework.Notify("Fahrzeug abgeholt!", "success")
+    SendMessage("vehicleSpawnState", { slot = LocalVehicle.slot, spawned = true })
 end
 
 function Vehicle.Despawn()
@@ -76,13 +77,23 @@ function Vehicle.Despawn()
         DeleteEntity(LocalVehicle.entity)
     end
     LocalVehicle.entity = nil
+    SendMessage("vehicleSpawnState", { slot = LocalVehicle.slot, spawned = false })
 end
+
+CreateThread(function()
+    Wait(500)
+    SendMessage("vehicleSpawnState", { slot = nil, spawned = false })
+end)
 
 -- Ausgerüstetes Fahrzeug wechseln (nach Equip-Aktion in der UI — Player ist am Depot → direkt spawnen)
 RegisterNetEvent("polarix_trucker:vehicleEquipped", function(vehicleSlot, vehicleModel)
     LocalVehicle.slot  = vehicleSlot
     LocalVehicle.model = vehicleModel
     Vehicle.Spawn()
+
+    if LocalTrailer.model then
+        Trailer.Spawn()
+    end
 end)
 
 -- Fahrzeug-Sync beim Login (wenn equipped_vehicle bereits in DB gesetzt war)
@@ -104,6 +115,12 @@ RegisterCommand("getruck", function()
         return
     end
     Vehicle.Spawn()
+
+    if LocalTrailer.model then
+        Trailer.Spawn()
+    else
+        Framework.Notify("Kein Trailer ausgerüstet.", "error")
+    end
 end, false)
 
 AddEventHandler("onResourceStop", function(resourceName)

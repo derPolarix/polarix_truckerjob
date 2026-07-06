@@ -13,6 +13,7 @@ return {
             comment = "Handle with care! Fragile goods inside.",
             tag = "FRAGILE", tag_color = "#b58a05", tag_bg = "rgba(232,180,8,0.16)", icon = "tabler:bottle",
             level_required = 1, requires_hazmat = false, requires_long_hauler = false,
+            pickup_heading = 0.0, dropoff_heading = 0.0,
         },
         {
             id = "order-st", name = "Steel Beams", cargo = "Heavy", cargo_type = "heavy",
@@ -24,6 +25,7 @@ return {
             comment = "Heavy load — secure properly before transit.",
             tag = "HEAVY", tag_color = "#6b7280", tag_bg = "rgba(107,114,128,0.16)", icon = "tabler:crane",
             level_required = 3, requires_hazmat = false, requires_long_hauler = false,
+            pickup_heading = 0.0, dropoff_heading = 0.0,
         },
         {
             id = "order-ch", name = "Chemical Drums", cargo = "Hazmat", cargo_type = "hazmat",
@@ -35,6 +37,7 @@ return {
             comment = "Hazardous materials — licensed drivers only.",
             tag = "HAZMAT", tag_color = "#dc2626", tag_bg = "rgba(220,38,38,0.16)", icon = "tabler:biohazard",
             level_required = 1, requires_hazmat = true, requires_long_hauler = false,
+            pickup_heading = 0.0, dropoff_heading = 0.0,
         },
         {
             id = "order-lv", name = "Livestock", cargo = "Live Animals", cargo_type = "live",
@@ -46,6 +49,7 @@ return {
             comment = "Live animals — drive carefully, no harsh braking.",
             tag = "LIVE", tag_color = "#16a34a", tag_bg = "rgba(22,163,74,0.16)", icon = "tabler:paw",
             level_required = 2, requires_hazmat = false, requires_long_hauler = false,
+            pickup_heading = 0.0, dropoff_heading = 0.0,
         },
         {
             id = "order-cr", name = "Crates (Standard)", cargo = "Standard", cargo_type = "standard",
@@ -53,10 +57,11 @@ return {
             pickup_label = "Pillbox Hill Depot", pickup_city = "Los Santos",
             pickup_x = 205.0, pickup_y = -810.0, pickup_z = 31.0,
             dropoff_label = "La Mesa Industrial", dropoff_city = "Los Santos",
-            dropoff_x = 820.0, dropoff_y = -1520.0, dropoff_z = 26.0,
+            dropoff_x = 919.4861, dropoff_y = -1563.5834, dropoff_z = 30.7582,
             comment = "Standard freight — no special requirements.",
             tag = "STD", tag_color = "#3b82f6", tag_bg = "rgba(59,130,246,0.16)", icon = "tabler:package",
             level_required = 1, requires_hazmat = false, requires_long_hauler = false,
+            pickup_heading = 0.0, dropoff_heading = 90.1649,
         },
     },
 
@@ -65,5 +70,10 @@ return {
         { slot = "kenworth-w900", name = "Kenworth W900",           model = "packer",   cls = "Long-haul",  speed = 135, cap_kg = 26000, fuel_l = 750, price = 540000,  level_required = 1  },
         { slot = "scania-r730",   name = "Scania R730 V8",          model = "phantom",  cls = "Premium",    speed = 150, cap_kg = 28000, fuel_l = 800, price = 1250000, level_required = 10 },
         { slot = "freightliner",  name = "Freightliner Cascadia",   model = "hauler2",  cls = "Long-haul",  speed = 130, cap_kg = 27000, fuel_l = 720, price = 610000,  level_required = 1  },
+    },
+
+    TrailerShop = {
+        { slot = "flatbed-std",   name = "Flatbed Standard",   model = "trailers2", price = 180000, level_required = 1 },
+        { slot = "container-std", name = "Container Standard", model = "trailers",  price = 220000, level_required = 3 },
     },
 }
