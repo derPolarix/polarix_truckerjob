@@ -182,14 +182,18 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		deliveries:  c.total_deliveries ?? 0,
 	}));
 
+	const statusTag: Record<string, string> = { completed: 'Completed', failed: 'Failed', abandoned: 'Abandoned', active: 'Active' };
+	const statusIcon: Record<string, string> = { completed: 'tabler:building-warehouse', failed: 'tabler:alert-triangle', abandoned: 'tabler:circle-x', active: 'tabler:road' };
+
 	const rawHistory: any[] = data.history ?? [];
 	const recentRuns = rawHistory.map((h: any) => ({
 		route: `${h.pickup_city ?? '?'} → ${h.dropoff_city ?? '?'}`,
 		code: `#DEL-${h.id}`,
 		reward: fmtMoney(h.reward_paid ?? 0),
-		tag: h.status === 'failed' ? 'FAILED' : (h.status === 'active' ? 'ACTIVE' : (h.name ?? 'DELIVERY')),
-		icon: h.status === 'failed' ? 'tabler:alert-triangle' : 'tabler:building-warehouse',
+		tag: statusTag[h.status] ?? 'Completed',
+		icon: statusIcon[h.status] ?? 'tabler:building-warehouse',
 		failed: h.status === 'failed',
+		status: (h.status ?? 'completed') as 'completed' | 'failed' | 'abandoned' | 'active',
 		when: fmtDate(h.completed_at ?? h.started_at, true),
 	}));
 

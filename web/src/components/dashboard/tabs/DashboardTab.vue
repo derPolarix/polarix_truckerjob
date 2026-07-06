@@ -87,7 +87,7 @@
           </div>
           <div style="text-align:right;flex-shrink:0">
             <div style="font-weight:700;font-size:13px" :style="{ color: r.failed ? '#d24b3a' : '#1b1f24' }">{{ r.reward }}</div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;margin-top:2px" :style="{ color: r.failed ? '#d24b3a' : '#9aa1ab' }">{{ r.tag }}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;margin-top:2px" :style="{ color: statusColor(r.status) }">{{ r.tag }}</div>
           </div>
         </div>
       </div>
@@ -103,6 +103,13 @@ import { useGameHudStore } from "@/stores/gameHudStore";
 const store = useDashboardStore();
 const hud = useGameHudStore();
 const hasActiveDelivery = computed(() => hud.visible && hud.phase !== null);
+
+function statusColor(status: string) {
+  if (status === "failed") return "#d24b3a";
+  if (status === "abandoned") return "#b58a05";
+  if (status === "active") return "#3b82f6";
+  return "#9aa1ab";
+}
 
 const stats = computed(() => [
   { icon: "tabler:cash-banknote", value: store.config.earnings, label: "Total earnings", sub: "ui.common.earnings", color: "#b58a05", tileBg: "rgba(232,180,8,0.16)" },

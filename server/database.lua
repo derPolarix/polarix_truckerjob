@@ -92,6 +92,13 @@ function DB.FailDelivery(deliveryId)
     )
 end
 
+function DB.AbandonDelivery(deliveryId)
+    MySQL.update.await(
+        ("UPDATE %s SET status='abandoned', completed_at=NOW() WHERE id=?"):format(T.deliveries),
+        { deliveryId }
+    )
+end
+
 function DB.GetActiveDelivery(identifier)
     return MySQL.single.await(
         ("SELECT id FROM %s WHERE identifier = ? AND status = 'active'"):format(T.deliveries),

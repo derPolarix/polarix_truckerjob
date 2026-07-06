@@ -22,7 +22,7 @@
             <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9aa1ab">{{ r.code }}</div>
           </div>
         </div>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.06em" :style="{ color: r.failed ? '#d24b3a' : '#2f9e63' }">{{ r.tag }}</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.06em" :style="{ color: statusColor(r.status) }">{{ r.tag }}</span>
         <span style="font-size:13px;font-weight:700" :style="{ color: r.failed ? '#d24b3a' : '#1b1f24' }">{{ r.reward }}</span>
         <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab">{{ r.when }}</span>
       </div>
@@ -35,4 +35,11 @@
 import { useDashboardStore } from "@/stores/dashboardStore";
 
 const store = useDashboardStore();
+
+function statusColor(status: string) {
+  if (status === "failed") return "#d24b3a";
+  if (status === "abandoned") return "#b58a05";
+  if (status === "active") return "#3b82f6";
+  return "#2f9e63";
+}
 </script>

@@ -188,7 +188,7 @@ RegisterNetEvent("polarix_trucker:deliveryCompleted", function(reward, xp, damag
 end)
 
 RegisterNetEvent("polarix_trucker:staleFailed", function()
-    Framework.Notify("Deine letzte Lieferung wurde als fehlgeschlagen markiert (Disconnect).", "error")
+    Framework.Notify("Deine letzte Lieferung wurde als abgebrochen markiert (Disconnect).", "info")
 end)
 
 -- Disconnect/Resource-Stop während aktiver Delivery → beim nächsten Join auto-fail (server-seitig via CleanupStaleDelivery)

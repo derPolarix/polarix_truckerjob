@@ -107,7 +107,8 @@ function Orders.Fail(source)
     ActiveDeliveries[source] = nil
 end
 
--- Beim Player-Load: offene Delivery aus vorherigem Disconnect als fehlgeschlagen markieren
+-- Beim Player-Load: offene Delivery aus vorherigem Disconnect/Server-Restart als abgebrochen markieren
+-- (kein echter Fehlschlag, zählt daher nicht als failed_deliveries)
 function Orders.CleanupStaleDelivery(source)
     local pData = Player.GetData(source)
     if not pData then return end
@@ -115,9 +116,7 @@ function Orders.CleanupStaleDelivery(source)
     local stale = DB.GetActiveDelivery(pData.identifier)
     if not stale then return end
 
-    DB.FailDelivery(stale.id)
-    pData.failed_deliveries = pData.failed_deliveries + 1
-    Player.Save(source)
+    DB.AbandonDelivery(stale.id)
     TriggerClientEvent("polarix_trucker:staleFailed", source)
 end
 

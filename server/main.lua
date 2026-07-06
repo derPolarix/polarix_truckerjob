@@ -73,12 +73,14 @@ AddEventHandler('onResourceStart', function(resourceName)
         id           INT AUTO_INCREMENT PRIMARY KEY,
         order_id     VARCHAR(36),
         identifier   VARCHAR(60),
-        status       ENUM('active','completed','failed') DEFAULT 'active',
+        status       ENUM('active','completed','failed','abandoned') DEFAULT 'active',
         reward_paid  INT       DEFAULT 0,
         xp_paid      INT       DEFAULT 0,
         started_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         completed_at TIMESTAMP NULL
     )]]):format(T.deliveries))
+
+    MySQL.query.await(([[ALTER TABLE %s MODIFY COLUMN status ENUM('active','completed','failed','abandoned') DEFAULT 'active']]):format(T.deliveries))
 
     MySQL.query.await(([[CREATE TABLE IF NOT EXISTS %s (
         id               INT AUTO_INCREMENT PRIMARY KEY,

@@ -155,7 +155,7 @@ export interface DashboardConfig {
   spawnedVehicleSlot: string | null;
   spawnedTrailerSlot: string | null;
   branches: SkillBranch[];
-  recentRuns: { route: string; code: string; reward: string; tag: string; icon: string; failed: boolean; when: string }[];
+  recentRuns: { route: string; code: string; reward: string; tag: string; icon: string; failed: boolean; status: "completed" | "failed" | "abandoned" | "active"; when: string }[];
   leaderboard: LeaderboardEntry[];
   companyLeaderboard: CompanyLeaderboardEntry[];
   openCompanies: OpenCompanyEntry[];
@@ -223,10 +223,10 @@ const defaultConfig: DashboardConfig = {
   spawnedTrailerSlot: "trl-owned-1",
   branches: [],
   recentRuns: [
-    { route: "Los Santos Port → Sandy Shores", code: "#OR-2024-001231", reward: "$12,500", tag: "FULL HAUL", icon: "tabler:building-warehouse", failed: false, when: "2h ago" },
-    { route: "Downtown → Mirror Park", code: "#OR-2024-001212", reward: "$8,750", tag: "HALF LOAD", icon: "tabler:road", failed: false, when: "6h ago" },
-    { route: "Paleto Bay → LS International", code: "#OR-2024-001188", reward: "$24,500", tag: "VEHICLE", icon: "tabler:car", failed: false, when: "1d ago" },
-    { route: "Industrial District → Grapeseed", code: "#OR-2024-001120", reward: "$0", tag: "FAILED", icon: "tabler:alert-triangle", failed: true, when: "2d ago" },
+    { route: "Los Santos Port → Sandy Shores", code: "#OR-2024-001231", reward: "$12,500", tag: "Completed", icon: "tabler:building-warehouse", failed: false, status: "completed", when: "2h ago" },
+    { route: "Downtown → Mirror Park", code: "#OR-2024-001212", reward: "$8,750", tag: "Completed", icon: "tabler:road", failed: false, status: "completed", when: "6h ago" },
+    { route: "Paleto Bay → LS International", code: "#OR-2024-001188", reward: "$24,500", tag: "Completed", icon: "tabler:car", failed: false, status: "completed", when: "1d ago" },
+    { route: "Industrial District → Grapeseed", code: "#OR-2024-001120", reward: "$0", tag: "Abandoned", icon: "tabler:circle-x", failed: false, status: "abandoned", when: "2d ago" },
   ],
   leaderboard: [
     { rank: 1, name: "IronMike", level: 24, deliveries: 412, earned: "$5,200,000", isYou: false },
