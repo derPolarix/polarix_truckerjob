@@ -141,6 +141,7 @@ export interface DashboardConfig {
   driverName: string;
   accentColor: string;
   driverLevel: number;
+  driverLevelTitle: string;
   driverXp: number;
   driverXpMax: number;
   skillPoints: number;
@@ -191,6 +192,7 @@ const defaultConfig: DashboardConfig = {
   driverName: "Max Mustermann",
   accentColor: "#E8B408",
   driverLevel: 2,
+  driverLevelTitle: "Apprentice",
   driverXp: 240,
   driverXpMax: 750,
   skillPoints: 15,

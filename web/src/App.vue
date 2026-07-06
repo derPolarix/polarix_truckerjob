@@ -46,6 +46,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 	const equippedSlot: string = p.equipped_vehicle ?? '';
 	const equippedTrailerSlot: string = p.equipped_trailer ?? '';
 	const xpThresholds: number[] = data.xpThresholds ?? [];
+	const levelTitles: string[] = data.levelTitles ?? [];
 
 	const fmtMoney = (v: number) => `$${(v ?? 0).toLocaleString()}`;
 	const fmtDate = (v: unknown, withTime = false): string => {
@@ -286,6 +287,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 	return {
 		driverName: p.name ?? '',
 		driverLevel: p.level ?? 1,
+		driverLevelTitle: levelTitles[(p.level ?? 1) - 1] ?? '',
 		driverXp: p.xp ?? 0,
 		driverXpMax: xpThresholds[p.level ?? 1] ?? (p.xp ?? 0),
 		skillPoints: p.skill_points ?? 0,

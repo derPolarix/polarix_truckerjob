@@ -41,7 +41,7 @@
               <div style="width:38px;height:38px;border-radius:11px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#22262d;flex-shrink:0">{{ store.config.driverName[0] }}</div>
               <div style="flex:1;min-width:0">
                 <div style="font-weight:600;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ store.config.driverName }}</div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#7a818c;margin-top:1px">Rookie · Lvl {{ store.config.driverLevel }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#7a818c;margin-top:1px">{{ store.config.driverLevelTitle }} · Lvl {{ store.config.driverLevel }}</div>
               </div>
             </div>
             <div style="margin-top:11px;display:flex;align-items:center;gap:8px">
