@@ -86,8 +86,9 @@ function Delivery.StartUnloading()
     isUnloading = true
 
     local o = DeliveryState.orderData
-    local success = lib.progressBar({
+    local success = lib.progressCircle({
         duration = 8000,
+        position = "bottom",
         label = "Cargo wird entladen: " .. o.name,
         useWhileDead = false,
         canCancel = false,

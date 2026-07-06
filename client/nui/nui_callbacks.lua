@@ -14,7 +14,6 @@ RegisterNUICallback('acceptOrder', function(data, cb)
     lib.callback('polarix_trucker:acceptOrder', false, function(success, orderData, err)
         if success then
             Delivery.Start(orderData)
-            CloseNui()
         else
             Framework.Notify(err or 'Fehler beim Annehmen.', 'error')
         end

@@ -40,7 +40,7 @@
           <div style="font-size:15px;font-weight:700;color:#1b1f24">Active delivery</div>
           <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.06em;color:#9aa1ab;text-transform:uppercase">{{ hasActiveDelivery ? hud.phase : 'Idle' }}</span>
         </div>
-        <div v-if="hasActiveDelivery" style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:20px 4px 30px;gap:14px">
+        <div v-if="hasActiveDelivery" style="display:flex;flex-direction:column;padding:16px 4px 30px;gap:14px">
           <div style="display:flex;align-items:center;gap:14px">
             <div style="width:56px;height:56px;border-radius:16px;background:rgba(232,180,8,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0">
               <iconify-icon icon="tabler:truck-delivery" width="28" style="color:#b58a05"></iconify-icon>

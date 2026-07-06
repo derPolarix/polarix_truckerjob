@@ -1,15 +1,5 @@
 <template>
-  <div v-if="visible" style="position:fixed;left:50%;transform:translateX(-50%);bottom:3vh;z-index:9998;pointer-events:none;font-family:'Archivo',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;gap:8px">
-    <div v-if="heldAction" style="display:flex;align-items:center;gap:14px;padding:10px 20px;border-radius:12px;background:rgba(22,38,45,0.96);border-left:3px solid #E8B408;box-shadow:0 16px 50px rgba(0,0,0,0.45)">
-      <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-weight:700;color:#fff;font-size:14px">{{ heldAction.name }}</span>
-        <span v-if="heldAction.hint" style="color:#7a818c">•</span>
-        <span v-if="heldAction.hint" style="color:#c9ced6;font-size:13px">{{ heldAction.hint }}</span>
-      </div>
-      <div style="width:1px;height:18px;background:rgba(255,255,255,0.12)"></div>
-      <span style="font-size:13px;color:#9aa1ab">[<span style="color:#E8B408;font-weight:700">{{ heldAction.primaryKey }}</span>] {{ heldAction.primaryAction }}</span>
-    </div>
-
+  <div v-if="visible" style="position:fixed;left:50%;transform:translateX(-50%);top:3vh;z-index:9998;pointer-events:none;font-family:'Archivo',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;gap:8px">
     <div v-if="store.visible" style="display:flex;align-items:center;gap:18px;padding:12px 22px;border-radius:12px;background:rgba(22,38,45,0.94);border:1px solid rgba(255,255,255,0.06);box-shadow:0 16px 50px rgba(0,0,0,0.45)">
       <template v-if="store.phase">
         <span style="font-weight:800;font-size:14px;letter-spacing:0.04em;color:#E8B408">{{ statusText }}</span>
@@ -39,6 +29,14 @@
           {{ store.forkliftCarrying ? 'Palette an Gabel' : 'Gabel leer' }}
         </span>
       </template>
+    </div>
+
+    <div v-if="heldAction" style="display:flex;align-items:center;gap:10px;padding:6px 14px;border-radius:9px;background:rgba(22,38,45,0.9);border-left:2px solid #E8B408;box-shadow:0 10px 30px rgba(0,0,0,0.4)">
+      <span style="font-weight:600;color:#e4e7eb;font-size:12px">{{ heldAction.name }}</span>
+      <span v-if="heldAction.hint" style="color:#7a818c;font-size:11px">•</span>
+      <span v-if="heldAction.hint" style="color:#9aa1ab;font-size:11px">{{ heldAction.hint }}</span>
+      <div style="width:1px;height:14px;background:rgba(255,255,255,0.12)"></div>
+      <span style="font-size:11px;color:#9aa1ab">[<span style="color:#E8B408;font-weight:700">{{ heldAction.primaryKey }}</span>] {{ heldAction.primaryAction }}</span>
     </div>
   </div>
 </template>
