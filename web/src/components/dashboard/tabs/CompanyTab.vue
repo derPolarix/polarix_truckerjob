@@ -319,7 +319,7 @@
               <div style="font-size:32px;font-weight:800;letter-spacing:-0.02em;color:#fff;margin-top:6px">{{ store.config.companyTreasury }}</div>
             </div>
             <div style="display:flex;gap:10px;align-items:center">
-              <input v-model.number="bankAmount" type="number" min="1" placeholder="Amount" style="width:120px;padding:11px 14px;border-radius:10px;border:1px solid #3a414b;background:#2e333b;color:#fff;font-size:13px;outline:none;font-family:inherit" />
+              <input v-model.number="bankAmount" type="number" min="1" placeholder="Amount" class="no-spinner" style="width:120px;padding:11px 14px;border-radius:10px;border:1px solid #3a414b;background:#2e333b;color:#fff;font-size:13px;outline:none;font-family:inherit" />
               <button class="accent-btn" style="padding:12px 20px;font-size:13px;gap:7px" @click="deposit"><iconify-icon icon="tabler:arrow-down" width="16"></iconify-icon>Deposit</button>
               <button style="background:#2e333b;color:#fff;border:1px solid #3a414b;border-radius:11px;padding:12px 20px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:7px" @click="withdraw"><iconify-icon icon="tabler:arrow-up" width="16"></iconify-icon>Withdraw</button>
             </div>
@@ -483,14 +483,16 @@ const bankAmount = ref<number | null>(null);
 
 async function deposit() {
   if (!bankAmount.value || bankAmount.value <= 0) return;
-  await nuiCallback('depositBank', { amount: bankAmount.value });
+  const res = await nuiCallback<{ ok: boolean }>('depositBank', { amount: bankAmount.value });
   bankAmount.value = null;
+  if (res?.ok) await nuiCallback('refetchDashboard');
 }
 
 async function withdraw() {
   if (!bankAmount.value || bankAmount.value <= 0) return;
-  await nuiCallback('withdrawBank', { amount: bankAmount.value });
+  const res = await nuiCallback<{ ok: boolean }>('withdrawBank', { amount: bankAmount.value });
   bankAmount.value = null;
+  if (res?.ok) await nuiCallback('refetchDashboard');
 }
 
 // --- Settings ---
@@ -582,4 +584,14 @@ function barHeight(v: number) {
 <style scoped>
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 0.75s linear infinite; }
+
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.no-spinner {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
 </style>
