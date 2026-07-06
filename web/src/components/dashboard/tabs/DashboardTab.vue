@@ -56,11 +56,11 @@
       <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
           <div style="font-size:15px;font-weight:700;color:#1b1f24">Recent runs</div>
-          <button style="background:transparent;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--accent);display:inline-flex;align-items:center;gap:4px" @click="store.setTab('orders')">
+          <button style="background:transparent;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--accent);display:inline-flex;align-items:center;gap:4px" @click="store.setTab('history')">
             View all <iconify-icon icon="tabler:chevron-right" width="14"></iconify-icon>
           </button>
         </div>
-        <div v-for="r in store.config.recentRuns" :key="r.code" style="display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid #eef0f2">
+        <div v-for="r in store.config.recentRuns.slice(0, 4)" :key="r.code" style="display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid #eef0f2">
           <div style="width:34px;height:34px;border-radius:9px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;flex-shrink:0">
             <iconify-icon :icon="r.icon" width="17" style="color:#6b7280"></iconify-icon>
           </div>

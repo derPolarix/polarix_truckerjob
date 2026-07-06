@@ -90,6 +90,24 @@ export interface Invitation {
   sent: string;
 }
 
+export interface LeaderboardEntry {
+  rank: number;
+  name: string;
+  level: number;
+  deliveries: number;
+  earned: string;
+  isYou: boolean;
+}
+
+export interface CompanyLeaderboardEntry {
+  rank: number;
+  name: string;
+  tag: string;
+  level: number;
+  deliveries: number;
+  earned: string;
+}
+
 export interface DashboardConfig {
   brandName: string;
   driverName: string;
@@ -107,7 +125,9 @@ export interface DashboardConfig {
   vehiclesOwned: VehicleOwned[];
   vehiclesShop: VehicleShop[];
   branches: SkillBranch[];
-  recentRuns: { route: string; code: string; reward: string; tag: string; icon: string; failed: boolean }[];
+  recentRuns: { route: string; code: string; reward: string; tag: string; icon: string; failed: boolean; when: string }[];
+  leaderboard: LeaderboardEntry[];
+  companyLeaderboard: CompanyLeaderboardEntry[];
   companyName: string;
   companyDescription: string;
   companyTag: string;
@@ -162,10 +182,22 @@ const defaultConfig: DashboardConfig = {
   ],
   branches: [],
   recentRuns: [
-    { route: "Los Santos Port → Sandy Shores", code: "#OR-2024-001231", reward: "$12,500", tag: "FULL HAUL", icon: "tabler:building-warehouse", failed: false },
-    { route: "Downtown → Mirror Park", code: "#OR-2024-001212", reward: "$8,750", tag: "HALF LOAD", icon: "tabler:road", failed: false },
-    { route: "Paleto Bay → LS International", code: "#OR-2024-001188", reward: "$24,500", tag: "VEHICLE", icon: "tabler:car", failed: false },
-    { route: "Industrial District → Grapeseed", code: "#OR-2024-001120", reward: "$0", tag: "FAILED", icon: "tabler:alert-triangle", failed: true },
+    { route: "Los Santos Port → Sandy Shores", code: "#OR-2024-001231", reward: "$12,500", tag: "FULL HAUL", icon: "tabler:building-warehouse", failed: false, when: "2h ago" },
+    { route: "Downtown → Mirror Park", code: "#OR-2024-001212", reward: "$8,750", tag: "HALF LOAD", icon: "tabler:road", failed: false, when: "6h ago" },
+    { route: "Paleto Bay → LS International", code: "#OR-2024-001188", reward: "$24,500", tag: "VEHICLE", icon: "tabler:car", failed: false, when: "1d ago" },
+    { route: "Industrial District → Grapeseed", code: "#OR-2024-001120", reward: "$0", tag: "FAILED", icon: "tabler:alert-triangle", failed: true, when: "2d ago" },
+  ],
+  leaderboard: [
+    { rank: 1, name: "IronMike", level: 24, deliveries: 412, earned: "$5,200,000", isYou: false },
+    { rank: 2, name: "HaulerJane", level: 19, deliveries: 308, earned: "$3,800,000", isYou: false },
+    { rank: 3, name: "TruckerBob", level: 17, deliveries: 266, earned: "$2,900,000", isYou: false },
+    { rank: 4, name: "DieselDon", level: 17, deliveries: 154, earned: "$1,600,000", isYou: false },
+    { rank: 5, name: "Max Mustermann", level: 2, deliveries: 3, earned: "$45,700", isYou: true },
+  ],
+  companyLeaderboard: [
+    { rank: 1, name: "Apex Logistics", tag: "APEX", level: 18, deliveries: 2140, earned: "$41,200,000" },
+    { rank: 2, name: "Polarix Freight Co.", tag: "PLRX", level: 12, deliveries: 1284, earned: "$18,450,000" },
+    { rank: 3, name: "Coastline Carriers", tag: "CLC", level: 9, deliveries: 960, earned: "$12,100,000" },
   ],
   companyName: "Polarix Freight Co.",
   companyDescription: "Reliable cross-country hauls. We move it, you trust it.",

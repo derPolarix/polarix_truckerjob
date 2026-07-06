@@ -92,6 +92,20 @@ function DB.GetDeliveryHistory(identifier, limit)
     )
 end
 
+function DB.GetLeaderboardGlobal(limit)
+    return MySQL.query.await(
+        ("SELECT name, level, total_deliveries, total_earnings FROM %s ORDER BY total_deliveries DESC LIMIT ?"):format(T.players),
+        { limit or 20 }
+    )
+end
+
+function DB.GetLeaderboardCompanies(limit)
+    return MySQL.query.await(
+        ("SELECT name, tag, level, total_deliveries, total_earnings FROM %s ORDER BY total_deliveries DESC LIMIT ?"):format(T.companies),
+        { limit or 10 }
+    )
+end
+
 -- Company queries
 
 function DB.GetMemberByPlayer(identifier)

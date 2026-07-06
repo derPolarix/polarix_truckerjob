@@ -90,6 +90,8 @@
           <VehiclesTab v-else-if="store.tab === 'vehicles'" />
           <SkillsTab v-else-if="store.tab === 'skills'" />
           <CompanyTab v-else-if="store.tab === 'company'" />
+          <LeaderboardTab v-else-if="store.tab === 'leaderboard'" />
+          <HistoryTab v-else-if="store.tab === 'history'" />
           <!-- Coming soon fallback -->
           <div v-else style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;height:100%;min-height:420px">
             <div style="width:70px;height:70px;border-radius:20px;background:#fff;border:1px solid #dfe2e6;display:flex;align-items:center;justify-content:center"><iconify-icon icon="tabler:tools" width="34" style="color:#aab0b8"></iconify-icon></div>
@@ -112,6 +114,8 @@ import OrdersTab from "@/components/dashboard/tabs/OrdersTab.vue";
 import VehiclesTab from "@/components/dashboard/tabs/VehiclesTab.vue";
 import SkillsTab from "@/components/dashboard/tabs/SkillsTab.vue";
 import CompanyTab from "@/components/dashboard/tabs/CompanyTab.vue";
+import LeaderboardTab from "@/components/dashboard/tabs/LeaderboardTab.vue";
+import HistoryTab from "@/components/dashboard/tabs/HistoryTab.vue";
 
 const store = useDashboardStore();
 const persistantStore = usePersistantStore();

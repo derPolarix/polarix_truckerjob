@@ -40,7 +40,10 @@ lib.callback.register("polarix_trucker:openDashboard", function(source)
         skillBranches = Skills.GetBranchesForPlayer(source),
         levelTitles   = sharedConfig.LevelTitles,
         xpThresholds  = sharedConfig.XPThresholds,
-        company       = companyData,
-        myRole        = membership and membership.role or nil,
+        company            = companyData,
+        myRole             = membership and membership.role or nil,
+        leaderboard        = Leaderboard.GetGlobal(),
+        companyLeaderboard = Leaderboard.GetCompanies(),
+        history            = Leaderboard.GetHistory(source),
     }
 end)

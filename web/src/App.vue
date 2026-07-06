@@ -21,7 +21,7 @@ import type { NuiMessage } from "./type";
 import { isDev } from "./main";
 import Sidebar from "@/components/app/Sidebar.vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
-import type { DashboardConfig, Order, VehicleOwned, VehicleShop, SkillBranch, SkillNode } from "@/stores/dashboardStore";
+import type { DashboardConfig, Order, VehicleOwned, VehicleShop, SkillBranch, SkillNode, LeaderboardEntry, CompanyLeaderboardEntry } from "@/stores/dashboardStore";
 
 // Standard Zugriffe auf globale Properties welche den persistantStore und den Router bereitstellen ohne diese immer neu importieren zu müssen
 const proxy = getCurrentInstance()!.proxy!;
@@ -114,6 +114,37 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		}),
 	}));
 
+	const rawLeaderboard: any[] = data.leaderboard ?? [];
+	const leaderboard: LeaderboardEntry[] = rawLeaderboard.map((r: any, i: number) => ({
+		rank: i + 1,
+		name: r.name ?? '',
+		level: r.level ?? 1,
+		deliveries: r.total_deliveries ?? 0,
+		earned: fmtMoney(r.total_earnings ?? 0),
+		isYou: r.name === p.name,
+	}));
+
+	const rawCompanyLeaderboard: any[] = data.companyLeaderboard ?? [];
+	const companyLeaderboard: CompanyLeaderboardEntry[] = rawCompanyLeaderboard.map((r: any, i: number) => ({
+		rank: i + 1,
+		name: r.name ?? '',
+		tag: r.tag ?? '',
+		level: r.level ?? 1,
+		deliveries: r.total_deliveries ?? 0,
+		earned: fmtMoney(r.total_earnings ?? 0),
+	}));
+
+	const rawHistory: any[] = data.history ?? [];
+	const recentRuns = rawHistory.map((h: any) => ({
+		route: `${h.pickup_city ?? '?'} → ${h.dropoff_city ?? '?'}`,
+		code: `#DEL-${h.id}`,
+		reward: fmtMoney(h.reward_paid ?? 0),
+		tag: h.status === 'failed' ? 'FAILED' : (h.status === 'active' ? 'ACTIVE' : (h.name ?? 'DELIVERY')),
+		icon: h.status === 'failed' ? 'tabler:alert-triangle' : 'tabler:building-warehouse',
+		failed: h.status === 'failed',
+		when: String(h.completed_at ?? h.started_at ?? '').substring(0, 16).replace('T', ' '),
+	}));
+
 	const totalDeliveries = (p.total_deliveries ?? 0) + (p.failed_deliveries ?? 0);
 
 	const rawCompany = (data as any).company;
@@ -175,6 +206,9 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		vehiclesOwned,
 		vehiclesShop,
 		branches,
+		recentRuns,
+		leaderboard,
+		companyLeaderboard,
 		...companyFields,
 	};
 }
