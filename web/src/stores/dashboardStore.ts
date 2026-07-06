@@ -108,6 +108,16 @@ export interface CompanyLeaderboardEntry {
   earned: string;
 }
 
+export interface OpenCompanyEntry {
+  id: number;
+  name: string;
+  tag: string;
+  description: string;
+  level: number;
+  members: number;
+  deliveries: number;
+}
+
 export interface DashboardConfig {
   brandName: string;
   driverName: string;
@@ -128,6 +138,7 @@ export interface DashboardConfig {
   recentRuns: { route: string; code: string; reward: string; tag: string; icon: string; failed: boolean; when: string }[];
   leaderboard: LeaderboardEntry[];
   companyLeaderboard: CompanyLeaderboardEntry[];
+  openCompanies: OpenCompanyEntry[];
   companyName: string;
   companyDescription: string;
   companyTag: string;
@@ -199,6 +210,7 @@ const defaultConfig: DashboardConfig = {
     { rank: 2, name: "Polarix Freight Co.", tag: "PLRX", level: 12, deliveries: 1284, earned: "$18,450,000" },
     { rank: 3, name: "Coastline Carriers", tag: "CLC", level: 9, deliveries: 960, earned: "$12,100,000" },
   ],
+  openCompanies: [],
   companyName: "Polarix Freight Co.",
   companyDescription: "Reliable cross-country hauls. We move it, you trust it.",
   companyTag: "PLRX",

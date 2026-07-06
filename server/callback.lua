@@ -42,6 +42,7 @@ lib.callback.register("polarix_trucker:openDashboard", function(source)
         xpThresholds  = sharedConfig.XPThresholds,
         company            = companyData,
         myRole             = membership and membership.role or nil,
+        openCompanies      = (not membership) and DB.GetOpenRecruitmentCompanies() or nil,
         leaderboard        = Leaderboard.GetGlobal(),
         companyLeaderboard = Leaderboard.GetCompanies(),
         history            = Leaderboard.GetHistory(source),

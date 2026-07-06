@@ -140,3 +140,14 @@ RegisterNUICallback('withdrawBank', function(data, cb)
         cb({ ok = success })
     end, data.amount)
 end)
+
+RegisterNUICallback('requestJoin', function(data, cb)
+    lib.callback('polarix_trucker:requestJoin', false, function(success, err)
+        if success then
+            Framework.Notify('Beigetreten! Öffne das Menü erneut.', 'success')
+        else
+            Framework.Notify(err or 'Beitreten fehlgeschlagen.', 'error')
+        end
+        cb({ ok = success })
+    end, data.companyId)
+end)

@@ -222,6 +222,13 @@ function DB.GetPlayerByName(name)
     )
 end
 
+function DB.GetOpenRecruitmentCompanies()
+    return MySQL.query.await(
+        ("SELECT c.id, c.name, c.tag, c.description, c.level, c.total_deliveries, COUNT(m.id) AS members FROM %s c LEFT JOIN %s m ON m.company_id = c.id WHERE c.open_recruitment = 1 GROUP BY c.id ORDER BY c.total_deliveries DESC"):format(T.companies, T.members),
+        {}
+    )
+end
+
 function LoadDatabaseToCache()
     -- Aktuell kein globaler DB-Cache nötig (Spieler werden pro-Source in PlayerCache gehalten).
 end

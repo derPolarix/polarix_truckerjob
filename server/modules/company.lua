@@ -216,3 +216,25 @@ end)
 lib.callback.register("polarix_trucker:saveCompanySettings", function(source, settings)
     return Company.SaveSettings(source, settings)
 end)
+
+function Company.RequestJoin(source, companyId)
+    local pData = Player.GetData(source)
+    if not pData then return false, "Spielerdaten fehlen." end
+
+    if Company.GetMembership(pData.identifier) then
+        return false, "Du bist bereits in einer Company."
+    end
+
+    local company = DB.GetCompanyById(companyId)
+    if not company then return false, "Company nicht gefunden." end
+
+    local isOpen = company.open_recruitment == 1 or company.open_recruitment == true
+    if not isOpen then return false, "Diese Company nimmt keine Bewerbungen an." end
+
+    DB.AddCompanyMember(companyId, pData.identifier, "recruit")
+    return true
+end
+
+lib.callback.register("polarix_trucker:requestJoin", function(source, companyId)
+    return Company.RequestJoin(source, companyId)
+end)

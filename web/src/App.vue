@@ -21,7 +21,7 @@ import type { NuiMessage } from "./type";
 import { isDev } from "./main";
 import Sidebar from "@/components/app/Sidebar.vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
-import type { DashboardConfig, Order, VehicleOwned, VehicleShop, SkillBranch, SkillNode, LeaderboardEntry, CompanyLeaderboardEntry } from "@/stores/dashboardStore";
+import type { DashboardConfig, Order, VehicleOwned, VehicleShop, SkillBranch, SkillNode, LeaderboardEntry, CompanyLeaderboardEntry, OpenCompanyEntry } from "@/stores/dashboardStore";
 
 // Standard Zugriffe auf globale Properties welche den persistantStore und den Router bereitstellen ohne diese immer neu importieren zu müssen
 const proxy = getCurrentInstance()!.proxy!;
@@ -134,6 +134,16 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		earned: fmtMoney(r.total_earnings ?? 0),
 	}));
 
+	const openCompanies: OpenCompanyEntry[] = (data.openCompanies ?? []).map((c: any) => ({
+		id:          c.id ?? 0,
+		name:        c.name ?? '',
+		tag:         c.tag ?? '',
+		description: c.description ?? '',
+		level:       c.level ?? 1,
+		members:     c.members ?? 0,
+		deliveries:  c.total_deliveries ?? 0,
+	}));
+
 	const rawHistory: any[] = data.history ?? [];
 	const recentRuns = rawHistory.map((h: any) => ({
 		route: `${h.pickup_city ?? '?'} → ${h.dropoff_city ?? '?'}`,
@@ -186,8 +196,42 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 				pos:   isTruthy(t.is_positive),
 				icon:  t.icon ?? 'tabler:arrows-exchange',
 			})),
+			topHaulers: (() => {
+				const sorted = [...(rawCompany.members ?? [])]
+					.sort((a: any, b: any) => (b.deliveries ?? 0) - (a.deliveries ?? 0))
+					.slice(0, 5);
+				const maxDel = sorted[0]?.deliveries ?? 1;
+				return sorted.map((m: any) => ({
+					name: m.name ?? '',
+					val:  `${m.deliveries ?? 0} runs`,
+					bar:  `${Math.max(Math.round(((m.deliveries ?? 0) / maxDel) * 100), 1)}%`,
+				}));
+			})(),
+			activity:  [],
+			statChart: [],
 		};
-	})() : { companyName: '' };
+	})() : {
+		companyName:            '',
+		companyDescription:     '',
+		companyTag:             '',
+		companyLevel:           1,
+		companyXp:              0,
+		companyXpMax:           1000,
+		companyFoundedDate:     '',
+		companyMembers:         0,
+		companyServerRank:      '—',
+		companyEarnings:        '$0',
+		companyDeliveries:      '0',
+		companyDistance:        '—',
+		companyTreasury:        '$0',
+		companyOpenRecruitment: false,
+		members:      [],
+		invitations:  [],
+		transactions: [],
+		topHaulers:   [],
+		activity:     [],
+		statChart:    [],
+	};
 
 	return {
 		driverName: p.name ?? '',
@@ -209,6 +253,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		recentRuns,
 		leaderboard,
 		companyLeaderboard,
+		openCompanies,
 		...companyFields,
 	};
 }
