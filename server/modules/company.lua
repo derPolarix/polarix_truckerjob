@@ -1,3 +1,5 @@
+local config = require("config.shared")
+
 Company = {}
 
 function Company.GetMembership(identifier)
@@ -74,6 +76,7 @@ function Company.GetFull(companyId, selfIdentifier)
         total_deliveries = company.total_deliveries,
         open_recruitment = company.open_recruitment,
         tax_rate         = company.tax_rate or 0,
+        min_level_to_join = company.min_level_to_join or 1,
         founded_at       = company.founded_at,
         members          = enrichedMembers,
         invitations      = enrichedInvites,
@@ -171,9 +174,13 @@ function Company.SaveSettings(source, settings)
     local taxRate = tonumber(settings.taxRate) or 0
     taxRate = math.floor(math.max(0, math.min(25, taxRate)))
 
+    local maxLevel = #config.XPThresholds
+    local minLevel = tonumber(settings.minLevel) or 1
+    minLevel = math.floor(math.max(1, math.min(maxLevel, minLevel)))
+
     DB.UpdateCompanySettings(
         membership.company_id,
-        settings.name, settings.tag, settings.description, settings.openRecruitment, taxRate
+        settings.name, settings.tag, settings.description, settings.openRecruitment, taxRate, minLevel
     )
     return true
 end
@@ -311,6 +318,11 @@ function Company.RequestJoin(source, companyId)
 
     local isOpen = company.open_recruitment == 1 or company.open_recruitment == true
     if not isOpen then return false, "Diese Company nimmt keine Bewerbungen an." end
+
+    local minLevel = company.min_level_to_join or 1
+    if pData.level < minLevel then
+        return false, ("Mindestlevel %d erforderlich."):format(minLevel)
+    end
 
     DB.AddCompanyMember(companyId, pData.identifier, "recruit")
     return true

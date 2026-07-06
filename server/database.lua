@@ -222,10 +222,10 @@ function DB.UpdateCompanyXP(companyId, amount)
     )
 end
 
-function DB.UpdateCompanySettings(companyId, name, tag, description, openRecruitment, taxRate)
+function DB.UpdateCompanySettings(companyId, name, tag, description, openRecruitment, taxRate, minLevelToJoin)
     MySQL.update.await(
-        ("UPDATE %s SET name=?, tag=?, description=?, open_recruitment=?, tax_rate=? WHERE id=?"):format(T.companies),
-        { name, tag, description, openRecruitment and 1 or 0, taxRate, companyId }
+        ("UPDATE %s SET name=?, tag=?, description=?, open_recruitment=?, tax_rate=?, min_level_to_join=? WHERE id=?"):format(T.companies),
+        { name, tag, description, openRecruitment and 1 or 0, taxRate, minLevelToJoin, companyId }
     )
 end
 
@@ -252,7 +252,7 @@ end
 
 function DB.GetOpenRecruitmentCompanies()
     return MySQL.query.await(
-        ("SELECT c.id, c.name, c.tag, c.description, c.level, c.total_deliveries, c.tax_rate, COUNT(m.id) AS members FROM %s c LEFT JOIN %s m ON m.company_id = c.id WHERE c.open_recruitment = 1 GROUP BY c.id ORDER BY c.total_deliveries DESC"):format(T.companies, T.members),
+        ("SELECT c.id, c.name, c.tag, c.description, c.level, c.total_deliveries, c.tax_rate, c.min_level_to_join, COUNT(m.id) AS members FROM %s c LEFT JOIN %s m ON m.company_id = c.id WHERE c.open_recruitment = 1 GROUP BY c.id ORDER BY c.total_deliveries DESC"):format(T.companies, T.members),
         {}
     )
 end

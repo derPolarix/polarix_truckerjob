@@ -91,6 +91,7 @@
           </div>
           <div style="display:flex;align-items:center;gap:18px;flex-shrink:0;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">
             <span style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:medal" width="13"></iconify-icon>Lvl {{ c.level }}</span>
+            <span v-if="c.minLevel > 1" style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:shield-lock" width="13"></iconify-icon>Min. Lvl {{ c.minLevel }}</span>
             <span style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:users" width="13"></iconify-icon>{{ c.members }}</span>
             <span style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:packages" width="13"></iconify-icon>{{ c.deliveries }}</span>
             <span style="display:inline-flex;align-items:center;gap:5px" :style="{ color: c.taxRate > 0 ? '#d24b3a' : '#9aa1ab' }"><iconify-icon icon="tabler:receipt-tax" width="13"></iconify-icon>{{ c.taxRate }}% tax</span>
@@ -358,7 +359,13 @@
               </div>
               <div>
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Min. level to join</div>
-                <input value="Lvl 2" readonly style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
+                <input
+                  v-model.number="settingsMinLevel"
+                  type="number" min="1" max="11" step="1" class="no-spinner"
+                  :readonly="!isOwner"
+                  style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit"
+                  @change="settingsMinLevel = Math.max(1, Math.min(11, Math.round(settingsMinLevel || 1)))"
+                />
               </div>
             </div>
             <div>
@@ -517,29 +524,38 @@ const settingsTag     = ref(store.config.companyTag);
 const settingsDesc    = ref(store.config.companyDescription);
 const settingsOpenRec = ref(store.config.companyOpenRecruitment);
 const settingsTaxRate = ref(store.config.companyTaxRate);
+const settingsMinLevel = ref(store.config.companyMinLevelToJoin);
 
-watch(() => store.config.companyName,            v => { settingsName.value    = v; });
-watch(() => store.config.companyTag,             v => { settingsTag.value     = v; });
-watch(() => store.config.companyDescription,     v => { settingsDesc.value    = v; });
-watch(() => store.config.companyOpenRecruitment, v => { settingsOpenRec.value = v; });
-watch(() => store.config.companyTaxRate,         v => { settingsTaxRate.value = v; });
+watch(() => store.config.companyName,            v => { settingsName.value     = v; });
+watch(() => store.config.companyTag,             v => { settingsTag.value      = v; });
+watch(() => store.config.companyDescription,     v => { settingsDesc.value     = v; });
+watch(() => store.config.companyOpenRecruitment, v => { settingsOpenRec.value  = v; });
+watch(() => store.config.companyTaxRate,         v => { settingsTaxRate.value  = v; });
+watch(() => store.config.companyMinLevelToJoin,  v => { settingsMinLevel.value = v; });
 
 async function saveSettings() {
-  await nuiCallback('saveCompanySettings', {
+  const res = await nuiCallback<{ ok: boolean }>('saveCompanySettings', {
     name:            settingsName.value,
     tag:             settingsTag.value,
     description:     settingsDesc.value,
     openRecruitment: settingsOpenRec.value,
     taxRate:         Math.max(0, Math.min(25, Math.round(settingsTaxRate.value || 0))),
+    minLevel:        Math.max(1, Math.min(11, Math.round(settingsMinLevel.value || 1))),
   });
+  if (res?.ok) {
+    isRefetching.value = true;
+    await nuiCallback('refetchDashboard');
+    isRefetching.value = false;
+  }
 }
 
 function resetSettings() {
-  settingsName.value    = store.config.companyName;
-  settingsTag.value     = store.config.companyTag;
-  settingsDesc.value    = store.config.companyDescription;
-  settingsOpenRec.value = store.config.companyOpenRecruitment;
-  settingsTaxRate.value = store.config.companyTaxRate;
+  settingsName.value     = store.config.companyName;
+  settingsTag.value      = store.config.companyTag;
+  settingsDesc.value     = store.config.companyDescription;
+  settingsOpenRec.value  = store.config.companyOpenRecruitment;
+  settingsTaxRate.value  = store.config.companyTaxRate;
+  settingsMinLevel.value = store.config.companyMinLevelToJoin;
 }
 
 // --- Danger zone ---

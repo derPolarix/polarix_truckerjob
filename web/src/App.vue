@@ -181,6 +181,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		members:     c.members ?? 0,
 		deliveries:  c.total_deliveries ?? 0,
 		taxRate:     c.tax_rate ?? 0,
+		minLevel:    c.min_level_to_join ?? 1,
 	}));
 
 	const statusTag: Record<string, string> = { completed: 'Completed', failed: 'Failed', abandoned: 'Abandoned', active: 'Active' };
@@ -219,6 +220,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 			companyTreasury:        fmtMoney(rawCompany.treasury ?? 0),
 			companyOpenRecruitment: isTruthy(rawCompany.open_recruitment),
 			companyTaxRate:         rawCompany.tax_rate ?? 0,
+			companyMinLevelToJoin:  rawCompany.min_level_to_join ?? 1,
 			companyMyRole:          (data as any).myRole ?? '',
 			members: (rawCompany.members ?? []).map((m: any) => ({
 				name:       m.name ?? '',
@@ -271,6 +273,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		companyTreasury:        '$0',
 		companyOpenRecruitment: false,
 		companyTaxRate:         0,
+		companyMinLevelToJoin:  1,
 		companyMyRole:          '',
 		members:      [],
 		invitations:  [],
