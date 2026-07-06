@@ -12,7 +12,7 @@
           <span>{{ store.config.openOrders }} orders open</span>
           <span style="color:#454c56">·</span>
           <span style="display:inline-flex;align-items:center;gap:6px">
-            <span style="width:7px;height:7px;border-radius:50%;background:#6b7280"></span>No active delivery
+            <span :style="{ width: '7px', height: '7px', borderRadius: '50%', background: hasActiveDelivery ? '#2f9e63' : '#6b7280' }"></span>{{ hasActiveDelivery ? `${hud.phase === 'pickup' ? 'Heading to pickup' : 'Delivering'}: ${hud.orderName}` : 'No active delivery' }}
           </span>
         </div>
       </div>
@@ -38,9 +38,26 @@
       <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px 18px 0;min-height:330px;display:flex;flex-direction:column">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div style="font-size:15px;font-weight:700;color:#1b1f24">Active delivery</div>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.06em;color:#9aa1ab;text-transform:uppercase">Idle</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.06em;color:#9aa1ab;text-transform:uppercase">{{ hasActiveDelivery ? hud.phase : 'Idle' }}</span>
         </div>
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 24px 30px">
+        <div v-if="hasActiveDelivery" style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:20px 4px 30px;gap:14px">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="width:56px;height:56px;border-radius:16px;background:rgba(232,180,8,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <iconify-icon icon="tabler:truck-delivery" width="28" style="color:#b58a05"></iconify-icon>
+            </div>
+            <div style="min-width:0">
+              <div style="font-size:15px;font-weight:700;color:#1b1f24;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ hud.orderName }}</div>
+              <div style="font-size:12px;color:#9aa1ab;margin-top:2px">{{ hud.cargo }} · {{ hud.city }}</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
+            <div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">Pickup</span><span style="color:#1b1f24;font-weight:600">{{ hud.pickupLabel }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">Drop-off</span><span style="color:#1b1f24;font-weight:600">{{ hud.dropoffLabel }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">Reward</span><span style="color:#2f9e63;font-weight:700">${{ hud.reward.toLocaleString() }}</span></div>
+            <div v-if="hud.palletsRequired > 0" style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">Pallets</span><span style="color:#1b1f24;font-weight:600">{{ hud.palletsLoaded }} / {{ hud.palletsRequired }}</span></div>
+          </div>
+        </div>
+        <div v-else style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 24px 30px">
           <div style="width:64px;height:64px;border-radius:18px;background:#f1f2f4;display:flex;align-items:center;justify-content:center">
             <iconify-icon icon="tabler:truck" width="32" style="color:#aab0b8"></iconify-icon>
           </div>
@@ -81,8 +98,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
+import { useGameHudStore } from "@/stores/gameHudStore";
 
 const store = useDashboardStore();
+const hud = useGameHudStore();
+const hasActiveDelivery = computed(() => hud.visible && hud.phase !== null);
 
 const stats = computed(() => [
   { icon: "tabler:cash-banknote", value: store.config.earnings, label: "Total earnings", sub: "ui.common.earnings", color: "#b58a05", tileBg: "rgba(232,180,8,0.16)" },

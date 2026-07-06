@@ -14,6 +14,10 @@ export interface GameHudPayload {
   palletsRequired?: number;
   inForklift?: boolean;
   forkliftCarrying?: boolean;
+  orderName?: string;
+  pickupLabel?: string;
+  dropoffLabel?: string;
+  reward?: number;
 }
 
 type GameHudState = {
@@ -28,6 +32,10 @@ type GameHudState = {
   palletsRequired: number;
   inForklift: boolean;
   forkliftCarrying: boolean;
+  orderName: string;
+  pickupLabel: string;
+  dropoffLabel: string;
+  reward: number;
 };
 
 export const useGameHudStore = defineStore("gameHud", {
@@ -43,6 +51,10 @@ export const useGameHudStore = defineStore("gameHud", {
     palletsRequired: 0,
     inForklift: false,
     forkliftCarrying: false,
+    orderName: "",
+    pickupLabel: "",
+    dropoffLabel: "",
+    reward: 0,
   }),
   actions: {
     update(payload: GameHudPayload) {
@@ -61,6 +73,10 @@ export const useGameHudStore = defineStore("gameHud", {
       this.palletsRequired = payload.palletsRequired ?? 0;
       this.inForklift = payload.inForklift ?? false;
       this.forkliftCarrying = payload.forkliftCarrying ?? false;
+      this.orderName = payload.orderName ?? "";
+      this.pickupLabel = payload.pickupLabel ?? "";
+      this.dropoffLabel = payload.dropoffLabel ?? "";
+      this.reward = payload.reward ?? 0;
     },
   },
 });

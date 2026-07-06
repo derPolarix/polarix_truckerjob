@@ -41,6 +41,10 @@ CreateThread(function()
                 palletsRequired  = palletsRequired,
                 inForklift       = inForklift,
                 forkliftCarrying = carrying,
+                orderName        = o.name,
+                pickupLabel      = o.pickup_label,
+                dropoffLabel     = o.dropoff_label,
+                reward           = o.reward_base,
             })
         elseif inForklift then
             SendMessage("gameHud", {
