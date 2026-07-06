@@ -25,7 +25,7 @@ local function DrawParkingRectangle(order, correct)
     local length = trailerConfig and trailerConfig.length or 11.0
     local width  = trailerConfig and trailerConfig.width or 2.6
 
-    local center = vector3(order.dropoff_x, order.dropoff_y, order.dropoff_z)
+    local center = vector3(order.dropoff_x, order.dropoff_y, order.dropoff_z - 0.8)
     local rad = math.rad(order.dropoff_heading or 0.0)
     local lengthDir = vector3(-math.sin(rad), math.cos(rad), 0.0)
     local widthDir  = vector3(math.cos(rad), math.sin(rad), 0.0)
@@ -71,11 +71,16 @@ CreateThread(function()
             and IsTrailerParkedCorrectly(DeliveryState.orderData) then
             if not promptVisible then
                 promptVisible = true
-                lib.showTextUI("[E] Entladen", { position = "bottom-center", icon = "flag-checkered" })
+                SetHeldAction({
+                    name = "Bereit zum Entladen",
+                    hint = "Trailer korrekt geparkt",
+                    primaryKey = "E",
+                    primaryAction = "Entladen",
+                })
             end
         elseif promptVisible then
             promptVisible = false
-            lib.hideTextUI()
+            ClearHeldAction()
         end
     end
 end)

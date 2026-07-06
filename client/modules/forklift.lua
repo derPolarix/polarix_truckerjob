@@ -85,6 +85,19 @@ function Forklift.Deploy()
         return
     end
 
+    local ok = lib.progressCircle({
+        duration = 3500,
+        position = "bottom",
+        label = "Gabelstapler wird ausgeladen...",
+        canCancel = true,
+        disable = { car = true, move = true, combat = true },
+    })
+
+    if not ok then
+        SetModelAsNoLongerNeeded(modelHash)
+        return
+    end
+
     local forklift = CreateVehicle(modelHash, coords.x, coords.y, coords.z, heading, true, false)
     SetVehicleNumberPlateText(forklift, "FORKLIFT")
     SetEntityAsMissionEntity(forklift, true, true)
@@ -115,6 +128,21 @@ function Forklift.Stow()
     local dist = #(GetEntityCoords(dock.entity) - GetEntityCoords(LocalTrailer.entity))
     if dist > 10.0 then
         Framework.Notify("Bring den Gabelstapler näher zum Trailer.", "error")
+        return
+    end
+
+    local ok = lib.progressCircle({
+        duration = 3000,
+        position = "bottom",
+        label = "Gabelstapler wird verstaut...",
+        canCancel = true,
+        disable = { car = true, move = true, combat = true },
+    })
+
+    if not ok then return end
+
+    if not dock.entity or not DoesEntityExist(dock.entity) then
+        ForkliftDockState[netId] = nil
         return
     end
 

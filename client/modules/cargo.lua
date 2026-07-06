@@ -244,8 +244,9 @@ function TryLoadPalletOnTrailer()
         return
     end
 
-    local ok = lib.progressBar({
+    local ok = lib.progressCircle({
         duration = 4000,
+        position = "bottom",
         label = "Palette wird verladen...",
         canCancel = true,
         disable = { car = true, move = true, combat = true },
@@ -287,6 +288,79 @@ function TryLoadPalletOnTrailer()
         Framework.Notify("Alle Paletten geladen! Verstaue den Gabelstapler am Trailer.", "success")
     else
         Framework.Notify(("Palette geladen (%d/%d)."):format(MissionCargo.loadedCount, MissionCargo.requiredCount), "success")
+    end
+end
+
+-- Test-Command: lädt alle verbleibenden Paletten sofort auf den Trailer (überspringt Gabelstapler-Handling)
+function AutoLoadAllPallets()
+    if MissionCargo.requiredCount == 0 then
+        Framework.Notify("Kein aktiver Auftrag.", "error")
+        return
+    end
+
+    if not LocalTrailer.entity or not DoesEntityExist(LocalTrailer.entity) then
+        Framework.Notify("Kein Trailer vorhanden.", "error")
+        return
+    end
+
+    local trailerModel = GetTrailerModelName()
+    local trailerConfig = trailerModel and shared.CompatibleTrailers[trailerModel]
+    if not trailerConfig then
+        Framework.Notify("Dieser Trailer unterstützt keine Paletten.", "error")
+        return
+    end
+
+    local modelHash = GetHashKey(shared.PalletModel)
+    RequestModel(modelHash)
+    local timeout = 0
+    while not HasModelLoaded(modelHash) and timeout < 100 do
+        Wait(50)
+        timeout = timeout + 1
+    end
+    if not HasModelLoaded(modelHash) then return end
+
+    while MissionCargo.loadedCount < MissionCargo.requiredCount do
+        local slot = GetFreeTrailerSlot(trailerConfig.maxPallets)
+        if not slot then break end
+
+        local offset = trailerConfig.attachOffsets[slot]
+        if not offset then break end
+
+        local prop = CreateObject(modelHash, 0.0, 0.0, 0.0, false, false, false)
+        if not prop or prop == 0 then break end
+
+        AttachEntityToEntity(prop, LocalTrailer.entity, 0,
+            offset.x, offset.y, offset.z,
+            offset.rx, offset.ry, offset.rz,
+            false, false, false, false, 2, true)
+
+        SetEntityInvincible(prop, true)
+        SetEntityProofs(prop, true, true, true, true, true, true, true, true)
+        SetEntityCollision(prop, true, true)
+        SetEntityNoCollisionEntity(prop, LocalTrailer.entity, true)
+        for otherSlot, otherEntity in pairs(LoadedPallets) do
+            if otherSlot ~= slot and otherEntity and DoesEntityExist(otherEntity) then
+                SetEntityNoCollisionEntity(prop, otherEntity, true)
+                SetEntityNoCollisionEntity(otherEntity, prop, true)
+            end
+        end
+
+        LoadedPallets[slot] = prop
+        MissionCargo.loadedCount = MissionCargo.loadedCount + 1
+    end
+
+    SetModelAsNoLongerNeeded(modelHash)
+
+    DetachPalletFromForklift()
+    DespawnMissionPallets()
+
+    if MissionCargo.loadedCount >= MissionCargo.requiredCount then
+        Framework.Notify("Test: alle Paletten geladen.", "success")
+        if Delivery and Delivery.EnterTransitPhase then
+            Delivery.EnterTransitPhase()
+        end
+    else
+        Framework.Notify(("Test: %d/%d Paletten geladen (Trailer voll)."):format(MissionCargo.loadedCount, MissionCargo.requiredCount), "success")
     end
 end
 

@@ -27,6 +27,11 @@ RegisterCommand('sendmsg', function()
 end, false)
 
 -- Test-Command: UI mit echten Daten öffnen (entspricht NPC-Interaktion)
+-- Test-Command: alle verbleibenden Paletten sofort auf den Trailer laden
+RegisterCommand('autoloadpallets', function()
+    AutoLoadAllPallets()
+end, false)
+
 RegisterCommand('truckerui', function()
     lib.callback('polarix_trucker:openDashboard', false, function(data)
         if not data then
