@@ -14,6 +14,8 @@ RegisterNUICallback('acceptOrder', function(data, cb)
     lib.callback('polarix_trucker:acceptOrder', false, function(success, orderData, err)
         if success then
             Delivery.Start(orderData)
+        elseif err == 'no_vehicle_or_trailer' then
+            Rental.OfferInline(data.orderId)
         else
             Framework.Notify(err or 'Fehler beim Annehmen.', 'error')
         end
