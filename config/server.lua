@@ -76,4 +76,14 @@ return {
         { slot = "flatbed-std",   name = "Flatbed Standard",   model = "trailers2", price = 180000, level_required = 1 },
         { slot = "container-std", name = "Container Standard", model = "trailers",  price = 220000, level_required = 3 },
     },
+
+    -- Feste Rental-Kombo für Spieler ohne eigenes Fahrzeug/Trailer, mit laufenden Kosten
+    Rental = {
+        VehicleModel = "hauler",
+        VehicleName  = "Rental Truck",
+        TrailerModel = "trailers2",
+        TrailerName  = "Rental Trailer",
+        IntervalMinutes = 5,
+        IntervalCost    = 500,
+    },
 }
