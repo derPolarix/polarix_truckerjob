@@ -40,6 +40,10 @@ function Orders.Accept(source, orderId)
     local pData = Player.GetData(source)
     if not pData then return false, "Spielerdaten nicht gefunden." end
 
+    if not pData.equipped_vehicle or not pData.equipped_trailer then
+        return false, "no_vehicle_or_trailer"
+    end
+
     local order = DB.GetOrderById(orderId)
     if not order or not isTruthy(order.is_active) then return false, "Auftrag nicht verfügbar." end
     if order.level_required > pData.level then return false, "Level nicht ausreichend." end
