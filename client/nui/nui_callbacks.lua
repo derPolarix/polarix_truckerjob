@@ -23,6 +23,25 @@ RegisterNUICallback('acceptOrder', function(data, cb)
     end, data.orderId)
 end)
 
+RegisterNUICallback('rentBundle', function(data, cb)
+    lib.callback('polarix_trucker:startRental', false, function(success, err)
+        if not success then
+            Framework.Notify(err or 'Miete fehlgeschlagen.', 'error')
+            cb({ ok = false })
+            return
+        end
+
+        lib.callback('polarix_trucker:acceptOrder', false, function(ok, orderData, acceptErr)
+            if ok then
+                Delivery.Start(orderData)
+            else
+                Framework.Notify(acceptErr or 'Fehler beim Annehmen.', 'error')
+            end
+            cb({ ok = ok })
+        end, data.orderId)
+    end)
+end)
+
 RegisterNUICallback('buyVehicle', function(data, cb)
     lib.callback('polarix_trucker:buyVehicle', false, function(success, price, err, ownedVehicles)
         if success then

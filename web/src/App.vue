@@ -13,6 +13,7 @@
 		</main>
 
 		<GameHud />
+		<RentalPromptModal />
 	</div>
 </template>
 
@@ -23,8 +24,9 @@ import type { NuiMessage } from "./type";
 import { isDev } from "./main";
 import Sidebar from "@/components/app/Sidebar.vue";
 import GameHud from "@/components/app/GameHud.vue";
+import RentalPromptModal from "@/components/app/RentalPromptModal.vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
-import type { DashboardConfig, Order, VehicleOwned, VehicleShop, TrailerOwned, TrailerShop, SkillBranch, SkillNode, LeaderboardEntry, CompanyLeaderboardEntry, OpenCompanyEntry } from "@/stores/dashboardStore";
+import type { DashboardConfig, Order, VehicleOwned, VehicleShop, TrailerOwned, TrailerShop, SkillBranch, SkillNode, LeaderboardEntry, CompanyLeaderboardEntry, OpenCompanyEntry, RentalPrompt } from "@/stores/dashboardStore";
 import { useGameHudStore } from "@/stores/gameHudStore";
 
 // Standard Zugriffe auf globale Properties welche den persistantStore und den Router bereitstellen ohne diese immer neu importieren zu müssen
@@ -387,6 +389,9 @@ const handleMessage = (event: MessageEvent) => {
 		}
 		case "gameHud":
 			gameHudStore.update((raw.data as any) ?? { visible: false });
+			break;
+		case "showRentalPrompt":
+			dashboardStore.openRentalPrompt(raw.data as RentalPrompt);
 			break;
 		case "setHeldAction":
 			persistantStore.setHeldAction((raw.data as any) ?? null);

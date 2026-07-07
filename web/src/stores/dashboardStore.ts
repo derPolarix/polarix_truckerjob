@@ -124,6 +124,14 @@ export interface CompanyLeaderboardEntry {
   earned: string;
 }
 
+export interface RentalPrompt {
+  orderId: string;
+  vehicleName: string;
+  trailerName: string;
+  intervalCost: number;
+  intervalMinutes: number;
+}
+
 export interface OpenCompanyEntry {
   id: number;
   name: string;
@@ -310,6 +318,7 @@ export const useDashboardStore = defineStore("dashboard", {
     orderId: null as string | null,
     ctab: "overview" as CompanyTabKey,
     hoverSkill: null as string | null,
+    rentalPrompt: null as RentalPrompt | null,
     config: { ...defaultConfig },
   }),
   actions: {
@@ -344,6 +353,12 @@ export const useDashboardStore = defineStore("dashboard", {
     },
     setHoverSkill(id: string | null) {
       this.hoverSkill = id;
+    },
+    openRentalPrompt(data: RentalPrompt) {
+      this.rentalPrompt = data;
+    },
+    closeRentalPrompt() {
+      this.rentalPrompt = null;
     },
     unlockSkill(skillId: string) {
       for (const branch of this.config.branches) {

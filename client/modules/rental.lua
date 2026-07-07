@@ -47,31 +47,16 @@ local function spawnModelAt(model, coords)
     return entity
 end
 
+-- Öffnet den Rental-Bestätigungsdialog in der NUI (siehe App.vue "showRentalPrompt" + RentalPromptModal.vue).
+-- Bestätigung/Ablehnung läuft vollständig über NUI-Callbacks (nui_callbacks.lua "rentBundle").
 function Rental.OfferInline(orderId)
-    local confirmed = lib.alertDialog({
-        header = "Kein Fahrzeug ausgerüstet",
-        content = ("Du hast kein eigenes Fahrzeug/Trailer. Jetzt %s + %s mieten für $%s alle %d Minuten?")
-            :format(serverConfig.Rental.VehicleName, serverConfig.Rental.TrailerName,
-                     serverConfig.Rental.IntervalCost, serverConfig.Rental.IntervalMinutes),
-        centered = true,
-        cancel = true,
+    SendMessage("showRentalPrompt", {
+        orderId = orderId,
+        vehicleName = serverConfig.Rental.VehicleName,
+        trailerName = serverConfig.Rental.TrailerName,
+        intervalCost = serverConfig.Rental.IntervalCost,
+        intervalMinutes = serverConfig.Rental.IntervalMinutes,
     })
-    if confirmed ~= "confirm" then return end
-
-    lib.callback("polarix_trucker:startRental", false, function(success, err)
-        if not success then
-            Framework.Notify(err or "Miete fehlgeschlagen.", "error")
-            return
-        end
-
-        lib.callback("polarix_trucker:acceptOrder", false, function(ok, orderData, acceptErr)
-            if ok then
-                Delivery.Start(orderData)
-            else
-                Framework.Notify(acceptErr or "Fehler beim Annehmen.", "error")
-            end
-        end, orderId)
-    end)
 end
 
 function Rental.Despawn()
