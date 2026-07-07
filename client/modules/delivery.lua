@@ -126,6 +126,17 @@ function Delivery.StartDamageMonitor(veh)
                 break
             end
 
+            local trailerEntity = (LocalTrailer and LocalTrailer.entity) or (LocalRental and LocalRental.trailerEntity)
+            if trailerEntity then
+                if not DoesEntityExist(trailerEntity) then
+                    Delivery.ForceFailure("Trailer zerstört!")
+                    break
+                elseif GetVehicleTrailerVehicle(veh) ~= trailerEntity then
+                    Delivery.ForceFailure("Trailer abgekoppelt!")
+                    break
+                end
+            end
+
             if isSensitive then
                 local speed = GetEntitySpeed(veh)
                 if speed > speedLimit then
