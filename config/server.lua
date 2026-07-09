@@ -1,5 +1,9 @@
 -- Importieren mit: local config = require("config.server")
 return {
+    AdminPermission = "admin", -- qbx_core/qb-core Permission-/Group-Name für Framework.IsAdmin
+    AdminGroups = { "admin", "superadmin" }, -- esx: erlaubte ESX-Gruppen für Framework.IsAdmin
+    AdminAceSuffix = "trucker_admin", -- Fallback-ACE falls Framework-Export fehlt: command.trucker_admin
+
     -- TEMPORÄR: Initiale Aufträge bis Admin-Menü existiert.
     -- ZIEL: Alle Aufträge ausschliesslich via Admin-Menü verwalten, diese Config entfernen.
     SeedOrders = {

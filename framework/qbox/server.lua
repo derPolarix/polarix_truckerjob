@@ -1,4 +1,12 @@
+local config = require("config.server")
+
 return {
+    IsAdmin = function(source)
+        local ok, result = pcall(function() return exports.qbx_core:HasPermission(source, config.AdminPermission) end)
+        if ok then return result == true end
+        return IsPlayerAceAllowed(source, "command." .. config.AdminAceSuffix)
+    end,
+
     GetPlayerIdentifier = function(source)
         local player = exports.qbx_core:GetPlayer(source)
         return player and player.PlayerData.citizenid or nil

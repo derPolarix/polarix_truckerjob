@@ -46,6 +46,10 @@ function DB.GetAvailableOrders()
     return MySQL.query.await(("SELECT * FROM %s WHERE is_active = 1"):format(T.orders))
 end
 
+function DB.GetAllOrdersAdmin()
+    return MySQL.query.await(("SELECT * FROM %s ORDER BY id"):format(T.orders))
+end
+
 function DB.CountOrders()
     return MySQL.scalar.await(("SELECT COUNT(*) FROM %s"):format(T.orders))
 end

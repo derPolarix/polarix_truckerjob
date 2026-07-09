@@ -1,4 +1,5 @@
 local ESX
+local config = require("config.server")
 
 local function getESX()
     ESX = ESX or exports.es_extended:getSharedObject()
@@ -6,6 +7,16 @@ local function getESX()
 end
 
 return {
+    IsAdmin = function(source)
+        local xPlayer = getESX().GetPlayerFromId(source)
+        if not xPlayer then return false end
+        local group = xPlayer.getGroup()
+        for _, g in ipairs(config.AdminGroups or {}) do
+            if g == group then return true end
+        end
+        return false
+    end,
+
     GetPlayerIdentifier = function(source)
         local xPlayer = getESX().GetPlayerFromId(source)
         return xPlayer and xPlayer.identifier or nil

@@ -20,6 +20,16 @@ RegisterCommand('truckeraddxp', function(source, args)
     print(("[truckeraddxp] +%d XP an source %d vergeben."):format(amount, source))
 end, true)  -- true = nur Admins (ace permission)
 
+RegisterCommand('truckeradmin', function(source)
+    if source == 0 then return end -- Konsole hat kein UI
+    if not Framework.IsAdmin(source) then
+        print(("[polarix_trucker] Nicht-Admin %d versuchte /truckeradmin"):format(source))
+        return
+    end
+    local orders = DB.GetAllOrdersAdmin()
+    TriggerClientEvent("polarix_trucker:openAdminEditor", source, orders)
+end, false)
+
 RegisterCommand('debugprintserver', function()
     Wait(1000) --Warte eine Sekunde, damit die Ausgabe im richtigen Reihenfolge erscheint
     debug.DebugPrint("Dies ist ein Debug Print Test von commands.lua!")

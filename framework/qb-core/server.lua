@@ -1,4 +1,5 @@
 local QBCore
+local config = require("config.server")
 
 local function getQBCore()
     QBCore = QBCore or exports["qb-core"]:GetCoreObject()
@@ -6,6 +7,12 @@ local function getQBCore()
 end
 
 return {
+    IsAdmin = function(source)
+        local ok, result = pcall(function() return getQBCore().Functions.HasPermission(source, config.AdminPermission) end)
+        if ok then return result == true end
+        return IsPlayerAceAllowed(source, "command." .. config.AdminAceSuffix)
+    end,
+
     GetPlayerIdentifier = function(source)
         local player = getQBCore().Functions.GetPlayer(source)
         return player and player.PlayerData.citizenid or nil
