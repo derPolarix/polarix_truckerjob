@@ -63,5 +63,6 @@ lib.callback.register("polarix_trucker:openDashboard", function(source)
         leaderboard        = Leaderboard.GetGlobal(),
         companyLeaderboard = Leaderboard.GetCompanies(),
         history            = Leaderboard.GetHistory(source),
+        notifications      = Notifications.GetForPlayer(pData.identifier),
     }
 end)

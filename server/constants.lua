@@ -8,4 +8,5 @@ return {
     members      = "polarix_trucker_company_members",
     invitations  = "polarix_trucker_company_invitations",
     transactions = "polarix_trucker_company_transactions",
+    notifications = "polarix_trucker_notifications",
 }

@@ -129,6 +129,18 @@ AddEventHandler('onResourceStart', function(resourceName)
         created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )]]):format(T.transactions))
 
+    MySQL.query.await(([[CREATE TABLE IF NOT EXISTS %s (
+        id         INT AUTO_INCREMENT PRIMARY KEY,
+        identifier VARCHAR(60),
+        type       VARCHAR(40),
+        title      VARCHAR(150),
+        message    VARCHAR(255),
+        icon       VARCHAR(60),
+        is_read    TINYINT(1) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_identifier (identifier, is_read)
+    )]]):format(T.notifications))
+
     print("[polarix_trucker] Schema initialisiert.")
 
     LoadDatabaseToCache()

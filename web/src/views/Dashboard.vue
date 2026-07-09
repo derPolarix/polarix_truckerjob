@@ -76,10 +76,7 @@
             <div style="font-size:10px;color:#9aa1ab">{{ date }}</div>
           </div>
           <button style="width:36px;height:36px;border-radius:10px;border:1px solid #e4e6e9;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280"><iconify-icon icon="tabler:users" width="18"></iconify-icon></button>
-          <button style="width:36px;height:36px;border-radius:10px;border:1px solid #e4e6e9;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280;position:relative">
-            <iconify-icon icon="tabler:bell" width="18"></iconify-icon>
-            <span style="position:absolute;top:8px;right:9px;width:6px;height:6px;border-radius:50%;background:#d24b3a"></span>
-          </button>
+          <NotificationsDropdown />
           <button style="width:36px;height:36px;border-radius:10px;border:1px solid #e4e6e9;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280" @click="closeNui"><iconify-icon icon="tabler:x" width="18"></iconify-icon></button>
         </header>
 
@@ -116,6 +113,7 @@ import SkillsTab from "@/components/dashboard/tabs/SkillsTab.vue";
 import CompanyTab from "@/components/dashboard/tabs/CompanyTab.vue";
 import LeaderboardTab from "@/components/dashboard/tabs/LeaderboardTab.vue";
 import HistoryTab from "@/components/dashboard/tabs/HistoryTab.vue";
+import NotificationsDropdown from "@/components/app/NotificationsDropdown.vue";
 
 const store = useDashboardStore();
 const persistantStore = usePersistantStore();

@@ -220,6 +220,18 @@ RegisterNUICallback('requestJoin', function(data, cb)
     end, data.companyId)
 end)
 
+RegisterNUICallback('markNotificationRead', function(data, cb)
+    lib.callback('polarix_trucker:markNotificationRead', false, function(success)
+        cb({ ok = success })
+    end, data.id)
+end)
+
+RegisterNUICallback('markAllNotificationsRead', function(_, cb)
+    lib.callback('polarix_trucker:markAllNotificationsRead', false, function(success)
+        cb({ ok = success })
+    end)
+end)
+
 RegisterNUICallback('refetchDashboard', function(_, cb)
     lib.callback('polarix_trucker:openDashboard', false, function(dashboardData)
         if dashboardData then

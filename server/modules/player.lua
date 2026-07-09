@@ -76,6 +76,13 @@ function Player.GetData(source)
     return PlayerCache[source]
 end
 
+function Player.GetSourceByIdentifier(identifier)
+    for src, pd in pairs(PlayerCache) do
+        if pd.identifier == identifier then return src end
+    end
+    return nil
+end
+
 function Player.AddXP(source, amount)
     local data = PlayerCache[source]
     if not data then return end
@@ -87,6 +94,7 @@ function Player.AddXP(source, amount)
         data.level = data.level + 1
         data.skill_points = data.skill_points + config.SkillPointsPerLevel
         TriggerClientEvent("polarix_trucker:levelUp", source, data.level)
+        Notifications.Push(data.identifier, "level_up", "Level Up!", ("You reached level %d!"):format(data.level), "tabler:star")
     end
 
     TriggerClientEvent("polarix_trucker:playerUpdate", source, {

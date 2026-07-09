@@ -102,15 +102,17 @@ function Company.Invite(source, targetName)
 
     DB.InsertInvitation(membership.company_id, targetRow.identifier, pData.identifier)
 
-    for src, pd in pairs(PlayerCache) do
-        if pd.identifier == targetRow.identifier then
-            local companyRow = DB.GetCompanyById(membership.company_id)
-            TriggerClientEvent("polarix_trucker:inviteReceived", src,
-                membership.company_id, companyRow and companyRow.name or "Unknown", pData.name,
-                companyRow and companyRow.tax_rate or 0)
-            break
-        end
+    local companyRow = DB.GetCompanyById(membership.company_id)
+    local companyName = companyRow and companyRow.name or "Unknown"
+
+    local targetSource = Player.GetSourceByIdentifier(targetRow.identifier)
+    if targetSource then
+        TriggerClientEvent("polarix_trucker:inviteReceived", targetSource,
+            membership.company_id, companyName, pData.name, companyRow and companyRow.tax_rate or 0)
     end
+
+    Notifications.Push(targetRow.identifier, "company_invite", "Company Invite",
+        ("%s invited you to [%s]."):format(pData.name, companyName), "tabler:mail")
 
     return true
 end
@@ -126,8 +128,17 @@ function Company.RespondInvite(source, companyId, accept)
             return false, "Du bist bereits in einer Company."
         end
         DB.AddCompanyMember(companyId, pData.identifier, "recruit")
+        Company.NotifyOwnerMemberJoined(companyId, pData.name)
     end
     return true
+end
+
+function Company.NotifyOwnerMemberJoined(companyId, memberName)
+    local owner = DB.GetCompanyOwner(companyId)
+    if owner then
+        Notifications.Push(owner.identifier, "member_joined", "New Member",
+            ("%s joined your company."):format(memberName), "tabler:user-plus")
+    end
 end
 
 function Company.ChangeRole(source, targetIdentifier, newRole)
@@ -201,11 +212,9 @@ function Company.Disband(source)
 
     for _, m in ipairs(members) do
         if m.identifier ~= pData.identifier then
-            for src, pd in pairs(PlayerCache) do
-                if pd.identifier == m.identifier then
-                    TriggerClientEvent("polarix_trucker:companyDisbanded", src)
-                    break
-                end
+            local memberSource = Player.GetSourceByIdentifier(m.identifier)
+            if memberSource then
+                TriggerClientEvent("polarix_trucker:companyDisbanded", memberSource)
             end
         end
     end
@@ -223,12 +232,35 @@ function Company.Leave(source)
         return false, "Als Owner musst du die Company auflösen."
     end
 
+    local owner = DB.GetCompanyOwner(membership.company_id)
     DB.DeleteMember(pData.identifier, membership.company_id)
+    if owner then
+        Notifications.Push(owner.identifier, "member_left", "Member Left",
+            ("%s left your company."):format(pData.name), "tabler:user-minus")
+    end
     return true
 end
 
 function Company.AddXP(companyId, amount)
+    local company = DB.GetCompanyById(companyId)
+    if not company then return end
+
+    local newXp = company.xp + amount
+    local newLevel = company.level
+    local thresholds = config.CompanyXPThresholds
+    while newLevel < #thresholds and newXp >= thresholds[newLevel + 1] do
+        newLevel = newLevel + 1
+    end
+
     DB.UpdateCompanyXP(companyId, amount)
+
+    if newLevel > company.level then
+        DB.SetCompanyLevel(companyId, newLevel)
+        for _, m in ipairs(DB.GetCompanyMembers(companyId)) do
+            Notifications.Push(m.identifier, "company_level_up", "Company Level Up!",
+                ("Your company reached level %d!"):format(newLevel), "tabler:building")
+        end
+    end
 end
 
 -- Zieht die Company-Abgabe (Steuer) vom Reward ab und bucht sie in die Kasse/Historie.
@@ -267,6 +299,7 @@ function Company.OnDeliveryComplete(source, reward)
     DB.UpdateCompanyStats(membership.company_id, reward)
     DB.UpdateMemberStats(pData.identifier, membership.company_id, reward)
     Company.AddXP(membership.company_id, 10)
+    Leaderboard.CheckCompanyTop3(membership.company_id)
 end
 
 -- Callbacks
@@ -325,6 +358,7 @@ function Company.RequestJoin(source, companyId)
     end
 
     DB.AddCompanyMember(companyId, pData.identifier, "recruit")
+    Company.NotifyOwnerMemberJoined(companyId, pData.name)
     return true
 end
 

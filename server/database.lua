@@ -257,6 +257,67 @@ function DB.GetOpenRecruitmentCompanies()
     )
 end
 
+-- Notifications
+
+function DB.InsertNotification(identifier, notifType, title, message, icon)
+    return MySQL.insert.await(
+        ("INSERT INTO %s (identifier, type, title, message, icon) VALUES (?,?,?,?,?)"):format(T.notifications),
+        { identifier, notifType, title, message, icon }
+    )
+end
+
+function DB.PruneNotifications(identifier, keep)
+    keep = keep or 50
+    MySQL.query.await(
+        ([[DELETE FROM %s WHERE identifier = ? AND is_read = 1 AND id NOT IN (
+            SELECT id FROM (SELECT id FROM %s WHERE identifier = ? ORDER BY created_at DESC LIMIT ?) AS keepers
+        )]]):format(T.notifications, T.notifications),
+        { identifier, identifier, keep }
+    )
+end
+
+function DB.GetNotifications(identifier, limit)
+    return MySQL.query.await(
+        ("SELECT * FROM %s WHERE identifier = ? ORDER BY created_at DESC LIMIT ?"):format(T.notifications),
+        { identifier, limit or 50 }
+    )
+end
+
+function DB.MarkNotificationRead(id, identifier)
+    MySQL.update.await(
+        ("UPDATE %s SET is_read = 1 WHERE id = ? AND identifier = ?"):format(T.notifications),
+        { id, identifier }
+    )
+end
+
+function DB.MarkAllNotificationsRead(identifier)
+    MySQL.update.await(
+        ("UPDATE %s SET is_read = 1 WHERE identifier = ?"):format(T.notifications),
+        { identifier }
+    )
+end
+
+function DB.GetCompanyOwner(companyId)
+    return MySQL.single.await(
+        ("SELECT identifier FROM %s WHERE company_id = ? AND role = 'owner'"):format(T.members),
+        { companyId }
+    )
+end
+
+function DB.GetCompanyRank(companyId)
+    return MySQL.scalar.await(
+        ("SELECT COUNT(*) + 1 FROM %s WHERE total_deliveries > (SELECT total_deliveries FROM %s WHERE id = ?)"):format(T.companies, T.companies),
+        { companyId }
+    )
+end
+
+function DB.SetCompanyLevel(companyId, level)
+    MySQL.update.await(
+        ("UPDATE %s SET level = ? WHERE id = ?"):format(T.companies),
+        { level, companyId }
+    )
+end
+
 function LoadDatabaseToCache()
     -- Aktuell kein globaler DB-Cache nötig (Spieler werden pro-Source in PlayerCache gehalten).
 end

@@ -28,6 +28,7 @@ import RentalPromptModal from "@/components/app/RentalPromptModal.vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import type { DashboardConfig, Order, VehicleOwned, VehicleShop, TrailerOwned, TrailerShop, SkillBranch, SkillNode, LeaderboardEntry, CompanyLeaderboardEntry, OpenCompanyEntry, RentalPrompt } from "@/stores/dashboardStore";
 import { useGameHudStore } from "@/stores/gameHudStore";
+import { useNotificationsStore } from "@/stores/notificationsStore";
 
 // Standard Zugriffe auf globale Properties welche den persistantStore und den Router bereitstellen ohne diese immer neu importieren zu müssen
 const proxy = getCurrentInstance()!.proxy!;
@@ -35,6 +36,7 @@ const router = proxy.$router;
 const persistantStore = proxy.$persistantStore;
 const gameHudStore = useGameHudStore();
 const dashboardStore = useDashboardStore();
+const notificationsStore = useNotificationsStore();
 
 function mapServerResponse(data: any): Partial<DashboardConfig> {
 	const p = data.player ?? {};
@@ -335,6 +337,10 @@ const handleMessage = (event: MessageEvent) => {
 					? mapServerResponse(raw.data)
 					: (raw.data as Partial<DashboardConfig> | undefined)
 			);
+			notificationsStore.setAll((raw.data as any)?.notifications ?? []);
+			break;
+		case "newNotification":
+			notificationsStore.push(raw.data);
 			break;
 		case "updateOwnedVehicles": {
 			const d = raw.data as { ownedVehicles: any[]; equippedSlot: string };

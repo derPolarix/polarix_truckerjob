@@ -30,6 +30,9 @@ return {
     -- Index = Level (Level 1 = Index 1, kein Threshold; Level 2 benötigt 200 XP, usw.)
     XPThresholds = { 0, 200, 500, 1000, 1800, 2800, 4200, 6000, 8500, 12000, 16000 },
     SkillPointsPerLevel = 2,
+
+    -- Gleiche Konvention wie XPThresholds, aber für Company-Level (Company.AddXP).
+    CompanyXPThresholds = { 0, 500, 1200, 2200, 3600, 5500, 8000, 11000, 15000, 20000 },
     LevelTitles = {
         "Rookie", "Apprentice", "Driver", "Pro Driver", "Senior Driver",
         "Expert", "Road Master", "Elite", "Legend", "Grand Champion", "Titan"
