@@ -152,16 +152,14 @@
       </div>
     </div>
 
-    <!-- Map placeholder -->
-    <div style="position:relative;border-radius:16px;overflow:hidden;border:1px solid #dfe2e6;background:#dfe1e4;display:flex;align-items:center;justify-content:center">
-      <div style="text-align:center;color:#aab0b8">
-        <iconify-icon icon="tabler:map" width="48"></iconify-icon>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;margin-top:8px">Live route</div>
-      </div>
-      <div style="position:absolute;bottom:14px;left:14px;width:34px;height:34px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,0.25)">
-        <iconify-icon icon="tabler:flag-filled" width="16" style="color:#22262d"></iconify-icon>
-      </div>
-      <div style="position:absolute;top:12px;left:12px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;background:rgba(255,255,255,0.85);padding:4px 9px;border-radius:7px">Live route</div>
+    <!-- Route map -->
+    <div style="position:relative;border-radius:16px;overflow:hidden;border:1px solid #dfe2e6">
+      <OrderRouteMap
+        :pickup="order.pickupCoords"
+        :pickup-label="order.pickup"
+        :dropoff="order.dropoffCoords"
+        :dropoff-label="order.dropoff"
+      />
     </div>
   </div>
 </template>
@@ -172,6 +170,7 @@ import { useDashboardStore } from "@/stores/dashboardStore";
 import { usePartyStore } from "@/stores/partyStore";
 import { nuiCallback } from "@/nui/nuiCallbacks";
 import type { Order } from "@/stores/dashboardStore";
+import OrderRouteMap from "@/components/dashboard/OrderRouteMap.vue";
 
 const store = useDashboardStore();
 const partyStore = usePartyStore();
