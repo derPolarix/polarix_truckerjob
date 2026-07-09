@@ -17,6 +17,14 @@
         </span>
       </template>
 
+      <template v-if="store.poolTotal > 0">
+        <div style="width:1px;height:20px;background:rgba(255,255,255,0.12)"></div>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#c9ced6">
+          <iconify-icon icon="tabler:users" width="14" style="color:#9aa1ab"></iconify-icon>
+          Pool: {{ store.poolDelivered }} / {{ store.poolTotal }}
+        </span>
+      </template>
+
       <template v-if="store.damage > 0">
         <div style="width:1px;height:20px;background:rgba(255,255,255,0.12)"></div>
         <span :style="{ fontFamily: `'IBM Plex Mono',monospace`, fontSize: '12px', fontWeight: 700, color: store.damage > 500 ? '#d24b3a' : '#E8B408' }">DMG: {{ store.damage }}</span>

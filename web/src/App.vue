@@ -362,6 +362,12 @@ const handleMessage = (event: MessageEvent) => {
 		case "partyInviteReceived":
 			partyStore.setPendingInvite(raw.data as any);
 			break;
+		case "partyMissionProgress":
+			partyStore.setMissionProgress(raw.data as any);
+			break;
+		case "partyMissionFinished":
+			partyStore.setMissionProgress(null);
+			break;
 		case "updateOwnedVehicles": {
 			const d = raw.data as { ownedVehicles: any[]; equippedSlot: string };
 			const slot = d.equippedSlot ?? '';

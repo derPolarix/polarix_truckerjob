@@ -38,6 +38,17 @@
             Party-Bonus: +{{ Math.round((store.rewardMultiplier.cash - 1) * 100) }}% Cash, +{{ Math.round((store.rewardMultiplier.xp - 1) * 100) }}% XP
           </div>
 
+          <div v-if="store.missionProgress" style="padding:10px 11px;border-radius:10px;background:#f6f7f8;border:1px solid #eef0f2">
+            <div style="display:flex;align-items:center;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6b7280">
+              <span>Pool-Fortschritt</span>
+              <span>{{ store.missionProgress.totalPallets }} insgesamt</span>
+            </div>
+            <div style="height:6px;border-radius:4px;background:#e4e6e9;margin-top:7px;overflow:hidden">
+              <div style="height:100%;background:#2f9e63;border-radius:4px" :style="{ width: progressPct(store.missionProgress) + '%' }"></div>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:5px">{{ store.missionProgress.claimedTotal }} eingeladen · {{ store.missionProgress.deliveredTotal }} geliefert</div>
+          </div>
+
           <div style="display:flex;flex-direction:column;gap:6px">
             <div
               v-for="m in store.party.members"
@@ -111,7 +122,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
-import { usePartyStore, type PartyMember, type PartyOnlineCandidate } from "@/stores/partyStore";
+import { usePartyStore, type PartyMember, type PartyMissionProgress, type PartyOnlineCandidate } from "@/stores/partyStore";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallback, nuiCallbackAsync } from "@/nui/nuiCallbacks";
 
@@ -128,6 +139,11 @@ const badgeCount = computed(() => (store.pendingInvite ? 1 : 0));
 
 function isSelf(m: PartyMember): boolean {
   return m.name === dashboardStore.config.driverName;
+}
+
+function progressPct(progress: PartyMissionProgress): number {
+  if (progress.totalPallets <= 0) return 0;
+  return Math.min(100, Math.round((progress.deliveredTotal / progress.totalPallets) * 100));
 }
 
 async function onToggle() {

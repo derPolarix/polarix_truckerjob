@@ -29,6 +29,16 @@ local function CreateBlip(x, y, z, sprite, color, name)
     return blip
 end
 
+-- Öffentlicher Wrapper: ClearBlips/DeliveryState sind hier lokal/modulintern, aber
+-- client/modules/party_mission.lua (eigener Chunk) braucht den kompletten Cleanup ebenfalls.
+function Delivery.Reset()
+    ClearBlips()
+    if ResetMissionCargo then ResetMissionCargo(nil) end
+    DeliveryState.status = "idle"
+    DeliveryState.orderData = nil
+    DeliveryState.cargoDamage = nil
+end
+
 function Delivery.Start(orderData, mode)
     DeliveryState.status = "awaiting_pickup"
     DeliveryState.mode = mode or "solo"
@@ -197,11 +207,7 @@ function Delivery.ForceFailure(reason)
 end
 
 RegisterNetEvent("polarix_trucker:deliveryCompleted", function(reward, xp, damagePenalty, companyTax)
-    ClearBlips()
-    if ResetMissionCargo then ResetMissionCargo(nil) end
-    DeliveryState.status = "idle"
-    DeliveryState.orderData = nil
-    DeliveryState.cargoDamage = nil
+    Delivery.Reset()
 
     local msg = ("Lieferung abgeschlossen! +$%s, +%s XP"):format(reward, xp)
     if damagePenalty and damagePenalty > 0 then

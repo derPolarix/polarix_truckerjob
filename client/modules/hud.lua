@@ -45,6 +45,8 @@ CreateThread(function()
                 pickupLabel      = o.pickup_label,
                 dropoffLabel     = o.dropoff_label,
                 reward           = o.reward_base,
+                poolTotal        = (DeliveryState.mode == "party" and PartyProgress and PartyProgress.totalPallets) or 0,
+                poolDelivered    = (DeliveryState.mode == "party" and PartyProgress and PartyProgress.deliveredTotal) or 0,
             })
         elseif inForklift then
             SendMessage("gameHud", {

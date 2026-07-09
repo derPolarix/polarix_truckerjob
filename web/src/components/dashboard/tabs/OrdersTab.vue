@@ -139,9 +139,17 @@
           </div>
         </div>
       </div>
-      <button class="accent-btn" style="margin-top:14px;width:100%;padding:15px;font-size:15px;justify-content:center" @click="acceptOrder">
-        Accept challenge <iconify-icon icon="tabler:chevron-right" width="19"></iconify-icon>
+      <button
+        v-if="!inParty || isLeader"
+        class="accent-btn"
+        style="margin-top:14px;width:100%;padding:15px;font-size:15px;justify-content:center"
+        @click="acceptOrder"
+      >
+        {{ inParty ? 'Start party mission' : 'Accept challenge' }} <iconify-icon icon="tabler:chevron-right" width="19"></iconify-icon>
       </button>
+      <div v-else style="margin-top:14px;width:100%;padding:15px;font-size:13px;text-align:center;color:#9aa1ab;background:#f6f7f8;border:1px solid #eef0f2;border-radius:12px">
+        Only the party leader can start a mission.
+      </div>
     </div>
 
     <!-- Map placeholder -->
@@ -161,12 +169,16 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
+import { usePartyStore } from "@/stores/partyStore";
 import { nuiCallback } from "@/nui/nuiCallbacks";
 import type { Order } from "@/stores/dashboardStore";
 
 const store = useDashboardStore();
+const partyStore = usePartyStore();
 
 const order = computed(() => store.config.orders.find(o => o.id === store.orderId) ?? store.config.orders[0]);
+const inParty = computed(() => !!partyStore.party);
+const isLeader = computed(() => !!partyStore.party?.members.some(m => m.isLeader && m.name === store.config.driverName));
 
 function orderCols(o: Order) {
   return [
@@ -178,7 +190,11 @@ function orderCols(o: Order) {
 }
 
 async function acceptOrder() {
-  await nuiCallback("acceptOrder", { orderId: order.value.id });
+  if (inParty.value) {
+    await nuiCallback("startPartyMission", { orderId: order.value.id });
+  } else {
+    await nuiCallback("acceptOrder", { orderId: order.value.id });
+  }
   store.closeOrder();
 }
 </script>

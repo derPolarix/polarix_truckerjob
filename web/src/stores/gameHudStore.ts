@@ -18,6 +18,8 @@ export interface GameHudPayload {
   pickupLabel?: string;
   dropoffLabel?: string;
   reward?: number;
+  poolTotal?: number;
+  poolDelivered?: number;
 }
 
 type GameHudState = {
@@ -36,6 +38,8 @@ type GameHudState = {
   pickupLabel: string;
   dropoffLabel: string;
   reward: number;
+  poolTotal: number;
+  poolDelivered: number;
 };
 
 export const useGameHudStore = defineStore("gameHud", {
@@ -55,6 +59,8 @@ export const useGameHudStore = defineStore("gameHud", {
     pickupLabel: "",
     dropoffLabel: "",
     reward: 0,
+    poolTotal: 0,
+    poolDelivered: 0,
   }),
   actions: {
     update(payload: GameHudPayload) {
@@ -77,6 +83,8 @@ export const useGameHudStore = defineStore("gameHud", {
       this.pickupLabel = payload.pickupLabel ?? "";
       this.dropoffLabel = payload.dropoffLabel ?? "";
       this.reward = payload.reward ?? 0;
+      this.poolTotal = payload.poolTotal ?? 0;
+      this.poolDelivered = payload.poolDelivered ?? 0;
     },
   },
 });

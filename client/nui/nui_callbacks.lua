@@ -319,6 +319,19 @@ RegisterNUICallback('transferPartyLeader', function(data, cb)
     end, data.identifier)
 end)
 
+RegisterNUICallback('startPartyMission', function(data, cb)
+    lib.callback('polarix_trucker:startPartyMission', false, function(success, err)
+        if not success then
+            if err == 'no_vehicle_or_trailer' then
+                Rental.OfferInline(data.orderId)
+            else
+                Framework.Notify(err or 'Fehler beim Starten.', 'error')
+            end
+        end
+        cb({ ok = success })
+    end, data.orderId)
+end)
+
 RegisterNUICallback('refetchDashboard', function(_, cb)
     lib.callback('polarix_trucker:openDashboard', false, function(dashboardData)
         if dashboardData then
