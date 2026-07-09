@@ -29,6 +29,7 @@ import { useDashboardStore } from "@/stores/dashboardStore";
 import type { DashboardConfig, Order, VehicleOwned, VehicleShop, TrailerOwned, TrailerShop, SkillBranch, SkillNode, LeaderboardEntry, CompanyLeaderboardEntry, OpenCompanyEntry, IncomingInvitation, RentalPrompt } from "@/stores/dashboardStore";
 import { useGameHudStore } from "@/stores/gameHudStore";
 import { useNotificationsStore } from "@/stores/notificationsStore";
+import { usePartyStore } from "@/stores/partyStore";
 
 // Standard Zugriffe auf globale Properties welche den persistantStore und den Router bereitstellen ohne diese immer neu importieren zu müssen
 const proxy = getCurrentInstance()!.proxy!;
@@ -37,6 +38,7 @@ const persistantStore = proxy.$persistantStore;
 const gameHudStore = useGameHudStore();
 const dashboardStore = useDashboardStore();
 const notificationsStore = useNotificationsStore();
+const partyStore = usePartyStore();
 
 function mapServerResponse(data: any): Partial<DashboardConfig> {
 	const p = data.player ?? {};
@@ -348,9 +350,17 @@ const handleMessage = (event: MessageEvent) => {
 					: (raw.data as Partial<DashboardConfig> | undefined)
 			);
 			notificationsStore.setAll((raw.data as any)?.notifications ?? []);
+			partyStore.setState((raw.data as any)?.party ?? null);
+			partyStore.setMultiplier((raw.data as any)?.partyRewardMultiplier ?? null);
 			break;
 		case "newNotification":
 			notificationsStore.push(raw.data);
+			break;
+		case "partyUpdate":
+			partyStore.setState((raw.data as any) ?? null);
+			break;
+		case "partyInviteReceived":
+			partyStore.setPendingInvite(raw.data as any);
 			break;
 		case "updateOwnedVehicles": {
 			const d = raw.data as { ownedVehicles: any[]; equippedSlot: string };

@@ -247,6 +247,78 @@ RegisterNUICallback('markAllNotificationsRead', function(_, cb)
     end)
 end)
 
+RegisterNUICallback('getPartyState', function(_, cb)
+    lib.callback('polarix_trucker:getPartyState', false, function(state)
+        cb({ ok = true, state = state })
+    end)
+end)
+
+RegisterNUICallback('getCompanyOnlineMembers', function(_, cb)
+    lib.callback('polarix_trucker:getCompanyOnlineMembers', false, function(list)
+        cb({ ok = true, list = list or {} })
+    end)
+end)
+
+RegisterNUICallback('invitePartyMember', function(data, cb)
+    lib.callback('polarix_trucker:invitePartyMember', false, function(success, err)
+        if not success then
+            Framework.Notify(err or 'Einladung fehlgeschlagen.', 'error')
+        else
+            Framework.Notify('Party-Einladung gesendet!', 'success')
+        end
+        cb({ ok = success })
+    end, data.identifier)
+end)
+
+RegisterNUICallback('respondPartyInvite', function(data, cb)
+    lib.callback('polarix_trucker:respondPartyInvite', false, function(success, err)
+        if not success then
+            Framework.Notify(err or 'Fehler.', 'error')
+        end
+        cb({ ok = success })
+    end, data.partyId, data.accept)
+end)
+
+RegisterNUICallback('kickPartyMember', function(data, cb)
+    lib.callback('polarix_trucker:kickPartyMember', false, function(success, err)
+        if not success then
+            Framework.Notify(err or 'Kick fehlgeschlagen.', 'error')
+        else
+            Framework.Notify('Mitglied entfernt.', 'success')
+        end
+        cb({ ok = success })
+    end, data.identifier)
+end)
+
+RegisterNUICallback('leaveParty', function(_, cb)
+    lib.callback('polarix_trucker:leaveParty', false, function(success, err)
+        if not success then
+            Framework.Notify(err or 'Verlassen fehlgeschlagen.', 'error')
+        end
+        cb({ ok = success })
+    end)
+end)
+
+RegisterNUICallback('disbandParty', function(_, cb)
+    lib.callback('polarix_trucker:disbandParty', false, function(success, err)
+        if not success then
+            Framework.Notify(err or 'Auflösen fehlgeschlagen.', 'error')
+        else
+            Framework.Notify('Party aufgelöst.', 'success')
+        end
+        cb({ ok = success })
+    end)
+end)
+
+RegisterNUICallback('transferPartyLeader', function(data, cb)
+    lib.callback('polarix_trucker:transferPartyLeader', false, function(success, err)
+        if not success then
+            Framework.Notify(err or 'Übergabe fehlgeschlagen.', 'error')
+        end
+        cb({ ok = success })
+    end, data.identifier)
+end)
+
 RegisterNUICallback('refetchDashboard', function(_, cb)
     lib.callback('polarix_trucker:openDashboard', false, function(dashboardData)
         if dashboardData then

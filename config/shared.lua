@@ -50,6 +50,13 @@ return {
     -- daher Auswahl über online Spieler in Reichweite statt Namenseingabe.
     CompanyInviteRadius = 15.0,
 
+    PartyMaxSize = 5,
+
+    PartyRewardMultiplier = {
+        cash = 1.10, -- +10% Cash bei Party-Missionen
+        xp   = 1.15, -- +15% XP bei Party-Missionen
+    },
+
     ForkliftModel         = "forklift",
     ForkliftAttachBone    = "forks_attach",
     ForkliftAttachOffset  = { x = 0.0, y = 0.0, z = 0.05, rx = 0.0, ry = 0.0, rz = 0.0 },
