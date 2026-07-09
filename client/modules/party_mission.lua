@@ -17,7 +17,7 @@ RegisterNetEvent("polarix_trucker:partyMissionProgress", function(progress)
 end)
 
 RegisterNetEvent("polarix_trucker:partyTripSettled", function(reward, xp, penalty, tax)
-    local msg = ("Party-Lieferung abgerechnet! +$%s, +%s XP"):format(reward, xp)
+    local msg = ("Convoy-Lieferung abgerechnet! +$%s, +%s XP"):format(reward, xp)
     if penalty and penalty > 0 then
         msg = msg .. (" (-%s Schaden-Abzug)"):format(penalty)
     end

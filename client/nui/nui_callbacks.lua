@@ -273,7 +273,7 @@ RegisterNUICallback('invitePartyMember', function(data, cb)
         if not success then
             Framework.Notify(err or 'Einladung fehlgeschlagen.', 'error')
         else
-            Framework.Notify('Party-Einladung gesendet!', 'success')
+            Framework.Notify('Convoy-Einladung gesendet!', 'success')
         end
         cb({ ok = success })
     end, data.identifier)
@@ -313,7 +313,7 @@ RegisterNUICallback('disbandParty', function(_, cb)
         if not success then
             Framework.Notify(err or 'Auflösen fehlgeschlagen.', 'error')
         else
-            Framework.Notify('Party aufgelöst.', 'success')
+            Framework.Notify('Convoy aufgelöst.', 'success')
         end
         cb({ ok = success })
     end)

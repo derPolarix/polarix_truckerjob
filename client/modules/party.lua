@@ -7,11 +7,11 @@ RegisterNetEvent("polarix_trucker:partyInviteReceived", function(partyId, fromNa
 end)
 
 RegisterNetEvent("polarix_trucker:partyKicked", function()
-    Framework.Notify("Du wurdest aus der Party entfernt.", "error")
+    Framework.Notify("Du wurdest aus dem Convoy entfernt.", "error")
     SendMessage("partyUpdate", nil)
 end)
 
 RegisterNetEvent("polarix_trucker:partyDisbanded", function()
-    Framework.Notify("Die Party wurde aufgelöst.", "info")
+    Framework.Notify("Der Convoy wurde aufgelöst.", "info")
     SendMessage("partyUpdate", nil)
 end)

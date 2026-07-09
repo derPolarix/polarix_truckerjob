@@ -16,7 +16,7 @@
       style="position:absolute;top:44px;right:0;width:320px;max-height:460px;display:flex;flex-direction:column;background:#fff;border-radius:14px;border:1px solid #e4e6e9;box-shadow:0 20px 60px rgba(0,0,0,0.18);z-index:1000;font-family:'Archivo',system-ui,sans-serif"
     >
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #eef0f2;flex-shrink:0">
-        <span style="font-size:14px;font-weight:700;color:#1b1f24">Party</span>
+        <span style="font-size:14px;font-weight:700;color:#1b1f24">Convoy</span>
         <span v-if="store.party" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">{{ store.party.members.length }}/{{ store.party.maxSize }}</span>
       </div>
 
@@ -24,18 +24,18 @@
 
         <!-- Incoming invite -->
         <div v-if="store.pendingInvite" style="padding:12px;border-radius:12px;background:rgba(232,180,8,0.08);border:1px solid rgba(232,180,8,0.25)">
-          <div style="font-size:13px;color:#1b1f24"><span style="font-weight:700">{{ store.pendingInvite.fromName }}</span> invited you to their party.</div>
+          <div style="font-size:13px;color:#1b1f24"><span style="font-weight:700">{{ store.pendingInvite.fromName }}</span> invited you to their convoy.</div>
           <div style="display:flex;gap:8px;margin-top:10px">
             <button class="accent-btn" style="flex:1;padding:8px;font-size:12px;justify-content:center" @click="respond(true)">Accept</button>
             <button style="flex:1;background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:9px;padding:8px;font-family:inherit;font-weight:600;font-size:12px;cursor:pointer" @click="respond(false)">Decline</button>
           </div>
         </div>
 
-        <!-- In a party -->
+        <!-- In a convoy -->
         <template v-if="store.party">
           <div v-if="store.rewardMultiplier" style="display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:10px;background:rgba(47,158,99,0.08);border:1px solid rgba(47,158,99,0.2);font-size:12px;color:#2f9e63">
             <iconify-icon icon="tabler:bolt" width="15"></iconify-icon>
-            Party-Bonus: +{{ Math.round((store.rewardMultiplier.cash - 1) * 100) }}% Cash, +{{ Math.round((store.rewardMultiplier.xp - 1) * 100) }}% XP
+            Convoy Bonus: +{{ Math.round((store.rewardMultiplier.cash - 1) * 100) }}% Cash, +{{ Math.round((store.rewardMultiplier.xp - 1) * 100) }}% XP
           </div>
 
           <div v-if="store.missionProgress" style="padding:10px 11px;border-radius:10px;background:#f6f7f8;border:1px solid #eef0f2">
@@ -84,12 +84,12 @@
           <button
             style="background:#fff;color:#d24b3a;border:1px solid #eecfc9;border-radius:10px;padding:9px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer"
             @click="isLeader ? disband() : leave()"
-          >{{ isLeader ? 'Disband party' : 'Leave party' }}</button>
+          >{{ isLeader ? 'Disband convoy' : 'Leave convoy' }}</button>
         </template>
 
-        <!-- Not in a party -->
+        <!-- Not in a convoy -->
         <template v-else-if="!store.pendingInvite">
-          <div style="text-align:center;padding:14px 4px;color:#9aa1ab;font-size:13px">You're not in a party.</div>
+          <div style="text-align:center;padding:14px 4px;color:#9aa1ab;font-size:13px">You're not in a convoy.</div>
 
           <div style="display:flex;align-items:center;justify-content:space-between">
             <span style="font-size:12px;font-weight:600;color:#1b1f24">Invite a company member</span>
@@ -112,7 +112,7 @@
             </div>
             <button class="accent-btn" style="padding:6px 11px;font-size:11px;flex-shrink:0" @click="invite(c.identifier)">Invite</button>
           </div>
-          <div v-if="!candidatesLoading && candidatesFetched && candidates.length === 0" style="padding:10px 0;text-align:center;font-size:12px;color:#9aa1ab">No online company members without a party.</div>
+          <div v-if="!candidatesLoading && candidatesFetched && candidates.length === 0" style="padding:10px 0;text-align:center;font-size:12px;color:#9aa1ab">No online company members without a convoy.</div>
         </template>
 
       </div>

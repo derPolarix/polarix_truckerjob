@@ -145,10 +145,10 @@
         style="margin-top:14px;width:100%;padding:15px;font-size:15px;justify-content:center"
         @click="acceptOrder"
       >
-        {{ inParty ? 'Start party mission' : 'Accept challenge' }} <iconify-icon icon="tabler:chevron-right" width="19"></iconify-icon>
+        {{ inParty ? 'Start convoy mission' : 'Accept challenge' }} <iconify-icon icon="tabler:chevron-right" width="19"></iconify-icon>
       </button>
       <div v-else style="margin-top:14px;width:100%;padding:15px;font-size:13px;text-align:center;color:#9aa1ab;background:#f6f7f8;border:1px solid #eef0f2;border-radius:12px">
-        Only the party leader can start a mission.
+        Only the convoy leader can start a mission.
       </div>
     </div>
 

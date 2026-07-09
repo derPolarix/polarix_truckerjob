@@ -13,10 +13,10 @@ function PartyMission.Start(source, orderId)
     if not pData then return false, "Spielerdaten fehlen." end
 
     local party = Party.GetMembership(pData.identifier)
-    if not party then return false, "Du bist in keiner Party." end
+    if not party then return false, "Du bist in keinem Convoy." end
     local partyId = PlayerParty[pData.identifier]
     if party.leader ~= pData.identifier then return false, "Nur der Leader kann starten." end
-    if PartyMissions[partyId] then return false, "Es läuft bereits eine Party-Mission." end
+    if PartyMissions[partyId] then return false, "Es läuft bereits eine Convoy-Mission." end
 
     local hasOwnGear = pData.equipped_vehicle and pData.equipped_trailer
     if not hasOwnGear and not Rental.IsActive(source) then return false, "no_vehicle_or_trailer" end
@@ -166,8 +166,8 @@ function PartyMission.Fail(partyId)
     if not mission then return end
     if party then
         for identifier in pairs(party.members) do
-            Notifications.Push(identifier, "party_mission_failed", "Party-Mission fehlgeschlagen",
-                "Alle Mitglieder haben die Party verlassen — die Mission wurde abgebrochen, kein Reward.", "tabler:alert-triangle")
+            Notifications.Push(identifier, "party_mission_failed", "Convoy-Mission fehlgeschlagen",
+                "Alle Mitglieder haben den Convoy verlassen — die Mission wurde abgebrochen, kein Reward.", "tabler:alert-triangle")
         end
     end
     PartyMissions[partyId] = nil
