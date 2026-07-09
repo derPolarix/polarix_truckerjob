@@ -35,6 +35,7 @@ export interface VehicleOwned {
   name: string;
   cls: string;
   slot: string;
+  model: string;
   speed: string;
   cap: string;
   fuel: string;
@@ -45,6 +46,7 @@ export interface VehicleShop {
   name: string;
   cls: string;
   slot: string;
+  model: string;
   speed: string;
   cap: string;
   fuel: string;
@@ -236,14 +238,14 @@ const defaultConfig: DashboardConfig = {
     { id: "co", name: "Construction Steel", cargo: "Heavy", weight: "14.2 t", distance: "9.0 km", reward: "$38,750", xp: "+5", time: "1h 50m", perKm: "$4,305 / km", lvlReq: "Lvl 4", pickup: "Murrieta Heights Yard", pickupCity: "Los Santos", pickupKm: "4.0 km", pickupCoords: { x: -190.0, y: -1570.0, z: 32.0 }, driveKm: "9.0 km", driveTime: "1h 50m", dropoff: "Vinewood Build Site", dropoffCity: "Vinewood", dropoffKm: "9.0 km", dropoffCoords: { x: 300.0, y: 600.0, z: 130.0 }, comment: "Overweight load. Use main highways.", tag: "HEAVY", tagColor: "#8b5cf6", tagBg: "rgba(139,92,246,0.14)", icon: "tabler:building-factory-2" },
   ],
   vehiclesOwned: [
-    { name: "Polarix Hauler T-200", cls: "Light Duty", slot: "veh-owned-1", speed: "140", cap: "8 t", fuel: "320 L", equipped: true },
-    { name: "Mack Titan XR", cls: "Heavy Duty", slot: "veh-owned-2", speed: "110", cap: "24 t", fuel: "600 L", equipped: false },
+    { name: "Polarix Hauler T-200", cls: "Light Duty", slot: "veh-owned-1", model: "hauler", speed: "140", cap: "8 t", fuel: "320 L", equipped: true },
+    { name: "Mack Titan XR", cls: "Heavy Duty", slot: "veh-owned-2", model: "hauler2", speed: "110", cap: "24 t", fuel: "600 L", equipped: false },
   ],
   vehiclesShop: [
-    { name: "Volvo FH16 Globetrotter", cls: "Heavy Duty", slot: "veh-shop-1", speed: "125", cap: "30 t", fuel: "700 L", price: "$680,000", locked: false, lvl: "" },
-    { name: "Kenworth W900", cls: "Long-haul", slot: "veh-shop-2", speed: "135", cap: "26 t", fuel: "750 L", price: "$540,000", locked: false, lvl: "" },
-    { name: "Scania R730 V8", cls: "Premium", slot: "veh-shop-3", speed: "150", cap: "28 t", fuel: "800 L", price: "$1,250,000", locked: true, lvl: "Lvl 10" },
-    { name: "Freightliner Cascadia", cls: "Long-haul", slot: "veh-shop-4", speed: "130", cap: "27 t", fuel: "720 L", price: "$610,000", locked: false, lvl: "" },
+    { name: "Volvo FH16 Globetrotter", cls: "Heavy Duty", slot: "veh-shop-1", model: "hauler", speed: "125", cap: "30 t", fuel: "700 L", price: "$680,000", locked: false, lvl: "" },
+    { name: "Kenworth W900", cls: "Long-haul", slot: "veh-shop-2", model: "packer", speed: "135", cap: "26 t", fuel: "750 L", price: "$540,000", locked: false, lvl: "" },
+    { name: "Scania R730 V8", cls: "Premium", slot: "veh-shop-3", model: "phantom", speed: "150", cap: "28 t", fuel: "800 L", price: "$1,250,000", locked: true, lvl: "Lvl 10" },
+    { name: "Freightliner Cascadia", cls: "Long-haul", slot: "veh-shop-4", model: "hauler2", speed: "130", cap: "27 t", fuel: "720 L", price: "$610,000", locked: false, lvl: "" },
   ],
   trailersOwned: [
     { name: "Flatbed Standard", slot: "trl-owned-1", maxPallets: 8, equipped: true },

@@ -10,8 +10,9 @@
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
         <div v-for="v in store.config.vehiclesOwned" :key="v.slot" style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;overflow:hidden;display:flex;flex-direction:column">
-          <div style="width:100%;height:150px;background:#f3f4f6;display:flex;align-items:center;justify-content:center">
-            <iconify-icon icon="tabler:truck" width="48" style="color:#aab0b8"></iconify-icon>
+          <div style="width:100%;height:150px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;overflow:hidden">
+            <img v-if="v.model && vehicleImages[v.model]" :src="vehicleImages[v.model]" :alt="v.name" style="width:100%;height:100%;object-fit:contain" />
+            <iconify-icon v-else icon="tabler:truck" width="48" style="color:#aab0b8"></iconify-icon>
           </div>
           <div style="padding:15px 16px">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
@@ -55,8 +56,9 @@
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
         <div v-for="v in store.config.vehiclesShop" :key="v.slot" style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;overflow:hidden;display:flex;flex-direction:column">
           <div style="position:relative">
-            <div style="width:100%;height:128px;background:#f3f4f6;display:flex;align-items:center;justify-content:center">
-              <iconify-icon icon="tabler:truck" width="40" style="color:#aab0b8"></iconify-icon>
+            <div style="width:100%;height:128px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;overflow:hidden">
+              <img v-if="v.model && vehicleImages[v.model]" :src="vehicleImages[v.model]" :alt="v.name" style="width:100%;height:100%;object-fit:contain" />
+              <iconify-icon v-else icon="tabler:truck" width="40" style="color:#aab0b8"></iconify-icon>
             </div>
             <div v-if="v.locked" style="position:absolute;inset:0;background:rgba(34,38,45,0.55);display:flex;align-items:center;justify-content:center">
               <iconify-icon icon="tabler:lock" width="26" style="color:#fff"></iconify-icon>
@@ -145,6 +147,13 @@ import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallback } from "@/nui/nuiCallbacks";
 
 const store = useDashboardStore();
+
+const vehicleImageFiles = import.meta.glob<{ default: string }>("@/assets/vehicles/*.png", { eager: true });
+const vehicleImages: Record<string, string> = {};
+for (const path in vehicleImageFiles) {
+  const model = path.split("/").pop()!.replace(".png", "");
+  vehicleImages[model] = vehicleImageFiles[path].default;
+}
 
 async function equipVehicle(slot: string) {
   await nuiCallback("equipVehicle", { slot });

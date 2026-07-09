@@ -70,14 +70,12 @@ return {
     },
 
     VehicleShop = {
-        { slot = "volvo-fh16",    name = "Volvo FH16 Globetrotter", model = "hauler",   cls = "Heavy Duty", speed = 125, cap_kg = 30000, fuel_l = 700, price = 680000,  level_required = 1  },
-        { slot = "kenworth-w900", name = "Kenworth W900",           model = "packer",   cls = "Long-haul",  speed = 135, cap_kg = 26000, fuel_l = 750, price = 540000,  level_required = 1  },
-        { slot = "scania-r730",   name = "Scania R730 V8",          model = "phantom",  cls = "Premium",    speed = 150, cap_kg = 28000, fuel_l = 800, price = 1250000, level_required = 10 },
-        { slot = "freightliner",  name = "Freightliner Cascadia",   model = "hauler2",  cls = "Long-haul",  speed = 130, cap_kg = 27000, fuel_l = 720, price = 610000,  level_required = 1  },
+        { slot = "volvo-fh16",    name = "Jobuilt Hauler",          model = "hauler",   cls = "Heavy Duty", speed = 125, cap_kg = 30000, fuel_l = 700, price = 680000,  level_required = 1  },
+        { slot = "kenworth-w900", name = "MTL Packer",              model = "packer",   cls = "Long-haul",  speed = 135, cap_kg = 26000, fuel_l = 750, price = 540000,  level_required = 1  },
+        { slot = "scania-r730",   name = "Jobuilt Phantom",         model = "phantom",  cls = "Premium",    speed = 150, cap_kg = 28000, fuel_l = 800, price = 1250000, level_required = 10 },
     },
 
     TrailerShop = {
-        { slot = "flatbed-std",   name = "Flatbed Standard",   model = "trailers2", price = 180000, level_required = 1 },
-        { slot = "container-std", name = "Container Standard", model = "trailers",  price = 220000, level_required = 3 },
+        { slot = "flatbed-std",   name = "Trailer Box Variant",   model = "trailers2", price = 180000, level_required = 1 },
     },
 }
