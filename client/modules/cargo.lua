@@ -12,7 +12,7 @@ function ResetMissionCargo(orderData)
     CleanupMissionPalletsOnTrailer()
 
     MissionCargo = {
-        requiredCount = orderData and cargo.CalcPalletCount(orderData.weight_kg) or 0,
+        requiredCount = 0,
         loadedCount = 0,
         pickupSpawned = false,
     }
@@ -381,7 +381,14 @@ CreateThread(function()
             local o = DeliveryState.orderData
             local dist = #(GetEntityCoords(PlayerPedId()) - vector3(o.pickup_x, o.pickup_y, o.pickup_z))
             if dist < 40.0 and not MissionCargo.pickupSpawned then
-                SpawnMissionPallets(o)
+                local claim = Delivery.RequestTripClaim()
+                if claim > 0 then
+                    MissionCargo.requiredCount = claim
+                    MissionCargo.loadedCount = 0
+                    SpawnMissionPallets(o)
+                else
+                    Framework.Notify("Keine Paletten mehr im Pool.", "info")
+                end
             elseif dist >= 40.0 and MissionCargo.pickupSpawned then
                 DespawnMissionPallets()
             end

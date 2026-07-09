@@ -79,6 +79,16 @@ function Trailers.GetEquippedMaxPallets(source)
     return nil
 end
 
+-- Wie GetEquippedMaxPallets, berücksichtigt zusätzlich die feste Rental-Trailer-Kapazität
+-- (Rental setzt kein equipped_trailer, siehe Orders.Accept hasOwnGear/Rental.IsActive-Zweig).
+function Trailers.GetActiveMaxPallets(source)
+    if Rental.IsActive(source) then
+        local trailerConfig = sharedConfig.CompatibleTrailers[sharedConfig.Rental.TrailerModel]
+        return trailerConfig and trailerConfig.maxPallets or nil
+    end
+    return Trailers.GetEquippedMaxPallets(source)
+end
+
 lib.callback.register("polarix_trucker:buyTrailer", function(source, trailerSlot)
     local success, result = Trailers.Buy(source, trailerSlot)
     if not success then return false, nil, result end

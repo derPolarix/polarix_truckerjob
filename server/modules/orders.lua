@@ -2,7 +2,7 @@ local config = require("config.server")
 local cargo = require("shared.cargo")
 
 Orders = {}
-ActiveDeliveries = {} -- source -> { deliveryId, orderId }
+ActiveDeliveries = {} -- source -> { deliveryId, orderId, totalPallets, remainingPallets, deliveredPallets, cargoDamageTotal }
 
 -- oxmysql returns TINYINT(1) as Lua boolean, not integer 1
 local function isTruthy(v) return v == 1 or v == true end
@@ -51,21 +51,50 @@ function Orders.Accept(source, orderId)
     if isTruthy(order.requires_hazmat) and not Player.HasSkill(source, "h3") then return false, "Hazmat-Lizenz erforderlich." end
     if isTruthy(order.requires_long_hauler) and not Player.HasSkill(source, "d3") then return false, "Long-Hauler-Skill erforderlich." end
 
-    local maxPallets = Trailers.GetEquippedMaxPallets(source)
-    if maxPallets and cargo.CalcPalletCount(order.weight_kg) > maxPallets then
-        return false, "Dein Trailer fasst diese Ladung nicht."
-    end
-
     if type(order.pickup_pallet_coords) == "string" then
         order.pickup_pallet_coords = json.decode(order.pickup_pallet_coords)
     end
 
+    local total = cargo.CalcPalletCount(order.weight_kg)
     local deliveryId = DB.InsertDelivery(orderId, pData.identifier)
-    ActiveDeliveries[source] = { deliveryId = deliveryId, orderId = orderId }
+    ActiveDeliveries[source] = {
+        deliveryId = deliveryId, orderId = orderId,
+        totalPallets = total, remainingPallets = total, deliveredPallets = 0, cargoDamageTotal = 0,
+    }
     return true, order
 end
 
-function Orders.Complete(source, cargoDamage)
+-- Wird beim Betreten der Pickup-Zone aufgerufen: vergibt so viele Paletten wie noch offen
+-- sind, gedeckelt durch die aktuell nutzbare Trailer-Kapazität (eigener Trailer oder Rental).
+function Orders.ClaimTripPallets(source)
+    local delivery = ActiveDeliveries[source]
+    if not delivery or delivery.remainingPallets <= 0 then return 0 end
+
+    local claim = math.min(Trailers.GetActiveMaxPallets(source) or 0, delivery.remainingPallets)
+    if claim <= 0 then return 0 end
+
+    delivery.remainingPallets = delivery.remainingPallets - claim
+    return claim
+end
+
+-- Meldet den Abschluss eines Trips. Ist die Order damit komplett geliefert, läuft die volle
+-- Reward/XP/Tax-Pipeline (Orders.Finish); sonst kehrt der Spieler zum Pickup zurück.
+function Orders.CompleteTrip(source, tripPalletCount, cargoDamage)
+    local delivery = ActiveDeliveries[source]
+    if not delivery then return false end
+
+    delivery.deliveredPallets = delivery.deliveredPallets + tripPalletCount
+    delivery.cargoDamageTotal = delivery.cargoDamageTotal + (cargoDamage or 0)
+
+    if delivery.deliveredPallets >= delivery.totalPallets then
+        local _, reward, xp, penalty, taxAmount = Orders.Finish(source)
+        return true, reward, xp, penalty, taxAmount
+    end
+    return false, delivery.remainingPallets
+end
+
+-- Vormals "Orders.Complete" — läuft erst, sobald der letzte Trip einer Order geliefert wurde.
+function Orders.Finish(source)
     local delivery = ActiveDeliveries[source]
     if not delivery then return false end
 
@@ -78,8 +107,8 @@ function Orders.Complete(source, cargoDamage)
     local reward, xp = Skills.ApplyRewardModifiers(source, order.reward_base, order.cargo_type, order)
     xp = Skills.ApplyXPModifiers(source, xp)
 
-    -- Cargo-Schaden-Abzug, max 30% vom Reward
-    local damagePercent = math.min((cargoDamage or 0) / order.reward_base, 0.30)
+    -- Cargo-Schaden-Abzug (über alle Trips kumuliert), max 30% vom Reward
+    local damagePercent = math.min(delivery.cargoDamageTotal / order.reward_base, 0.30)
     local penalty = math.floor(reward * damagePercent)
     reward = reward - penalty
 
@@ -134,11 +163,17 @@ lib.callback.register("polarix_trucker:acceptOrder", function(source, orderId)
     return true, result
 end)
 
-RegisterNetEvent("polarix_trucker:completeDelivery", function(cargoDamage)
+lib.callback.register("polarix_trucker:claimTripPallets", function(source)
+    return Orders.ClaimTripPallets(source)
+end)
+
+RegisterNetEvent("polarix_trucker:completeTrip", function(tripPalletCount, cargoDamage)
     local src = source
-    local success, reward, xp, penalty, taxAmount = Orders.Complete(src, cargoDamage)
-    if success then
-        TriggerClientEvent("polarix_trucker:deliveryCompleted", src, reward, xp, penalty, taxAmount)
+    local finished, a, b, c, d = Orders.CompleteTrip(src, tripPalletCount, cargoDamage)
+    if finished then
+        TriggerClientEvent("polarix_trucker:deliveryCompleted", src, a, b, c, d) -- a=reward, b=xp, c=penalty, d=tax
+    else
+        TriggerClientEvent("polarix_trucker:tripSettled", src, a) -- a=remainingPallets
     end
 end)
 

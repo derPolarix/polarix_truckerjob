@@ -2,6 +2,7 @@ local cargo = require("shared.cargo")
 
 DeliveryState = {
     status = "idle", -- idle | awaiting_pickup | delivering
+    mode = "solo", -- solo | party
     orderData = nil,
     pickupBlip = nil,
     dropoffBlip = nil,
@@ -28,8 +29,9 @@ local function CreateBlip(x, y, z, sprite, color, name)
     return blip
 end
 
-function Delivery.Start(orderData)
+function Delivery.Start(orderData, mode)
     DeliveryState.status = "awaiting_pickup"
+    DeliveryState.mode = mode or "solo"
     DeliveryState.orderData = orderData
 
     DeliveryState.pickupBlip  = CreateBlip(orderData.pickup_x, orderData.pickup_y, orderData.pickup_z, 1, 2, "Pickup: " .. orderData.pickup_label)
@@ -41,7 +43,14 @@ function Delivery.Start(orderData)
     if ResetMissionCargo then ResetMissionCargo(orderData) end
     Delivery.HUD.Start()
 
-    Framework.Notify(("Fahre zur Abholstelle: %s (%d Paletten benötigt)"):format(orderData.pickup_label, cargo.CalcPalletCount(orderData.weight_kg)), "info")
+    Framework.Notify(("Fahre zur Abholstelle: %s (%d Paletten insgesamt)"):format(orderData.pickup_label, cargo.CalcPalletCount(orderData.weight_kg)), "info")
+end
+
+-- Fragt am Pickup ab, wie viele Paletten für den nächsten Trip beansprucht werden dürfen
+-- (gedeckelt durch die eigene Trailer-Kapazität). Solo: eigener Order-Pool, Party: geteilter Pool.
+function Delivery.RequestTripClaim()
+    local eventName = DeliveryState.mode == "party" and "polarix_trucker:claimPartyPallets" or "polarix_trucker:claimTripPallets"
+    return lib.callback.await(eventName, false)
 end
 
 function Delivery.Cancel()
@@ -101,7 +110,11 @@ function Delivery.StartUnloading()
     if success then
         Delivery.HUD.Stop()
         Delivery.StopDamageMonitor()
-        TriggerServerEvent("polarix_trucker:completeDelivery", DeliveryState.cargoDamage)
+        if DeliveryState.mode == "party" then
+            TriggerServerEvent("polarix_trucker:completePartyTrip", MissionCargo.loadedCount, DeliveryState.cargoDamage)
+        else
+            TriggerServerEvent("polarix_trucker:completeTrip", MissionCargo.loadedCount, DeliveryState.cargoDamage)
+        end
     end
 end
 
@@ -199,6 +212,15 @@ RegisterNetEvent("polarix_trucker:deliveryCompleted", function(reward, xp, damag
     end
     Framework.Notify(msg, "success")
     SendMessage("deliveryComplete", { reward = reward, xp = xp })
+end)
+
+-- Trip geliefert, aber Order-Pool noch nicht leer → zurück zum Pickup für den nächsten Trip
+RegisterNetEvent("polarix_trucker:tripSettled", function(remainingPallets)
+    DeliveryState.status = "awaiting_pickup"
+    SetBlipRoute(DeliveryState.dropoffBlip, false)
+    SetBlipRoute(DeliveryState.pickupBlip, true)
+    SetBlipRouteColour(DeliveryState.pickupBlip, 5)
+    Framework.Notify(("Trip geliefert. Noch %d Paletten im Pool — zurück zum Pickup!"):format(remainingPallets), "info")
 end)
 
 RegisterNetEvent("polarix_trucker:staleFailed", function()
