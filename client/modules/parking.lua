@@ -19,14 +19,10 @@ function IsTrailerParkedCorrectly(order)
     return dist <= shared.ParkingTolerance.distance and headingDiff <= shared.ParkingTolerance.heading
 end
 
-local function DrawParkingRectangle(order, correct)
-    local trailerModel = GetTrailerModelName and GetTrailerModelName() or nil
-    local trailerConfig = trailerModel and shared.CompatibleTrailers[trailerModel]
-    local length = trailerConfig and trailerConfig.length or 11.0
-    local width  = trailerConfig and trailerConfig.width or 2.6
-
-    local center = vector3(order.dropoff_x, order.dropoff_y, order.dropoff_z - 0.8)
-    local rad = math.rad(order.dropoff_heading or 0.0)
+-- Extrahierte Kernlogik, wiederverwendet vom Admin-Mission-Editor (client/modules/admin_editor.lua)
+-- für die Dropoff-Preview — daher global statt local.
+function DrawOutlineRectangle(center, heading, length, width, correct)
+    local rad = math.rad(heading or 0.0)
     local lengthDir = vector3(-math.sin(rad), math.cos(rad), 0.0)
     local widthDir  = vector3(math.cos(rad), math.sin(rad), 0.0)
 
@@ -43,6 +39,16 @@ local function DrawParkingRectangle(order, correct)
     DrawLine(p2.x, p2.y, p2.z, p3.x, p3.y, p3.z, r, g, b, 220)
     DrawLine(p3.x, p3.y, p3.z, p4.x, p4.y, p4.z, r, g, b, 220)
     DrawLine(p4.x, p4.y, p4.z, p1.x, p1.y, p1.z, r, g, b, 220)
+end
+
+local function DrawParkingRectangle(order, correct)
+    local trailerModel = GetTrailerModelName and GetTrailerModelName() or nil
+    local trailerConfig = trailerModel and shared.CompatibleTrailers[trailerModel]
+    local length = trailerConfig and trailerConfig.length or 11.0
+    local width  = trailerConfig and trailerConfig.width or 2.6
+
+    local center = vector3(order.dropoff_x, order.dropoff_y, order.dropoff_z - 0.8)
+    DrawOutlineRectangle(center, order.dropoff_heading or 0.0, length, width, correct)
 end
 
 CreateThread(function()
