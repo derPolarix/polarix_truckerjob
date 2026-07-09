@@ -4,6 +4,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import Defaultpage from "../views/DefaultPage.vue";
 import TemplatePage from "../views/TemplatePage.vue";
 import Dashboard from "../views/Dashboard.vue";
+import AdminMissionEditor from "../views/AdminMissionEditor.vue";
 
 //Hier werden neue Seiten definiert die der Router nutzen kann
 //Um neue Routen anzulegen einfach ein neues Objekt in das routes Array hinzufügen
@@ -27,6 +28,12 @@ const router = createRouter({
       name: "dashboard",
       component: Dashboard,
       meta: { navLabel: "Dashboard" },
+    },
+    {
+      path: "/admin-missions",
+      name: "admin-missions",
+      component: AdminMissionEditor,
+      meta: { navLabel: "Admin: Missionen" },
     },
     {
       path: "/",

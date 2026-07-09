@@ -30,6 +30,7 @@ import type { DashboardConfig, Order, VehicleOwned, VehicleShop, TrailerOwned, T
 import { useGameHudStore } from "@/stores/gameHudStore";
 import { useNotificationsStore } from "@/stores/notificationsStore";
 import { usePartyStore } from "@/stores/partyStore";
+import { useAdminMissionsStore } from "@/stores/adminMissionsStore";
 
 // Standard Zugriffe auf globale Properties welche den persistantStore und den Router bereitstellen ohne diese immer neu importieren zu müssen
 const proxy = getCurrentInstance()!.proxy!;
@@ -39,6 +40,7 @@ const gameHudStore = useGameHudStore();
 const dashboardStore = useDashboardStore();
 const notificationsStore = useNotificationsStore();
 const partyStore = usePartyStore();
+const adminMissionsStore = useAdminMissionsStore();
 
 function mapServerResponse(data: any): Partial<DashboardConfig> {
 	const p = data.player ?? {};
@@ -353,6 +355,13 @@ const handleMessage = (event: MessageEvent) => {
 			partyStore.setState((raw.data as any)?.party ?? null);
 			partyStore.setMultiplier((raw.data as any)?.partyRewardMultiplier ?? null);
 			break;
+			case "openAdminMissions": {
+				persistantStore.IsNuiOpen = true;
+				router.push("/admin-missions");
+				const d = raw.data as { orders?: any[]; palletWeightKg?: number; maxPalletsPerOrder?: number };
+				adminMissionsStore.setOrders(d?.orders ?? [], d?.palletWeightKg, d?.maxPalletsPerOrder);
+				break;
+			}
 		case "newNotification":
 			notificationsStore.push(raw.data);
 			break;

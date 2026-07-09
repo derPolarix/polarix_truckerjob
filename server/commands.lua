@@ -26,7 +26,7 @@ RegisterCommand('truckeradmin', function(source)
         print(("[polarix_trucker] Nicht-Admin %d versuchte /truckeradmin"):format(source))
         return
     end
-    local orders = DB.GetAllOrdersAdmin()
+    local orders = AdminMissions.ListForWeb()
     TriggerClientEvent("polarix_trucker:openAdminEditor", source, orders)
 end, false)
 

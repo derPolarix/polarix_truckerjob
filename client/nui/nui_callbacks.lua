@@ -349,3 +349,70 @@ RegisterNUICallback('refetchDashboard', function(_, cb)
         cb({ ok = dashboardData ~= nil })
     end)
 end)
+
+-- Admin-Mission-Editor: reine Server-Forwarder, jeder Server-Callback prüft Framework.IsAdmin
+-- selbst erneut (siehe admin-mission-editor-plan.md, Phase B). Namen sind server-seitig final.
+
+RegisterNUICallback('adminListOrders', function(_, cb)
+    lib.callback('polarix_trucker:adminListOrders', false, function(orders)
+        cb({ ok = true, orders = orders or {} })
+    end)
+end)
+
+RegisterNUICallback('adminCreateOrder', function(data, cb)
+    lib.callback('polarix_trucker:adminCreateOrder', false, function(success, result)
+        if not success then
+            Framework.Notify(result or 'Erstellen fehlgeschlagen.', 'error')
+        end
+        cb({ ok = success, orderId = success and result or nil, err = not success and result or nil })
+    end, data.order)
+end)
+
+RegisterNUICallback('adminUpdateOrder', function(data, cb)
+    lib.callback('polarix_trucker:adminUpdateOrder', false, function(success, err)
+        if not success then
+            Framework.Notify(err or 'Speichern fehlgeschlagen.', 'error')
+        end
+        cb({ ok = success, err = not success and err or nil })
+    end, data.orderId, data.order)
+end)
+
+RegisterNUICallback('adminSetOrderActive', function(data, cb)
+    lib.callback('polarix_trucker:adminSetOrderActive', false, function(success, err)
+        if not success then
+            Framework.Notify(err or 'Fehler.', 'error')
+        end
+        cb({ ok = success })
+    end, data.orderId, data.isActive)
+end)
+
+RegisterNUICallback('adminDeleteOrder', function(data, cb)
+    lib.callback('polarix_trucker:adminDeleteOrder', false, function(success, err)
+        if not success then
+            Framework.Notify(err or 'Löschen fehlgeschlagen.', 'error')
+        end
+        cb({ ok = success, err = not success and err or nil })
+    end, data.orderId)
+end)
+
+RegisterNUICallback('adminCloneOrder', function(data, cb)
+    lib.callback('polarix_trucker:adminCloneOrder', false, function(success, result)
+        if not success then
+            Framework.Notify(result or 'Duplizieren fehlgeschlagen.', 'error')
+        end
+        cb({ ok = success, order = success and result or nil })
+    end, data.orderId)
+end)
+
+-- Erfolgreicher Test startet die Lieferung sofort für den Admin (gleicher Pfad wie acceptOrder).
+-- Web schließt das Admin-Fenster danach selbst (persistantStore.closeNui()).
+RegisterNUICallback('adminTestRunOrder', function(data, cb)
+    lib.callback('polarix_trucker:adminTestRunOrder', false, function(success, result)
+        if success then
+            Delivery.Start(result)
+        else
+            Framework.Notify(result or 'Test fehlgeschlagen.', 'error')
+        end
+        cb({ ok = success })
+    end, data.orderId)
+end)

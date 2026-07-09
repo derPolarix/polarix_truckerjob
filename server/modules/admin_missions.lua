@@ -65,6 +65,7 @@ function AdminMissions.Clone(source, orderId)
     if not ok then return false, err end
     local order = DB.GetOrderById(orderId)
     if not order then return false, "Mission nicht gefunden." end
+    if type(order.pickup_pallet_coords) == "string" then order.pickup_pallet_coords = json.decode(order.pickup_pallet_coords) end
     order.id = nil
     order.name = order.name .. " (Kopie)"
     return true, order -- Client bekommt vorausgefülltes Formular, speichert separat via Create
@@ -88,9 +89,23 @@ function AdminMissions.TestRun(source, orderId)
     return true, order
 end
 
+-- Web-Formular braucht pickup_pallet_coords als Array (nicht JSON-String) sowie delivery_count
+-- pro Order, um den Löschen-Button gaten zu können (siehe admin-mission-editor-plan.md Phase D).
+-- Global (nicht local), da server/commands.lua (/truckeradmin, initiales Öffnen) dieselbe
+-- Aufbereitung braucht wie der lib.callback für den späteren "adminListOrders"-Refetch —
+-- sonst bekäme das Formular beim ersten Öffnen JSON-Strings statt Arrays.
+function AdminMissions.ListForWeb()
+    local orders = DB.GetAllOrdersAdmin()
+    for _, order in ipairs(orders) do
+        if type(order.pickup_pallet_coords) == "string" then order.pickup_pallet_coords = json.decode(order.pickup_pallet_coords) end
+        order.delivery_count = DB.CountDeliveriesForOrder(order.id) or 0
+    end
+    return orders
+end
+
 lib.callback.register("polarix_trucker:adminListOrders", function(source)
     if not Framework.IsAdmin(source) then return {} end
-    return DB.GetAllOrdersAdmin()
+    return AdminMissions.ListForWeb()
 end)
 
 lib.callback.register("polarix_trucker:adminCreateOrder", function(source, order) return AdminMissions.Create(source, order) end)

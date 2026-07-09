@@ -6,7 +6,9 @@ AdminEditorPreview = { active = false, dropoffX = nil, dropoffY = nil, dropoffZ 
 
 RegisterNetEvent("polarix_trucker:openAdminEditor", function(orders)
     SetFocus(true)
-    SendMessage("openAdminMissions", { orders = orders })
+    -- PalletWeightKg/MaxPalletsPerOrder mitgeliefert, damit web/ Cargo.CalcPalletCount duplizieren
+    -- kann ohne die Werte hart zu codieren (siehe admin-mission-editor-plan.md Phase D).
+    SendMessage("openAdminMissions", { orders = orders, palletWeightKg = shared.PalletWeightKg, maxPalletsPerOrder = shared.MaxPalletsPerOrder })
 end)
 
 local function spawnGhostPallet(pos, heading)
