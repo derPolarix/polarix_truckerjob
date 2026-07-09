@@ -80,7 +80,6 @@ RegisterNetEvent("polarix_trucker:rentalStarted", function(vehicleModel, trailer
         return
     end
     SetVehicleNumberPlateText(vehEntity, "RENTAL")
-    Framework.GiveVehicleKeys(vehEntity, "RENTAL")
     LocalRental.vehicleEntity = vehEntity
 
     local trailerCoords = findFreeSpawnPoint(clientConfig.TrailerSpawnPoints)
@@ -90,9 +89,12 @@ RegisterNetEvent("polarix_trucker:rentalStarted", function(vehicleModel, trailer
         LocalRental.trailerEntity = trailerEntity
     end
 
+    -- Reihenfolge wichtig: erst einsteigen, dann Keys vergeben (wie in Vehicle.Spawn) —
+    -- manche Key-Systeme (qbx_vehiclekeys) binden Keys an den gerade sitzenden Fahrer.
     if clientConfig.TeleportIntoVehicle then
         TaskWarpPedIntoVehicle(PlayerPedId(), vehEntity, -1)
     end
+    Framework.GiveVehicleKeys(vehEntity, "RENTAL")
 
     Framework.Notify("Rental-Fahrzeug abgeholt! Es wird laufend Miete abgebucht.", "success")
 end)

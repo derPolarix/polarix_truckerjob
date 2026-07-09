@@ -40,7 +40,8 @@ function Orders.Accept(source, orderId)
     local pData = Player.GetData(source)
     if not pData then return false, "Spielerdaten nicht gefunden." end
 
-    if not pData.equipped_vehicle or not pData.equipped_trailer then
+    local hasOwnGear = pData.equipped_vehicle and pData.equipped_trailer
+    if not hasOwnGear and not Rental.IsActive(source) then
         return false, "no_vehicle_or_trailer"
     end
 
