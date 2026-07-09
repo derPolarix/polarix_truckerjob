@@ -91,7 +91,7 @@ return {
                 { x =  0.55, y = -3.6, z = 0.85, rx = 0.0, ry = 0.0, rz = 0.0 },
             },
         },
-        ["trailers"] = {
+        ["docktrailer"] = {
             maxPallets = 4,
             length = 11.0, width = 2.6,
             attachOffsets = {
