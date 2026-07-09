@@ -4,9 +4,9 @@ return {
 
     -- Jeder Eintrag: vec4 (x, y, z, heading). Spawn wählt zufällig einen freien Punkt.
     VehicleSpawnPoints = {
-        vector4(164.6270, -3217.6768, 6.1488, 271.7001),
-        vector4(165.2691, -3235.8877, 6.1331, 270.5462),
-        vector4(167.6816, -3259.7295, 6.0871, 269.5370),
+        vector4(171.9114, -3217.7483, 5.9814, 271.3356),
+        vector4(170.4050, -3235.7805, 6.0557, 271.2271),
+        vector4(170.2728, -3290.9385, 6.0459, 270.7673),
     },
 
     -- true = Spieler wird nach dem Spawnen ins Fahrzeug teleportiert
