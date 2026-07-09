@@ -48,8 +48,13 @@ function Player.Load(source)
         end
     end
 
+    local trailers = DB.GetPlayerTrailers(identifier)
+    if not data.equipped_trailer and #trailers > 0 then
+        data.equipped_trailer = trailers[1].trailer_slot
+        Player.Save(source)
+    end
+
     if data.equipped_trailer then
-        local trailers = DB.GetPlayerTrailers(identifier)
         for _, t in ipairs(trailers) do
             if t.trailer_slot == data.equipped_trailer then
                 TriggerClientEvent("polarix_trucker:trailerSync", source, data.equipped_trailer, t.trailer_model)

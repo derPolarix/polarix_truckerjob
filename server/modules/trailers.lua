@@ -35,6 +35,13 @@ function Trailers.Buy(source, trailerSlot)
     Framework.RemoveMoney(source, price)
 
     DB.InsertTrailer(pData.identifier, trailerSlot, shopEntry.model)
+
+    if not pData.equipped_trailer then
+        pData.equipped_trailer = trailerSlot
+        Player.Save(source)
+        TriggerClientEvent("polarix_trucker:trailerSync", source, trailerSlot, shopEntry.model)
+    end
+
     return true, price
 end
 

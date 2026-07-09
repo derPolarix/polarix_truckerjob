@@ -14,11 +14,6 @@ return {
 
     DepotBlip = { sprite = 477, color = 5, scale = 0.9, name = "Truck Depot" },
 
-    TrailerSpawnPoints = {
-        vector4(170.0, -3217.0, 6.1, 271.0),
-        vector4(171.0, -3236.0, 6.1, 270.0),
-    },
-
     ForkliftDeployOffset = { x = 0.0, y = -7.0, z = 0.0 },
     ForkliftSpawnOffset = { x = 0.0, y = -10.5, z = 0.0 },
 

@@ -84,7 +84,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
         <div>
           <div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24">Your trailers</div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">{{ store.config.trailersOwned.length }} trailers owned</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">{{ store.config.trailersOwned.length }} trailers owned · selected trailer parks with your vehicle automatically</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
@@ -97,10 +97,10 @@
             <div style="display:flex;align-items:center;gap:6px;margin-top:14px;padding-top:14px;border-top:1px solid #eef0f2;font-size:12px;color:#6b7280">
               <iconify-icon icon="tabler:stack-2" width="16" style="color:#9aa1ab"></iconify-icon>{{ t.maxPallets }} pallet slots
             </div>
-            <div v-if="t.equipped && t.slot === store.config.spawnedTrailerSlot" style="margin-top:14px;width:100%;text-align:center;padding:10px;border-radius:10px;background:rgba(47,158,99,0.12);color:#2f9e63;font-weight:700;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:7px">
-              <iconify-icon icon="tabler:circle-check-filled" width="16"></iconify-icon>Equipped
+            <div v-if="t.equipped" style="margin-top:14px;width:100%;text-align:center;padding:10px;border-radius:10px;background:rgba(47,158,99,0.12);color:#2f9e63;font-weight:700;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:7px">
+              <iconify-icon icon="tabler:circle-check-filled" width="16"></iconify-icon>{{ t.slot === store.config.spawnedTrailerSlot ? 'Attached' : 'Selected' }}
             </div>
-            <button v-else class="equip-btn" style="margin-top:14px;width:100%;padding:10px;border-radius:10px;border:1px solid #dfe2e6;background:#fff;color:#3c424b;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="equipTrailer(t.slot)">{{ t.equipped ? 'Call trailer' : 'Equip' }}</button>
+            <button v-else class="equip-btn" style="margin-top:14px;width:100%;padding:10px;border-radius:10px;border:1px solid #dfe2e6;background:#fff;color:#3c424b;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="equipTrailer(t.slot)">Select</button>
           </div>
         </div>
       </div>

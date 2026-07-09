@@ -1,5 +1,3 @@
-local clientConfig = require("config.client")
-
 LocalTrailer = {
     entity = nil,
     slot   = nil,
@@ -8,36 +6,16 @@ LocalTrailer = {
 
 Trailer = {}
 
-local function findFreeTrailerSpawnPoint()
-    local points = clientConfig.TrailerSpawnPoints
-    local candidates = {}
-    for i = 1, #points do candidates[i] = points[i] end
-    for i = #candidates, 2, -1 do
-        local j = math.random(i)
-        candidates[i], candidates[j] = candidates[j], candidates[i]
-    end
-
-    local vehicles = GetGamePool("CVehicle")
-    for _, point in ipairs(candidates) do
-        local free = true
-        for _, veh in ipairs(vehicles) do
-            local pos = GetEntityCoords(veh)
-            if #(pos - vector3(point.x, point.y, point.z)) < 6.0 then
-                free = false
-                break
-            end
-        end
-        if free then return point end
-    end
-    return candidates[1]
-end
-
+-- Trailer wird immer zusammen mit dem Fahrzeug geparkt (nie alleine) — Spawn-Punkt ergibt sich
+-- direkt aus der Fahrzeugposition, da AttachVehicleToTrailer ihn ohnehin sofort an die Anhängerkupplung snappt.
 function Trailer.Spawn()
     if not LocalTrailer.model then return end
+    if not (LocalVehicle.entity and DoesEntityExist(LocalVehicle.entity)) then return end
 
     Trailer.Despawn()
 
-    local coords    = findFreeTrailerSpawnPoint()
+    local coords    = GetOffsetFromEntityInWorldCoords(LocalVehicle.entity, 0.0, -12.0, 0.0)
+    local heading   = GetEntityHeading(LocalVehicle.entity)
     local modelHash = GetHashKey(LocalTrailer.model)
 
     RequestModel(modelHash)
@@ -51,14 +29,12 @@ function Trailer.Spawn()
         return
     end
 
-    local trailer = CreateVehicle(modelHash, coords.x, coords.y, coords.z, coords.w, true, false)
+    local trailer = CreateVehicle(modelHash, coords.x, coords.y, coords.z, heading, true, false)
     SetEntityAsMissionEntity(trailer, true, true)
     SetModelAsNoLongerNeeded(modelHash)
     LocalTrailer.entity = trailer
 
-    if LocalVehicle.entity and DoesEntityExist(LocalVehicle.entity) then
-        AttachVehicleToTrailer(LocalVehicle.entity, trailer, 15.0)
-    end
+    AttachVehicleToTrailer(LocalVehicle.entity, trailer, 15.0)
 
     SendMessage("trailerSpawnState", { slot = LocalTrailer.slot, spawned = true })
 end

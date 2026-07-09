@@ -82,7 +82,8 @@ RegisterNetEvent("polarix_trucker:rentalStarted", function(vehicleModel, trailer
     SetVehicleNumberPlateText(vehEntity, "RENTAL")
     LocalRental.vehicleEntity = vehEntity
 
-    local trailerCoords = findFreeSpawnPoint(clientConfig.TrailerSpawnPoints)
+    local trailerCoords = GetOffsetFromEntityInWorldCoords(vehEntity, 0.0, -12.0, 0.0)
+    trailerCoords = vector4(trailerCoords.x, trailerCoords.y, trailerCoords.z, GetEntityHeading(vehEntity))
     local trailerEntity = spawnModelAt(trailerModel, trailerCoords)
     if trailerEntity then
         AttachVehicleToTrailer(vehEntity, trailerEntity, 15.0)
