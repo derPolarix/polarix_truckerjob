@@ -1,4 +1,4 @@
-local config = require("config.server")
+local config = require("config.shared")
 
 Rental = {}
 RentalState = {} -- source -> { nextChargeAt = <GetGameTimer() ms> }

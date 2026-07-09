@@ -50,6 +50,18 @@ return {
 
     PalletModel = "sm3d_prop_pallet_1",
 
+    -- Feste Rental-Kombo für Spieler ohne eigenes Fahrzeug/Trailer, mit laufenden Kosten.
+    -- In config/shared.lua statt config/server.lua, da Client (Rental-Dialog, Spawn) und Server
+    -- (Billing) beide Zugriff brauchen — config/server.lua wird nur server-seitig geladen.
+    Rental = {
+        VehicleModel = "hauler",
+        VehicleName  = "Rental Truck",
+        TrailerModel = "trailers2",
+        TrailerName  = "Rental Trailer",
+        IntervalMinutes = 5,
+        IntervalCost    = 500,
+    },
+
     CompatibleTrailers = {
         ["trailers2"] = {
             maxPallets = 8,

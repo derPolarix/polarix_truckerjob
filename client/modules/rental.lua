@@ -1,5 +1,5 @@
 local clientConfig = require("config.client")
-local serverConfig = require("config.server")
+local sharedConfig = require("config.shared")
 
 LocalRental = {
     vehicleEntity = nil,
@@ -52,10 +52,10 @@ end
 function Rental.OfferInline(orderId)
     SendMessage("showRentalPrompt", {
         orderId = orderId,
-        vehicleName = serverConfig.Rental.VehicleName,
-        trailerName = serverConfig.Rental.TrailerName,
-        intervalCost = serverConfig.Rental.IntervalCost,
-        intervalMinutes = serverConfig.Rental.IntervalMinutes,
+        vehicleName = sharedConfig.Rental.VehicleName,
+        trailerName = sharedConfig.Rental.TrailerName,
+        intervalCost = sharedConfig.Rental.IntervalCost,
+        intervalMinutes = sharedConfig.Rental.IntervalMinutes,
     })
 end
 
