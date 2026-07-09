@@ -15,7 +15,7 @@ RegisterNUICallback('acceptOrder', function(data, cb)
         if success then
             Delivery.Start(orderData)
         elseif err == 'no_vehicle_or_trailer' then
-            Rental.OfferInline(data.orderId)
+            Rental.OfferInline(data.orderId, 'solo')
         else
             Framework.Notify(err or 'Fehler beim Annehmen.', 'error')
         end
@@ -31,14 +31,23 @@ RegisterNUICallback('rentBundle', function(data, cb)
             return
         end
 
-        lib.callback('polarix_trucker:acceptOrder', false, function(ok, orderData, acceptErr)
-            if ok then
-                Delivery.Start(orderData)
-            else
-                Framework.Notify(acceptErr or 'Fehler beim Annehmen.', 'error')
-            end
-            cb({ ok = ok })
-        end, data.orderId)
+        if data.mode == 'party' then
+            lib.callback('polarix_trucker:startPartyMission', false, function(ok, startErr)
+                if not ok then
+                    Framework.Notify(startErr or 'Fehler beim Starten.', 'error')
+                end
+                cb({ ok = ok })
+            end, data.orderId)
+        else
+            lib.callback('polarix_trucker:acceptOrder', false, function(ok, orderData, acceptErr)
+                if ok then
+                    Delivery.Start(orderData)
+                else
+                    Framework.Notify(acceptErr or 'Fehler beim Annehmen.', 'error')
+                end
+                cb({ ok = ok })
+            end, data.orderId)
+        end
     end)
 end)
 
@@ -323,7 +332,7 @@ RegisterNUICallback('startPartyMission', function(data, cb)
     lib.callback('polarix_trucker:startPartyMission', false, function(success, err)
         if not success then
             if err == 'no_vehicle_or_trailer' then
-                Rental.OfferInline(data.orderId)
+                Rental.OfferInline(data.orderId, 'party')
             else
                 Framework.Notify(err or 'Fehler beim Starten.', 'error')
             end

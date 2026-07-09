@@ -23,6 +23,9 @@ function PartyMission.Start(source, orderId)
 
     local order = DB.GetOrderById(orderId)
     if not order or not isTruthy(order.is_active) then return false, "Auftrag nicht verfügbar." end
+    if order.level_required > pData.level then return false, "Level nicht ausreichend." end
+    if isTruthy(order.requires_hazmat) and not Player.HasSkill(source, "h3") then return false, "Hazmat-Lizenz erforderlich." end
+    if isTruthy(order.requires_long_hauler) and not Player.HasSkill(source, "d3") then return false, "Long-Hauler-Skill erforderlich." end
     if type(order.pickup_pallet_coords) == "string" then order.pickup_pallet_coords = json.decode(order.pickup_pallet_coords) end
 
     local total = cargo.CalcPalletCount(order.weight_kg)

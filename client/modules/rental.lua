@@ -49,9 +49,12 @@ end
 
 -- Öffnet den Rental-Bestätigungsdialog in der NUI (siehe App.vue "showRentalPrompt" + RentalPromptModal.vue).
 -- Bestätigung/Ablehnung läuft vollständig über NUI-Callbacks (nui_callbacks.lua "rentBundle").
-function Rental.OfferInline(orderId)
+-- mode ("solo"/"party") wird durchgereicht, damit rentBundle nach dem Mieten den richtigen
+-- Folge-Callback (acceptOrder/startPartyMission) auslöst statt Party-Starts immer solo zu machen.
+function Rental.OfferInline(orderId, mode)
     SendMessage("showRentalPrompt", {
         orderId = orderId,
+        mode = mode or "solo",
         vehicleName = sharedConfig.Rental.VehicleName,
         trailerName = sharedConfig.Rental.TrailerName,
         intervalCost = sharedConfig.Rental.IntervalCost,

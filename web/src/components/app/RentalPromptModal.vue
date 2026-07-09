@@ -45,7 +45,7 @@ const isRenting = ref(false);
 async function confirmRent() {
   if (!store.rentalPrompt) return;
   isRenting.value = true;
-  await nuiCallback("rentBundle", { orderId: store.rentalPrompt.orderId });
+  await nuiCallback("rentBundle", { orderId: store.rentalPrompt.orderId, mode: store.rentalPrompt.mode ?? 'solo' });
   isRenting.value = false;
   store.closeRentalPrompt();
 }

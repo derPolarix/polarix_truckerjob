@@ -141,6 +141,7 @@ export interface CompanyLeaderboardEntry {
 
 export interface RentalPrompt {
   orderId: string;
+  mode?: 'solo' | 'party';
   vehicleName: string;
   trailerName: string;
   intervalCost: number;
