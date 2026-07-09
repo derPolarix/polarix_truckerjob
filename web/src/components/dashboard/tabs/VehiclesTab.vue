@@ -91,8 +91,9 @@
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
         <div v-for="t in store.config.trailersOwned" :key="t.slot" style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;overflow:hidden;display:flex;flex-direction:column">
-          <div style="width:100%;height:150px;background:#f3f4f6;display:flex;align-items:center;justify-content:center">
-            <iconify-icon icon="tabler:container" width="48" style="color:#aab0b8"></iconify-icon>
+          <div style="width:100%;height:150px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;overflow:hidden">
+            <img v-if="t.model && vehicleImages[t.model]" :src="vehicleImages[t.model]" :alt="t.name" style="width:100%;height:100%;object-fit:contain" />
+            <iconify-icon v-else icon="tabler:container" width="48" style="color:#aab0b8"></iconify-icon>
           </div>
           <div style="padding:15px 16px">
             <div style="font-size:15px;font-weight:700;color:#1b1f24;line-height:1.2">{{ t.name }}</div>
@@ -118,8 +119,9 @@
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
         <div v-for="t in store.config.trailersShop" :key="t.slot" style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;overflow:hidden;display:flex;flex-direction:column">
           <div style="position:relative">
-            <div style="width:100%;height:128px;background:#f3f4f6;display:flex;align-items:center;justify-content:center">
-              <iconify-icon icon="tabler:container" width="40" style="color:#aab0b8"></iconify-icon>
+            <div style="width:100%;height:128px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;overflow:hidden">
+              <img v-if="t.model && vehicleImages[t.model]" :src="vehicleImages[t.model]" :alt="t.name" style="width:100%;height:100%;object-fit:contain" />
+              <iconify-icon v-else icon="tabler:container" width="40" style="color:#aab0b8"></iconify-icon>
             </div>
             <div v-if="t.locked" style="position:absolute;inset:0;background:rgba(34,38,45,0.55);display:flex;align-items:center;justify-content:center">
               <iconify-icon icon="tabler:lock" width="26" style="color:#fff"></iconify-icon>

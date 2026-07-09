@@ -134,6 +134,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		return {
 			name:       shopEntry?.name ?? t.trailer_slot,
 			slot:       t.trailer_slot,
+			model:      shopEntry?.model ?? '',
 			maxPallets: shopEntry?.maxPallets ?? 0,
 			equipped:   t.trailer_slot === equippedTrailerSlot,
 		};
@@ -142,6 +143,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 	const trailersShop: TrailerShop[] = rawTrailerShop.map((t: any) => ({
 		name:       t.name ?? '',
 		slot:       t.slot ?? '',
+		model:      t.model ?? '',
 		maxPallets: t.maxPallets ?? 0,
 		price:      fmtMoney(t.price),
 		locked:     (p.level ?? 1) < (t.level_required ?? 1),
@@ -407,6 +409,7 @@ const handleMessage = (event: MessageEvent) => {
 				return {
 					name:       shopEntry?.name ?? t.trailer_slot,
 					slot:       t.trailer_slot,
+					model:      shopEntry?.model ?? '',
 					maxPallets: shopEntry?.maxPallets ?? 0,
 					equipped:   t.trailer_slot === slot,
 				} as TrailerOwned;

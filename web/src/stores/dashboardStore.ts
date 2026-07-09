@@ -58,6 +58,7 @@ export interface VehicleShop {
 export interface TrailerOwned {
   name: string;
   slot: string;
+  model: string;
   maxPallets: number;
   equipped: boolean;
 }
@@ -65,6 +66,7 @@ export interface TrailerOwned {
 export interface TrailerShop {
   name: string;
   slot: string;
+  model: string;
   maxPallets: number;
   price: string;
   locked: boolean;
@@ -248,11 +250,10 @@ const defaultConfig: DashboardConfig = {
     { name: "Freightliner Cascadia", cls: "Long-haul", slot: "veh-shop-4", model: "hauler2", speed: "130", cap: "27 t", fuel: "720 L", price: "$610,000", locked: false, lvl: "" },
   ],
   trailersOwned: [
-    { name: "Flatbed Standard", slot: "trl-owned-1", maxPallets: 8, equipped: true },
+    { name: "Flatbed Standard", slot: "trl-owned-1", model: "trailers2", maxPallets: 8, equipped: true },
   ],
   trailersShop: [
-    { name: "Flatbed Standard", slot: "trl-shop-1", maxPallets: 8, price: "$180,000", locked: false, lvl: "" },
-    { name: "Container Standard", slot: "trl-shop-2", maxPallets: 4, price: "$220,000", locked: true, lvl: "Lvl 3" },
+    { name: "Flatbed Standard", slot: "trl-shop-1", model: "trailers2", maxPallets: 8, price: "$180,000", locked: false, lvl: "" },
   ],
   spawnedVehicleSlot: "veh-owned-1",
   spawnedTrailerSlot: "trl-owned-1",

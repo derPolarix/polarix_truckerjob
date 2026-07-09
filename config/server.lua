@@ -77,5 +77,7 @@ return {
 
     TrailerShop = {
         { slot = "flatbed-std",   name = "Trailer Box Variant",   model = "trailers2", price = 180000, level_required = 1 },
+        { slot = "flatbed-std",   name = "Trailer Container Variant",   model = "docktrailer", price = 200000, level_required = 3 },
+
     },
 }
