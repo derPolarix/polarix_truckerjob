@@ -51,4 +51,11 @@ Server admins open the in-game editor with `/truckeradmin` to create, edit, or d
 
 Report bugs or request features via [GitHub Issues](https://github.com/derPolarix/polarix_truckerjob/issues).
 
-[![Star History Chart](https://api.star-history.com/svg?repos=derPolarix/polarix_truckerjob&type=Date)](https://www.star-history.com/#derPolarix/polarix_truckerjob&Date)
+
+<a href="https://www.star-history.com/?type=date&repos=derPolarix%2Fpolarix_truckerjob">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=derPolarix/polarix_truckerjob&type=date&theme=dark&legend=top-left&sealed_token=bIG9TT-k8opAcQAcJJK-A792_r1BVxf5VSTMSrWy9SX9xfGFha_j0oy_pFtuMFMxRRGZ8_uthw7Y_ZuXWD8M09AoPV_PVRQgC2OqRh3suZrqt9NPHXS2ctMGfaDcK9NZEcPQaqgneFsS-reHzngNudUkt6MRLENWYBa0N8D_H5sUfg-JLMYWP5mqr2pw" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=derPolarix/polarix_truckerjob&type=date&legend=top-left&sealed_token=bIG9TT-k8opAcQAcJJK-A792_r1BVxf5VSTMSrWy9SX9xfGFha_j0oy_pFtuMFMxRRGZ8_uthw7Y_ZuXWD8M09AoPV_PVRQgC2OqRh3suZrqt9NPHXS2ctMGfaDcK9NZEcPQaqgneFsS-reHzngNudUkt6MRLENWYBa0N8D_H5sUfg-JLMYWP5mqr2pw" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=derPolarix/polarix_truckerjob&type=date&legend=top-left&sealed_token=bIG9TT-k8opAcQAcJJK-A792_r1BVxf5VSTMSrWy9SX9xfGFha_j0oy_pFtuMFMxRRGZ8_uthw7Y_ZuXWD8M09AoPV_PVRQgC2OqRh3suZrqt9NPHXS2ctMGfaDcK9NZEcPQaqgneFsS-reHzngNudUkt6MRLENWYBa0N8D_H5sUfg-JLMYWP5mqr2pw" />
+ </picture>
+</a>
