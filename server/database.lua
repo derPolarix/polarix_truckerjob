@@ -58,6 +58,48 @@ function DB.GetOrderById(orderId)
     return MySQL.single.await(("SELECT * FROM %s WHERE id = ?"):format(T.orders), { orderId })
 end
 
+function DB.OrderIdExists(orderId)
+    return (MySQL.scalar.await(("SELECT COUNT(*) FROM %s WHERE id = ?"):format(T.orders), { orderId }) or 0) > 0
+end
+
+function DB.UpdateOrder(orderId, order, adminIdentifier)
+    MySQL.update.await(
+        ("UPDATE %s SET name=?,cargo=?,cargo_type=?,weight_kg=?,distance_km=?,reward_base=?,xp_base=?,time_minutes=?,pickup_label=?,pickup_city=?,pickup_x=?,pickup_y=?,pickup_z=?,pickup_heading=?,pickup_pallet_coords=?,dropoff_label=?,dropoff_city=?,dropoff_x=?,dropoff_y=?,dropoff_z=?,dropoff_heading=?,comment=?,tag=?,tag_color=?,tag_bg=?,icon=?,level_required=?,requires_hazmat=?,requires_long_hauler=?,updated_by=?,updated_at=NOW() WHERE id=?"):format(T.orders),
+        {
+            order.name, order.cargo, order.cargo_type, order.weight_kg, order.distance_km,
+            order.reward_base, order.xp_base, order.time_minutes, order.pickup_label, order.pickup_city,
+            order.pickup_x, order.pickup_y, order.pickup_z, order.pickup_heading or 0.0,
+            json.encode(order.pickup_pallet_coords or {}),
+            order.dropoff_label, order.dropoff_city, order.dropoff_x, order.dropoff_y, order.dropoff_z, order.dropoff_heading or 0.0,
+            order.comment, order.tag, order.tag_color, order.tag_bg, order.icon,
+            order.level_required, order.requires_hazmat and 1 or 0, order.requires_long_hauler and 1 or 0,
+            adminIdentifier, orderId,
+        }
+    )
+end
+
+function DB.SetOrderCreatedBy(orderId, adminIdentifier)
+    MySQL.update.await(
+        ("UPDATE %s SET created_by=? WHERE id=?"):format(T.orders),
+        { adminIdentifier, orderId }
+    )
+end
+
+function DB.SetOrderActive(orderId, isActive, adminIdentifier)
+    MySQL.update.await(
+        ("UPDATE %s SET is_active=?, updated_by=?, updated_at=NOW() WHERE id=?"):format(T.orders),
+        { isActive and 1 or 0, adminIdentifier, orderId }
+    )
+end
+
+function DB.CountDeliveriesForOrder(orderId)
+    return MySQL.scalar.await(("SELECT COUNT(*) FROM %s WHERE order_id = ?"):format(T.deliveries), { orderId })
+end
+
+function DB.DeleteOrderHard(orderId)
+    MySQL.query.await(("DELETE FROM %s WHERE id = ?"):format(T.orders), { orderId })
+end
+
 function DB.InsertOrder(order)
     MySQL.insert.await(
         ("INSERT INTO %s (id,name,cargo,cargo_type,weight_kg,distance_km,reward_base,xp_base,time_minutes,pickup_label,pickup_city,pickup_x,pickup_y,pickup_z,pickup_heading,pickup_pallet_coords,dropoff_label,dropoff_city,dropoff_x,dropoff_y,dropoff_z,dropoff_heading,comment,tag,tag_color,tag_bg,icon,level_required,requires_hazmat,requires_long_hauler,is_active) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"):format(T.orders),
