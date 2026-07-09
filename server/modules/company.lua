@@ -84,7 +84,7 @@ function Company.GetFull(companyId, selfIdentifier)
     }
 end
 
-function Company.Invite(source, targetName)
+function Company.Invite(source, targetIdentifier)
     local pData = Player.GetData(source)
     if not pData then return false, "Spielerdaten fehlen." end
 
@@ -94,27 +94,85 @@ function Company.Invite(source, targetName)
         return false, "Keine Berechtigung."
     end
 
-    local targetRow = DB.GetPlayerByName(targetName)
+    local targetRow = DB.GetPlayer(targetIdentifier)
     if not targetRow then return false, "Spieler nicht gefunden." end
-    if Company.GetMembership(targetRow.identifier) then
+    if Company.GetMembership(targetIdentifier) then
         return false, "Spieler ist bereits in einer Company."
     end
 
-    DB.InsertInvitation(membership.company_id, targetRow.identifier, pData.identifier)
+    DB.InsertInvitation(membership.company_id, targetIdentifier, pData.identifier)
 
     local companyRow = DB.GetCompanyById(membership.company_id)
     local companyName = companyRow and companyRow.name or "Unknown"
 
-    local targetSource = Player.GetSourceByIdentifier(targetRow.identifier)
+    local targetSource = Player.GetSourceByIdentifier(targetIdentifier)
     if targetSource then
         TriggerClientEvent("polarix_trucker:inviteReceived", targetSource,
             membership.company_id, companyName, pData.name, companyRow and companyRow.tax_rate or 0)
     end
 
-    Notifications.Push(targetRow.identifier, "company_invite", "Company Invite",
+    Notifications.Push(targetIdentifier, "company_invite", "Company Invite",
         ("%s invited you to [%s]."):format(pData.name, companyName), "tabler:mail")
 
     return true
+end
+
+function Company.CancelInvite(source, targetIdentifier)
+    local pData = Player.GetData(source)
+    if not pData then return false, "Spielerdaten fehlen." end
+
+    local membership = Company.GetMembership(pData.identifier)
+    if not membership or (membership.role ~= "owner" and membership.role ~= "manager") then
+        return false, "Keine Berechtigung."
+    end
+
+    DB.DeleteInvitation(membership.company_id, targetIdentifier)
+    return true
+end
+
+-- Scannt online Spieler in Reichweite (kein Username-Feld vorhanden — Company-Namen können
+-- doppelt vergeben sein, daher Auswahl per Nähe statt Texteingabe).
+function Company.GetNearbyRecruits(source)
+    local pData = Player.GetData(source)
+    if not pData then return {} end
+
+    local membership = Company.GetMembership(pData.identifier)
+    if not membership or (membership.role ~= "owner" and membership.role ~= "manager") then
+        return {}
+    end
+
+    local originCoords = GetEntityCoords(GetPlayerPed(source))
+    local radius = config.CompanyInviteRadius or 15.0
+
+    local nearby = {}
+    for src, pd in pairs(PlayerCache) do
+        if src ~= source and not Company.GetMembership(pd.identifier) then
+            local targetPed = GetPlayerPed(src)
+            if targetPed ~= 0 then
+                local dist = #(originCoords - GetEntityCoords(targetPed))
+                if dist <= radius then
+                    nearby[#nearby + 1] = { identifier = pd.identifier, name = pd.name, lvl = pd.level }
+                end
+            end
+        end
+    end
+    return nearby
+end
+
+function Company.GetIncomingInvites(identifier)
+    local rows = DB.GetInvitationsForPlayer(identifier)
+    local result = {}
+    for _, r in ipairs(rows) do
+        local inviter = DB.GetPlayer(r.invited_by)
+        result[#result + 1] = {
+            companyId   = r.company_id,
+            companyName = r.company_name,
+            companyTag  = r.company_tag,
+            invitedBy   = inviter and inviter.name or "Unknown",
+            created_at  = r.created_at,
+        }
+    end
+    return result
 end
 
 function Company.RespondInvite(source, companyId, accept)
@@ -310,8 +368,16 @@ lib.callback.register("polarix_trucker:createCompany", function(source, name, ta
     return true
 end)
 
-lib.callback.register("polarix_trucker:inviteMember", function(source, targetName)
-    return Company.Invite(source, targetName)
+lib.callback.register("polarix_trucker:inviteMember", function(source, targetIdentifier)
+    return Company.Invite(source, targetIdentifier)
+end)
+
+lib.callback.register("polarix_trucker:cancelInvite", function(source, targetIdentifier)
+    return Company.CancelInvite(source, targetIdentifier)
+end)
+
+lib.callback.register("polarix_trucker:getNearbyRecruits", function(source)
+    return Company.GetNearbyRecruits(source)
 end)
 
 lib.callback.register("polarix_trucker:respondInvite", function(source, companyId, accept)

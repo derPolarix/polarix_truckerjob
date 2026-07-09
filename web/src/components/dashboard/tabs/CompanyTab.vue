@@ -4,6 +4,36 @@
     <!-- ===== NO COMPANY VIEW ===== -->
     <template v-if="!store.config.companyName">
 
+      <!-- Incoming invitations -->
+      <div v-if="store.config.incomingInvites.length > 0" style="background:#fff;border:1px solid #dfe2e6;border-radius:16px;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid #eef0f2;display:flex;align-items:center;gap:9px">
+          <iconify-icon icon="tabler:mail" width="18" style="color:var(--accent)"></iconify-icon>
+          <span style="font-size:15px;font-weight:700;color:#1b1f24">Incoming invitations</span>
+          <span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">{{ store.config.incomingInvites.length }} pending</span>
+        </div>
+        <div
+          v-for="inv in store.config.incomingInvites"
+          :key="inv.companyId"
+          style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid #f1f2f4"
+        >
+          <div style="width:44px;height:44px;border-radius:11px;background:#22262d;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;color:var(--accent)">{{ inv.companyTag }}</span>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:700;color:#1b1f24">{{ inv.companyName }}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:2px">Invited by {{ inv.invitedBy }} · {{ inv.sent }}</div>
+          </div>
+          <button
+            style="width:34px;height:34px;border-radius:9px;border:1px solid #e4e6e9;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#d24b3a"
+            @click="respondToInvite(inv.companyId, false)"
+          ><iconify-icon icon="tabler:x" width="16"></iconify-icon></button>
+          <button
+            style="width:34px;height:34px;border-radius:9px;border:none;background:rgba(47,158,99,0.12);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#2f9e63"
+            @click="respondToInvite(inv.companyId, true)"
+          ><iconify-icon icon="tabler:check" width="16"></iconify-icon></button>
+        </div>
+      </div>
+
       <!-- Create company card (empty state + expandable form) -->
       <div style="background:#fff;border:1px solid #dfe2e6;border-radius:16px;padding:44px 24px;display:flex;flex-direction:column;align-items:center;text-align:center">
 
@@ -243,28 +273,54 @@
       <!-- Invitations -->
       <template v-if="store.ctab === 'invitations'">
         <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:14px;align-items:start">
-          <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px">
-            <div style="font-size:15px;font-weight:700;color:#1b1f24">Invite a driver</div>
-            <div style="font-size:13px;color:#9aa1ab;margin-top:4px">Send a recruitment offer by username.</div>
-            <div style="display:flex;align-items:center;gap:10px;margin-top:16px;padding:11px 14px;border-radius:11px;background:#f1f2f4;border:1px solid #e4e6e9">
-              <iconify-icon icon="tabler:at" width="17" style="color:#9aa1ab"></iconify-icon>
-              <input v-model="inviteUsername" placeholder="username" style="flex:1;border:none;background:transparent;outline:none;font-size:13px;color:#1b1f24;font-family:inherit" />
+          <div v-if="canInvite" style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-size:15px;font-weight:700;color:#1b1f24">Invite a driver</div>
+                <div style="font-size:13px;color:#9aa1ab;margin-top:4px">No username system — pick a driver near you.</div>
+              </div>
+              <button
+                style="width:34px;height:34px;border-radius:9px;border:1px solid #e4e6e9;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280;flex-shrink:0"
+                :style="{ opacity: nearbyLoading ? '0.5' : '1' }"
+                :disabled="nearbyLoading"
+                @click="refreshNearby"
+              ><iconify-icon icon="tabler:refresh" width="16"></iconify-icon></button>
             </div>
-            <button class="accent-btn" style="margin-top:12px;width:100%;padding:12px;font-size:13px;justify-content:center" @click="sendInvite">Send invitation</button>
+            <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+              <div
+                v-for="r in nearbyRecruits"
+                :key="r.identifier"
+                style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;background:#f6f7f8;border:1px solid #eef0f2"
+              >
+                <div style="width:30px;height:30px;border-radius:8px;background:#f1f2f4;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#6b7280;flex-shrink:0">{{ r.name[0] }}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:13px;font-weight:600;color:#1b1f24;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9aa1ab">Lvl {{ r.lvl }}</div>
+                </div>
+                <button class="accent-btn" style="padding:7px 12px;font-size:12px;flex-shrink:0" @click="sendInvite(r.identifier)">Invite</button>
+              </div>
+              <div v-if="!nearbyLoading && nearbyRecruits.length === 0" style="padding:16px 0;text-align:center;font-size:13px;color:#9aa1ab">No nearby drivers without a company. Get closer and refresh.</div>
+            </div>
+          </div>
+          <div v-else style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;color:#9aa1ab;font-size:13px">
+            Only owners and managers can invite drivers.
           </div>
           <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
               <div style="font-size:15px;font-weight:700;color:#1b1f24">Pending invitations</div>
               <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">{{ store.config.invitations.length }} sent</span>
             </div>
-            <div v-for="v in store.config.invitations" :key="v.name" style="display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid #eef0f2">
+            <div v-for="v in store.config.invitations" :key="v.identifier" style="display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid #eef0f2">
               <div style="width:36px;height:36px;border-radius:10px;background:#f1f2f4;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#6b7280;flex-shrink:0">{{ v.name[0] }}</div>
               <div style="flex:1;min-width:0">
                 <div style="font-size:14px;font-weight:600;color:#1b1f24">{{ v.name }}</div>
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9aa1ab;margin-top:2px">Lvl {{ v.lvl }} · sent {{ v.sent }}</div>
               </div>
-              <button style="width:34px;height:34px;border-radius:9px;border:1px solid #e4e6e9;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#d24b3a"><iconify-icon icon="tabler:x" width="16"></iconify-icon></button>
-              <button style="width:34px;height:34px;border-radius:9px;border:none;background:rgba(47,158,99,0.12);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#2f9e63"><iconify-icon icon="tabler:check" width="16"></iconify-icon></button>
+              <button
+                v-if="canInvite"
+                style="width:34px;height:34px;border-radius:9px;border:1px solid #e4e6e9;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#d24b3a"
+                @click="cancelInvite(v.identifier)"
+              ><iconify-icon icon="tabler:x" width="16"></iconify-icon></button>
             </div>
             <div v-if="store.config.invitations.length === 0" style="padding:20px 0;text-align:center;font-size:13px;color:#9aa1ab">No pending invitations.</div>
           </div>
@@ -449,12 +505,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
-import type { OpenCompanyEntry } from "@/stores/dashboardStore";
+import type { OpenCompanyEntry, NearbyRecruit } from "@/stores/dashboardStore";
 import { nuiCallback } from "@/nui/nuiCallbacks";
 
 const store = useDashboardStore();
 const accentDark = "#b58a05";
 const isOwner = computed(() => store.config.companyMyRole === 'owner');
+const canInvite = computed(() => store.config.companyMyRole === 'owner' || store.config.companyMyRole === 'manager');
 
 // --- No-company state ---
 const showCreate    = ref(false);
@@ -492,14 +549,42 @@ async function requestJoinAction(company: OpenCompanyEntry) {
   }
 }
 
-// --- Invite ---
-const inviteUsername = ref('');
+// --- Invite (no username system — pick from nearby online drivers) ---
+const nearbyRecruits = ref<NearbyRecruit[]>([]);
+const nearbyLoading   = ref(false);
 
-async function sendInvite() {
-  if (!inviteUsername.value.trim()) return;
-  await nuiCallback('inviteMember', { name: inviteUsername.value.trim() });
-  inviteUsername.value = '';
+async function refreshNearby() {
+  nearbyLoading.value = true;
+  const res = await nuiCallback<{ ok: boolean; list: NearbyRecruit[] }>('getNearbyRecruits');
+  nearbyRecruits.value = res?.list ?? [];
+  nearbyLoading.value = false;
 }
+
+async function sendInvite(identifier: string) {
+  const res = await nuiCallback<{ ok: boolean }>('inviteMember', { identifier });
+  if (res?.ok) {
+    nearbyRecruits.value = nearbyRecruits.value.filter(r => r.identifier !== identifier);
+    await nuiCallback('refetchDashboard');
+  }
+}
+
+async function cancelInvite(identifier: string) {
+  const res = await nuiCallback<{ ok: boolean }>('cancelInvite', { identifier });
+  if (res?.ok) await nuiCallback('refetchDashboard');
+}
+
+async function respondToInvite(companyId: number, accept: boolean) {
+  const res = await nuiCallback<{ ok: boolean }>('respondInvite', { companyId, accept });
+  if (res?.ok) {
+    isRefetching.value = true;
+    await nuiCallback('refetchDashboard');
+    isRefetching.value = false;
+  }
+}
+
+watch(() => store.ctab, (v) => {
+  if (v === 'invitations' && canInvite.value) refreshNearby();
+});
 
 // --- Bank ---
 const bankAmount = ref<number | null>(null);

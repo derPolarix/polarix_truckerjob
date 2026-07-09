@@ -122,7 +122,22 @@ RegisterNUICallback('inviteMember', function(data, cb)
             Framework.Notify('Einladung gesendet!', 'success')
         end
         cb({ ok = success })
-    end, data.name)
+    end, data.identifier)
+end)
+
+RegisterNUICallback('cancelInvite', function(data, cb)
+    lib.callback('polarix_trucker:cancelInvite', false, function(success, err)
+        if not success then
+            Framework.Notify(err or 'Zurückziehen fehlgeschlagen.', 'error')
+        end
+        cb({ ok = success })
+    end, data.identifier)
+end)
+
+RegisterNUICallback('getNearbyRecruits', function(_, cb)
+    lib.callback('polarix_trucker:getNearbyRecruits', false, function(list)
+        cb({ ok = true, list = list or {} })
+    end)
 end)
 
 RegisterNUICallback('respondInvite', function(data, cb)

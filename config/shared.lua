@@ -46,6 +46,10 @@ return {
         heading  = 12.0,
     },
 
+    -- Radius (m) für "nearby recruits" beim Company-Invite — kein Username-System vorhanden,
+    -- daher Auswahl über online Spieler in Reichweite statt Namenseingabe.
+    CompanyInviteRadius = 15.0,
+
     ForkliftModel         = "forklift",
     ForkliftAttachBone    = "forks_attach",
     ForkliftAttachOffset  = { x = 0.0, y = 0.0, z = 0.05, rx = 0.0, ry = 0.0, rz = 0.0 },

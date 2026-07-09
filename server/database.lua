@@ -243,10 +243,10 @@ function DB.UpdateMemberStats(identifier, companyId, earnings)
     )
 end
 
-function DB.GetPlayerByName(name)
-    return MySQL.single.await(
-        ("SELECT identifier, level FROM %s WHERE name = ?"):format(T.players),
-        { name }
+function DB.GetInvitationsForPlayer(identifier)
+    return MySQL.query.await(
+        ("SELECT i.company_id, i.created_at, i.invited_by, c.name AS company_name, c.tag AS company_tag FROM %s i JOIN %s c ON c.id = i.company_id WHERE i.target_identifier = ?"):format(T.invitations, T.companies),
+        { identifier }
     )
 end
 

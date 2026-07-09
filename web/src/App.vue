@@ -26,7 +26,7 @@ import Sidebar from "@/components/app/Sidebar.vue";
 import GameHud from "@/components/app/GameHud.vue";
 import RentalPromptModal from "@/components/app/RentalPromptModal.vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
-import type { DashboardConfig, Order, VehicleOwned, VehicleShop, TrailerOwned, TrailerShop, SkillBranch, SkillNode, LeaderboardEntry, CompanyLeaderboardEntry, OpenCompanyEntry, RentalPrompt } from "@/stores/dashboardStore";
+import type { DashboardConfig, Order, VehicleOwned, VehicleShop, TrailerOwned, TrailerShop, SkillBranch, SkillNode, LeaderboardEntry, CompanyLeaderboardEntry, OpenCompanyEntry, IncomingInvitation, RentalPrompt } from "@/stores/dashboardStore";
 import { useGameHudStore } from "@/stores/gameHudStore";
 import { useNotificationsStore } from "@/stores/notificationsStore";
 
@@ -189,6 +189,14 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		minLevel:    c.min_level_to_join ?? 1,
 	}));
 
+	const incomingInvites: IncomingInvitation[] = (data.incomingInvites ?? []).map((inv: any) => ({
+		companyId:   inv.companyId ?? 0,
+		companyName: inv.companyName ?? '',
+		companyTag:  inv.companyTag ?? '',
+		invitedBy:   inv.invitedBy ?? '',
+		sent:        fmtDate(inv.created_at),
+	}));
+
 	const statusTag: Record<string, string> = { completed: 'Completed', failed: 'Failed', abandoned: 'Abandoned', active: 'Active' };
 	const statusIcon: Record<string, string> = { completed: 'tabler:building-warehouse', failed: 'tabler:alert-triangle', abandoned: 'tabler:circle-x', active: 'tabler:road' };
 
@@ -237,6 +245,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 				you:        m.isYou ?? false,
 			})),
 			invitations: (rawCompany.invitations ?? []).map((inv: any) => ({
+				identifier: inv.identifier ?? '',
 				name: inv.name ?? '',
 				lvl:  inv.lvl ?? 1,
 				sent: fmtDate(inv.created_at),
@@ -312,6 +321,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		leaderboard,
 		companyLeaderboard,
 		openCompanies,
+		incomingInvites,
 		...companyFields,
 	};
 }

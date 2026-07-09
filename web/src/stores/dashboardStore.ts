@@ -101,9 +101,24 @@ export interface Transaction {
 }
 
 export interface Invitation {
+  identifier: string;
   name: string;
   lvl: number;
   sent: string;
+}
+
+export interface IncomingInvitation {
+  companyId: number;
+  companyName: string;
+  companyTag: string;
+  invitedBy: string;
+  sent: string;
+}
+
+export interface NearbyRecruit {
+  identifier: string;
+  name: string;
+  lvl: number;
 }
 
 export interface LeaderboardEntry {
@@ -170,6 +185,7 @@ export interface DashboardConfig {
   leaderboard: LeaderboardEntry[];
   companyLeaderboard: CompanyLeaderboardEntry[];
   openCompanies: OpenCompanyEntry[];
+  incomingInvites: IncomingInvitation[];
   companyName: string;
   companyDescription: string;
   companyTag: string;
@@ -255,6 +271,7 @@ const defaultConfig: DashboardConfig = {
     { rank: 3, name: "Coastline Carriers", tag: "CLC", level: 9, deliveries: 960, earned: "$12,100,000" },
   ],
   openCompanies: [],
+  incomingInvites: [],
   companyName: "Polarix Freight Co.",
   companyDescription: "Reliable cross-country hauls. We move it, you trust it.",
   companyTag: "PLRX",
@@ -281,9 +298,9 @@ const defaultConfig: DashboardConfig = {
     { name: "RookieRiley", role: "Recruit", deliveries: 0, earned: "$0", status: "offline", lvl: 1 },
   ],
   invitations: [
-    { name: "SpeedyGonzales", lvl: 14, sent: "2d ago" },
-    { name: "BigRigBenny", lvl: 21, sent: "5d ago" },
-    { name: "CargoQueen", lvl: 9, sent: "1w ago" },
+    { identifier: "mock-1", name: "SpeedyGonzales", lvl: 14, sent: "2d ago" },
+    { identifier: "mock-2", name: "BigRigBenny", lvl: 21, sent: "5d ago" },
+    { identifier: "mock-3", name: "CargoQueen", lvl: 9, sent: "1w ago" },
   ],
   transactions: [
     { label: "Delivery payout – TruckerBob", amt: "+$13,500", when: "2m ago", pos: true, icon: "tabler:arrow-down-left" },

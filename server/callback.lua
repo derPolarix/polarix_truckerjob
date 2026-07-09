@@ -60,6 +60,7 @@ lib.callback.register("polarix_trucker:openDashboard", function(source)
         company            = companyData,
         myRole             = membership and membership.role or nil,
         openCompanies      = (not membership) and DB.GetOpenRecruitmentCompanies() or nil,
+        incomingInvites    = (not membership) and Company.GetIncomingInvites(pData.identifier) or nil,
         leaderboard        = Leaderboard.GetGlobal(),
         companyLeaderboard = Leaderboard.GetCompanies(),
         history            = Leaderboard.GetHistory(source),
