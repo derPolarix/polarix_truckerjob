@@ -10,8 +10,8 @@
         </div>
         <div style="padding:10px 12px">
           <input v-model="search" placeholder="Suche…" style="width:100%;padding:7px 10px;border-radius:8px;border:1px solid #3a414b;background:#2b3039;color:#fff;font-family:inherit;font-size:12px;outline:none" />
-          <label style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:#9aa1ab;cursor:pointer">
-            <input type="checkbox" v-model="onlyActive" /> Nur aktiv
+          <label class="chk chk-dark" style="margin-top:8px">
+            <input type="checkbox" v-model="onlyActive" /><span class="chk-box"></span> Nur aktiv
           </label>
         </div>
         <nav style="flex:1;overflow-y:auto;padding:4px 8px">
@@ -63,8 +63,8 @@
 
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px">
             <label class="field-label">Level erforderlich<input type="number" min="1" v-model.number="store.form.level_required" class="fld" /></label>
-            <label style="display:flex;align-items:center;gap:6px;margin-top:18px;font-size:12px;cursor:pointer"><input type="checkbox" v-model="store.form.requires_hazmat" /> Hazmat nötig</label>
-            <label style="display:flex;align-items:center;gap:6px;margin-top:18px;font-size:12px;cursor:pointer"><input type="checkbox" v-model="store.form.requires_long_hauler" /> Long-Hauler nötig</label>
+            <label class="chk" style="margin-top:18px"><input type="checkbox" v-model="store.form.requires_hazmat" /><span class="chk-box"></span> Hazmat nötig</label>
+            <label class="chk" style="margin-top:18px"><input type="checkbox" v-model="store.form.requires_long_hauler" /><span class="chk-box"></span> Long-Hauler nötig</label>
           </div>
 
           <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#9aa1ab;margin:18px 0 8px">Pickup</div>
@@ -101,7 +101,7 @@
 
           <div style="display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:10px;align-items:end">
             <label class="field-label">Distanz (km)<input type="number" step="0.1" v-model.number="store.form.distance_km" :disabled="!distanceOverride" class="fld" /></label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;cursor:pointer;margin-bottom:8px"><input type="checkbox" v-model="distanceOverride" /> Manuell überschreiben</label>
+            <label class="chk" style="margin-bottom:8px"><input type="checkbox" v-model="distanceOverride" /><span class="chk-box"></span> Manuell überschreiben</label>
           </div>
 
           <label class="field-label" style="margin-top:10px">Kommentar<textarea v-model="store.form.comment" rows="2" class="fld" style="resize:vertical" /></label>
@@ -244,4 +244,67 @@ async function closeEditor() {
 }
 .admin-form-scroll::-webkit-scrollbar { width: 8px; }
 .admin-form-scroll::-webkit-scrollbar-thumb { background: #c9cdd3; border-radius: 8px; }
+
+/* Custom Checkbox — native input bleibt für a11y/Klickfläche, aber unsichtbar */
+.chk {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: #6b7280;
+  cursor: pointer;
+  user-select: none;
+}
+.chk input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.chk-box {
+  position: relative;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+  border: 1px solid #d5d8dc;
+  background: #fff;
+  transition: background 0.12s, border-color 0.12s;
+}
+.chk-box::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #1b1f24;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.chk input:checked + .chk-box {
+  background: #e8b408;
+  border-color: #e8b408;
+}
+.chk input:checked + .chk-box::after {
+  opacity: 1;
+}
+.chk input:focus-visible + .chk-box {
+  outline: 2px solid rgba(232, 180, 8, 0.45);
+  outline-offset: 2px;
+}
+.chk-dark {
+  color: #9aa1ab;
+  font-size: 11px;
+}
+.chk-dark .chk-box {
+  background: #2b3039;
+  border-color: #3a414b;
+}
+.chk-dark input:checked + .chk-box::after {
+  border-color: #22262d;
+}
 </style>
