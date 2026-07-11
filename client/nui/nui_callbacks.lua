@@ -393,6 +393,15 @@ RegisterNUICallback('adminDeleteOrder', function(data, cb)
     end, data.orderId)
 end)
 
+RegisterNUICallback('adminForceDeleteOrder', function(data, cb)
+    lib.callback('polarix_trucker:adminForceDeleteOrder', false, function(success, err)
+        if not success then
+            Framework.Notify(err or Locale("notify.failed_delete"), 'error')
+        end
+        cb({ ok = success, err = not success and err or nil })
+    end, data.orderId)
+end)
+
 RegisterNUICallback('adminCloneOrder', function(data, cb)
     lib.callback('polarix_trucker:adminCloneOrder', false, function(success, result)
         if not success then
