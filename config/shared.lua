@@ -1,5 +1,5 @@
 return {
-    Framework = "qbox",
+    Framework = "qbox", -- "qbox", "qb-core", "esx"
     Debug = false,
     PrintDebug = true,
 
