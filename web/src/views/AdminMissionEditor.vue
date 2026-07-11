@@ -41,7 +41,7 @@
           Mission auswählen oder neu anlegen.
         </div>
 
-        <div v-else style="flex:1;overflow-y:auto;padding:16px" class="admin-form-scroll">
+        <div v-else style="flex:1;overflow-y:auto;overflow-x:hidden;padding:16px" class="admin-form-scroll">
           <div v-if="store.error" style="padding:8px 12px;border-radius:8px;background:rgba(220,38,38,0.1);color:#dc2626;font-size:12px;margin-bottom:12px">{{ store.error }}</div>
 
           <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px">
@@ -68,36 +68,43 @@
           </div>
 
           <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#9aa1ab;margin:18px 0 8px">Pickup</div>
-          <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:10px;align-items:end">
+          <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;align-items:end">
             <label class="field-label">Label<input v-model="store.form.pickup_label" class="fld" /></label>
             <label class="field-label">Stadt<input v-model="store.form.pickup_city" class="fld" /></label>
-            <button @click="store.useCurrentPositionForPickup()" class="mini-btn">Aktuelle Position nutzen</button>
           </div>
-          <div style="font-size:11px;color:#9aa1ab;margin-top:6px" v-if="store.form.pickup_x != null">
-            {{ store.form.pickup_x?.toFixed(1) }}, {{ store.form.pickup_y?.toFixed(1) }}, {{ store.form.pickup_z?.toFixed(1) }} · Heading {{ store.form.pickup_heading.toFixed(0) }}°
+          <div style="display:grid;grid-template-columns:repeat(4,1fr) auto;gap:8px;margin-top:8px;align-items:center">
+            <input type="number" step="0.1" v-model.number="store.form.pickup_x" class="fld" placeholder="X" title="X" />
+            <input type="number" step="0.1" v-model.number="store.form.pickup_y" class="fld" placeholder="Y" title="Y" />
+            <input type="number" step="0.1" v-model.number="store.form.pickup_z" class="fld" placeholder="Z" title="Z" />
+            <input type="number" step="0.1" v-model.number="store.form.pickup_heading" class="fld" placeholder="Heading°" title="Heading°" />
+            <button @click="store.useCurrentPositionForPickup()" class="icon-btn" title="Aktuelle Position nutzen" data-tooltip="Aktuelle Position nutzen"><iconify-icon icon="tabler:crosshair" width="16"></iconify-icon></button>
           </div>
 
           <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
             <div style="font-size:11px;font-weight:600;color:#6b7280;flex:1">Paletten ({{ store.form.pickup_pallet_coords.length }})</div>
-            <button @click="store.generateGrid()" class="mini-btn" :disabled="store.form.pickup_x == null">Auto-Grid generieren</button>
+            <button @click="store.generateGrid()" class="mini-btn" :disabled="store.form.pickup_x == null" title="Erzeugt automatisch ein Paletten-Raster ausgehend von der Pickup-Position" data-tooltip="Erzeugt automatisch ein Paletten-Raster ausgehend von der Pickup-Position">Auto-Grid generieren</button>
             <button @click="store.addPalletRow()" class="mini-btn">+ manuell</button>
           </div>
           <div v-for="(p, idx) in store.form.pickup_pallet_coords" :key="idx" style="display:flex;align-items:center;gap:8px;margin-top:6px">
             <div style="flex:1;font-size:11px;color:#3c424b;background:#f6f7f8;border:1px solid #eef0f2;border-radius:7px;padding:5px 8px">#{{ idx + 1 }} — {{ p.x.toFixed(1) }}, {{ p.y.toFixed(1) }}, {{ p.z.toFixed(1) }}</div>
-            <button @click="store.useCurrentPositionForPallet(idx)" class="mini-btn">Position nutzen</button>
+            <button @click="store.useCurrentPositionForPallet(idx)" class="icon-btn" title="Position nutzen" data-tooltip="Position nutzen"><iconify-icon icon="tabler:crosshair" width="16"></iconify-icon></button>
             <button @click="store.confirmPallet(idx)" class="mini-btn">Bestätigen</button>
             <button @click="store.removePalletRow(idx)" class="mini-btn danger">✕</button>
           </div>
 
           <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#9aa1ab;margin:18px 0 8px">Dropoff</div>
-          <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:10px;align-items:end">
+          <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;align-items:end">
             <label class="field-label">Label<input v-model="store.form.dropoff_label" class="fld" /></label>
             <label class="field-label">Stadt<input v-model="store.form.dropoff_city" class="fld" /></label>
-            <button @click="store.useCurrentPositionForDropoff()" class="mini-btn">Aktuelle Position nutzen</button>
           </div>
-          <div style="font-size:11px;color:#9aa1ab;margin-top:6px" v-if="store.form.dropoff_x != null">
-            {{ store.form.dropoff_x?.toFixed(1) }}, {{ store.form.dropoff_y?.toFixed(1) }}, {{ store.form.dropoff_z?.toFixed(1) }} · Heading {{ store.form.dropoff_heading.toFixed(0) }}° · rotes Outline live in-game
+          <div style="display:grid;grid-template-columns:repeat(4,1fr) auto;gap:8px;margin-top:8px;align-items:center">
+            <input type="number" step="0.1" v-model.number="store.form.dropoff_x" @change="onDropoffCoordsChange" class="fld" placeholder="X" title="X" />
+            <input type="number" step="0.1" v-model.number="store.form.dropoff_y" @change="onDropoffCoordsChange" class="fld" placeholder="Y" title="Y" />
+            <input type="number" step="0.1" v-model.number="store.form.dropoff_z" @change="onDropoffCoordsChange" class="fld" placeholder="Z" title="Z" />
+            <input type="number" step="0.1" v-model.number="store.form.dropoff_heading" @change="onDropoffCoordsChange" class="fld" placeholder="Heading°" title="Heading°" />
+            <button @click="store.useCurrentPositionForDropoff()" class="icon-btn" title="Aktuelle Position nutzen" data-tooltip="Aktuelle Position nutzen"><iconify-icon icon="tabler:crosshair" width="16"></iconify-icon></button>
           </div>
+          <div style="font-size:10px;color:#9aa1ab;margin-top:4px" v-if="store.form.dropoff_x != null">rotes Outline live in-game</div>
 
           <div style="display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:10px;align-items:end">
             <label class="field-label">Distanz (km)<input type="number" step="0.1" v-model.number="store.form.distance_km" :disabled="!distanceOverride" class="fld" /></label>
@@ -161,6 +168,10 @@ function onCargoTypeChange(type: string) {
   store.applyCargoType(type);
 }
 
+function onDropoffCoordsChange() {
+  if (store.form?.dropoff_x != null) store.setDropoffPreview(true);
+}
+
 // Distanz automatisch nachziehen, solange der Admin sie nicht manuell überschreibt.
 watch(
   () => [store.form?.pickup_x, store.form?.pickup_y, store.form?.pickup_z, store.form?.dropoff_x, store.form?.dropoff_y, store.form?.dropoff_z],
@@ -208,6 +219,9 @@ async function closeEditor() {
   font-size: 12px;
   outline: none;
   color: #1b1f24;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 .mini-btn {
   padding: 7px 10px;
@@ -220,6 +234,11 @@ async function closeEditor() {
   cursor: pointer;
   color: #3c424b;
   white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.mini-btn:hover:not(:disabled) {
+  background: #eef0f2;
+  border-color: #c8ccd2;
 }
 .mini-btn:disabled {
   opacity: 0.45;
@@ -228,6 +247,58 @@ async function closeEditor() {
 .mini-btn.danger {
   color: #dc2626;
   border-color: rgba(220, 38, 38, 0.3);
+}
+.mini-btn.danger:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.5);
+}
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  border: 1px solid #e4e6e9;
+  background: #fff;
+  cursor: pointer;
+  color: #3c424b;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.icon-btn:hover {
+  background: #e8b408;
+  border-color: #e8b408;
+  color: #1b1f24;
+}
+[data-tooltip] {
+  position: relative;
+}
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 7px);
+  right: 0;
+  background: #1b1f24;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  padding: 5px 8px;
+  border-radius: 6px;
+  white-space: normal;
+  width: max-content;
+  max-width: 220px;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.12s ease, visibility 0.12s ease;
+  z-index: 30;
+}
+[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
 }
 .accent-btn {
   background: #e8b408;
