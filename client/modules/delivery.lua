@@ -149,7 +149,7 @@ function Delivery.StartDamageMonitor(veh)
                 break
             end
 
-            local trailerEntity = (LocalTrailer and LocalTrailer.entity) or (LocalRental and LocalRental.trailerEntity)
+            local trailerEntity = GetActiveTrailer()
             if trailerEntity then
                 if not DoesEntityExist(trailerEntity) then
                     Delivery.ForceFailure(Locale("notify.trailer_destroyed"))

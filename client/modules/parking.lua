@@ -7,8 +7,8 @@ local function NormalizeHeadingDelta(a, b)
 end
 
 function IsTrailerParkedCorrectly(order)
-    local trailer = LocalTrailer and LocalTrailer.entity
-    if not trailer or not DoesEntityExist(trailer) then return false end
+    local trailer = GetActiveTrailer()
+    if not trailer then return false end
 
     local target = vector3(order.dropoff_x, order.dropoff_y, order.dropoff_z)
     local trailerPos = GetEntityCoords(trailer)

@@ -213,8 +213,9 @@ lib.addKeybind({
 })
 
 function GetTrailerModelName()
-    if not LocalTrailer.entity or not DoesEntityExist(LocalTrailer.entity) then return nil end
-    local modelHash = GetEntityModel(LocalTrailer.entity)
+    local trailer = GetActiveTrailer()
+    if not trailer then return nil end
+    local modelHash = GetEntityModel(trailer)
     for name, _ in pairs(shared.CompatibleTrailers) do
         if GetHashKey(name) == modelHash then return name end
     end
@@ -230,7 +231,8 @@ end
 
 function TryLoadPalletOnTrailer()
     if not ForkliftPallet.entity or not DoesEntityExist(ForkliftPallet.entity) then return end
-    if not LocalTrailer.entity or not DoesEntityExist(LocalTrailer.entity) then return end
+    local trailer = GetActiveTrailer()
+    if not trailer then return end
 
     local trailerModel = GetTrailerModelName()
     local trailerConfig = trailerModel and shared.CompatibleTrailers[trailerModel]
@@ -266,13 +268,13 @@ function TryLoadPalletOnTrailer()
 
     local prop = ForkliftPallet.entity
     DetachEntity(prop, true, true)
-    AttachEntityToEntity(prop, LocalTrailer.entity, 0,
+    AttachEntityToEntity(prop, trailer, 0,
         offset.x, offset.y, offset.z,
         offset.rx, offset.ry, offset.rz,
         false, false, false, false, 2, true)
 
     SetEntityCollision(prop, true, true)
-    SetEntityNoCollisionEntity(prop, LocalTrailer.entity, true)
+    SetEntityNoCollisionEntity(prop, trailer, true)
     for otherSlot, otherEntity in pairs(LoadedPallets) do
         if otherSlot ~= slot and otherEntity and DoesEntityExist(otherEntity) then
             SetEntityNoCollisionEntity(prop, otherEntity, true)
@@ -299,7 +301,8 @@ function AutoLoadAllPallets()
         return
     end
 
-    if not LocalTrailer.entity or not DoesEntityExist(LocalTrailer.entity) then
+    local trailer = GetActiveTrailer()
+    if not trailer then
         Framework.Notify(Locale("notify.no_trailer_present"), "error")
         return
     end
@@ -330,7 +333,7 @@ function AutoLoadAllPallets()
         local prop = CreateObject(modelHash, 0.0, 0.0, 0.0, false, false, false)
         if not prop or prop == 0 then break end
 
-        AttachEntityToEntity(prop, LocalTrailer.entity, 0,
+        AttachEntityToEntity(prop, trailer, 0,
             offset.x, offset.y, offset.z,
             offset.rx, offset.ry, offset.rz,
             false, false, false, false, 2, true)
@@ -338,7 +341,7 @@ function AutoLoadAllPallets()
         SetEntityInvincible(prop, true)
         SetEntityProofs(prop, true, true, true, true, true, true, true, true)
         SetEntityCollision(prop, true, true)
-        SetEntityNoCollisionEntity(prop, LocalTrailer.entity, true)
+        SetEntityNoCollisionEntity(prop, trailer, true)
         for otherSlot, otherEntity in pairs(LoadedPallets) do
             if otherSlot ~= slot and otherEntity and DoesEntityExist(otherEntity) then
                 SetEntityNoCollisionEntity(prop, otherEntity, true)

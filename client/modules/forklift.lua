@@ -7,9 +7,10 @@ ForkliftDockState = {}
 Forklift = {}
 
 local function GetTrailerNetId()
-    if not LocalTrailer.entity or not DoesEntityExist(LocalTrailer.entity) then return nil end
-    if not NetworkGetEntityIsNetworked(LocalTrailer.entity) then return nil end
-    return NetworkGetNetworkIdFromEntity(LocalTrailer.entity)
+    local trailer = GetActiveTrailer()
+    if not trailer then return nil end
+    if not NetworkGetEntityIsNetworked(trailer) then return nil end
+    return NetworkGetNetworkIdFromEntity(trailer)
 end
 
 local function IsForkliftDeployed(netId)
@@ -39,9 +40,10 @@ CreateThread(function()
 end)
 
 local function GetForkliftInteractionCoords()
-    if not LocalTrailer.entity or not DoesEntityExist(LocalTrailer.entity) then return nil end
+    local trailer = GetActiveTrailer()
+    if not trailer then return nil end
     local offset = clientConfig.ForkliftDeployOffset
-    return GetOffsetFromEntityInWorldCoords(LocalTrailer.entity, offset.x, offset.y, offset.z)
+    return GetOffsetFromEntityInWorldCoords(trailer, offset.x, offset.y, offset.z)
 end
 
 local function GetForkliftInteractionRadius()
@@ -69,10 +71,11 @@ function Forklift.Deploy()
         return
     end
 
-    if not GetForkliftInteractionCoords() then return end
+    local trailer = GetActiveTrailer()
+    if not trailer then return end
     local spawnOffset = clientConfig.ForkliftSpawnOffset
-    local coords = GetOffsetFromEntityInWorldCoords(LocalTrailer.entity, spawnOffset.x, spawnOffset.y, spawnOffset.z)
-    local heading = GetEntityHeading(LocalTrailer.entity)
+    local coords = GetOffsetFromEntityInWorldCoords(trailer, spawnOffset.x, spawnOffset.y, spawnOffset.z)
+    local heading = GetEntityHeading(trailer)
 
     local modelHash = GetHashKey(sharedConfig.ForkliftModel)
     RequestModel(modelHash)
@@ -126,7 +129,9 @@ function Forklift.Stow()
         return
     end
 
-    local dist = #(GetEntityCoords(dock.entity) - GetEntityCoords(LocalTrailer.entity))
+    local trailer = GetActiveTrailer()
+    if not trailer then return end
+    local dist = #(GetEntityCoords(dock.entity) - GetEntityCoords(trailer))
     if dist > 10.0 then
         Framework.Notify(Locale("notify.bring_forklift_closer_trailer"), "error")
         return
@@ -230,8 +235,9 @@ CreateThread(function()
         Wait(500)
 
         if usingOxTarget then
-            if LocalTrailer.entity and DoesEntityExist(LocalTrailer.entity) then
-                EnsureOxTargetRegistered(LocalTrailer.entity)
+            local trailer = GetActiveTrailer()
+            if trailer then
+                EnsureOxTargetRegistered(trailer)
             end
         else
             local inRange = IsInForkliftInteractionRange()

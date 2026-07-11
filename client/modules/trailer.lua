@@ -8,6 +8,19 @@ LocalTrailer = {
 
 Trailer = {}
 
+-- Trailer in play can come from either an owned trailer (LocalTrailer) or an
+-- active rental (LocalRental) — callers that need "whatever trailer the player
+-- currently has" should go through this instead of reading LocalTrailer.entity directly.
+function GetActiveTrailer()
+    if LocalTrailer.entity and DoesEntityExist(LocalTrailer.entity) then
+        return LocalTrailer.entity
+    end
+    if LocalRental and LocalRental.trailerEntity and DoesEntityExist(LocalRental.trailerEntity) then
+        return LocalRental.trailerEntity
+    end
+    return nil
+end
+
 -- Spawn point is derived from the vehicle since AttachVehicleToTrailer immediately
 -- snaps the trailer to the hitch anyway — it's never parked standalone.
 function Trailer.Spawn()
