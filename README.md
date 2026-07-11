@@ -39,7 +39,7 @@ Everything is tunable from three files, no code changes required:
 
 | File | What you can change |
 |---|---|
-| [config/shared.lua](config/shared.lua) | Skill tree & perks, XP curve, rental pricing, trailer capacities, party size and reward bonus |
+| [config/shared.lua](config/shared.lua) | Language, Skill tree & perks, XP curve, rental pricing, trailer capacities, party size and reward bonus |
 | [config/server.lua](config/server.lua) | Framework, admin access, vehicle shop lineup |
 | [config/client.lua](config/client.lua) | Truck depot location and blip |
 
