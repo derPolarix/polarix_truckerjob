@@ -92,7 +92,7 @@ local function setupTarget(ped)
 
             if dist < 15.0 then
                 DrawMarker(2, npcPos.x, npcPos.y, npcPos.z, 0, 0, 0, 0, 0, 0,
-                    0.8, 0.8, 0.4, 232, 180, 8, 150, false, true, 2, false, "", "", false)
+                    0.8, 0.8, 0.4, 232, 180, 8, 150, false, true, 2, false, nil, nil, false)
             end
 
             if promptVisible and IsControlJustReleased(0, 38) then -- E
