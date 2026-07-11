@@ -405,6 +405,12 @@ RegisterNUICallback('adminCloneOrder', function(data, cb)
     end, data.orderId)
 end)
 
+RegisterNUICallback('adminImportSampleMissions', function(_, cb)
+    lib.callback('polarix_trucker:adminImportSampleMissions', false, function(success)
+        cb({ ok = success })
+    end)
+end)
+
 -- Erfolgreicher Test startet die Lieferung sofort für den Admin (gleicher Pfad wie acceptOrder).
 -- Web schließt das Admin-Fenster danach selbst (persistantStore.closeNui()).
 RegisterNUICallback('adminTestRunOrder', function(data, cb)

@@ -1,4 +1,3 @@
-local config = require("config.server")
 local cargo = require("shared.cargo")
 local Locale = require("shared.locale")
 
@@ -7,18 +6,6 @@ ActiveDeliveries = {} -- source -> { deliveryId, orderId, totalPallets, remainin
 
 -- oxmysql returns TINYINT(1) as Lua boolean, not integer 1
 local function isTruthy(v) return v == 1 or v == true end
-
--- TEMPORÄR: Seed initiale Orders aus Config wenn Tabelle leer.
--- ZIEL: Orders ausschliesslich via Admin-Menü verwalten, dieser Seed entfällt dann.
-function Orders.SeedIfEmpty()
-    if (DB.CountOrders() or 0) > 0 then return end
-    for _, order in ipairs(config.SeedOrders or {}) do
-        local anchor = vector3(order.pickup_x, order.pickup_y, order.pickup_z)
-        local count = cargo.CalcPalletCount(order.weight_kg)
-        order.pickup_pallet_coords = cargo.GenerateGridCoords(anchor, order.pickup_heading, count)
-        DB.InsertOrder(order)
-    end
-end
 
 function Orders.GetAvailableForPlayer(source)
     local pData = Player.GetData(source)

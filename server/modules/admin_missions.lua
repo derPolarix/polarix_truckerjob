@@ -1,5 +1,6 @@
 local cargo = require("shared.cargo")
 local Locale = require("shared.locale")
+local sampleMissions = require("server.sample_missions")
 
 AdminMissions = {}
 
@@ -61,6 +62,16 @@ function AdminMissions.Delete(source, orderId)
     return true
 end
 
+-- Bewusster Bruch der Delivery-History-Sperre: löscht auch die zugehörigen deliveries-Zeilen.
+-- Nur über den eigenen, deutlich beschrifteten "Force Delete"-Bestätigungsdialog im Web erreichbar.
+function AdminMissions.ForceDelete(source, orderId)
+    local ok, err = requireAdmin(source)
+    if not ok then return false, err end
+    DB.DeleteDeliveriesForOrder(orderId)
+    DB.DeleteOrderHard(orderId)
+    return true
+end
+
 function AdminMissions.Clone(source, orderId)
     local ok, err = requireAdmin(source)
     if not ok then return false, err end
@@ -70,6 +81,44 @@ function AdminMissions.Clone(source, orderId)
     order.id = nil
     order.name = order.name .. " (Kopie)"
     return true, order -- Client bekommt vorausgefülltes Formular, speichert separat via Create
+end
+
+local function shallowCopy(t)
+    local copy = {}
+    for k, v in pairs(t) do copy[k] = v end
+    return copy
+end
+
+-- Sample-IDs sind statisch (order-lv, order-cr, ...). Nach einem Löschen+Reimport würde die
+-- alte deliveries-Historie unter derselben ID sonst weiterhin den Hard-Delete blockieren
+-- (DB.CountDeliveriesForOrder prüft nur order_id, nicht ob die Order selbst noch existiert).
+-- Deshalb hier auch auf verwaiste Lieferhistorie prüfen, nicht nur auf existierende Orders.
+local function freshSampleId(baseId)
+    local candidate = baseId
+    local suffix = 0
+    while DB.OrderIdExists(candidate) or DB.CountDeliveriesForOrder(candidate) > 0 do
+        suffix = suffix + 1
+        candidate = ("%s-%d"):format(baseId, suffix)
+    end
+    return candidate
+end
+
+-- Button im leeren Editor (kein Missionsbestand) für ein sofort spielbares Ready-to-use-Script.
+-- Nur solange keine Order existiert — kein Merge/Overwrite-Fall zu behandeln.
+function AdminMissions.ImportSampleMissions(source)
+    local ok, err = requireAdmin(source)
+    if not ok then return false, err end
+    if (DB.CountOrders() or 0) > 0 then return false end
+
+    for _, sample in ipairs(sampleMissions) do
+        local order = shallowCopy(sample)
+        order.id = freshSampleId(order.id)
+        local anchor = vector3(order.pickup_x, order.pickup_y, order.pickup_z)
+        local count = cargo.CalcPalletCount(order.weight_kg)
+        order.pickup_pallet_coords = cargo.GenerateGridCoords(anchor, order.pickup_heading, count)
+        DB.InsertOrder(order)
+    end
+    return true
 end
 
 -- Reiner Test-Button für Admins (QA), kein "Zuweisen"-Feature — startet die Mission nur für den
@@ -113,5 +162,7 @@ lib.callback.register("polarix_trucker:adminCreateOrder", function(source, order
 lib.callback.register("polarix_trucker:adminUpdateOrder", function(source, orderId, order) return AdminMissions.Update(source, orderId, order) end)
 lib.callback.register("polarix_trucker:adminSetOrderActive", function(source, orderId, isActive) return AdminMissions.SetActive(source, orderId, isActive) end)
 lib.callback.register("polarix_trucker:adminDeleteOrder", function(source, orderId) return AdminMissions.Delete(source, orderId) end)
+lib.callback.register("polarix_trucker:adminForceDeleteOrder", function(source, orderId) return AdminMissions.ForceDelete(source, orderId) end)
 lib.callback.register("polarix_trucker:adminCloneOrder", function(source, orderId) return AdminMissions.Clone(source, orderId) end)
 lib.callback.register("polarix_trucker:adminTestRunOrder", function(source, orderId) return AdminMissions.TestRun(source, orderId) end)
+lib.callback.register("polarix_trucker:adminImportSampleMissions", function(source) return AdminMissions.ImportSampleMissions(source) end)

@@ -58,8 +58,8 @@ export interface CargoTypePreset {
   icon: string;
 }
 
-// Werte übernommen aus config/server.lua SeedOrders (siehe admin-mission-editor-plan.md
-// "Cargo-Type-Presets"). "valuable" steht zwar im Plantext, hat aber kein SeedOrders-Gegenstück —
+// Werte übernommen aus server/sample_missions.lua (siehe admin-mission-editor-plan.md
+// "Cargo-Type-Presets"). "valuable" steht zwar im Plantext, hat aber kein Sample-Mission-Gegenstück —
 // Preset hier mit plausiblen Werten ergänzt (offene Frage, siehe Plan-Dokumentation Phase D).
 export const CARGO_TYPE_PRESETS: Record<string, CargoTypePreset> = {
   standard: { label: "Standard", cargo: "Standard", tag: "STD", tag_color: "#3b82f6", tag_bg: "rgba(59,130,246,0.16)", icon: "tabler:package" },
@@ -306,6 +306,16 @@ export const useAdminMissionsStore = defineStore("adminMissions", {
         this.error = res.err ?? "Löschen fehlgeschlagen.";
       }
     },
+    async forceRemove(orderId: string) {
+      const res = await nuiCallbackAsync<{ ok: boolean; err?: string }>("adminForceDeleteOrder", { orderId });
+      if (res.ok) {
+        this.selectedId = null;
+        this.form = null;
+        await this.refetch();
+      } else {
+        this.error = res.err ?? "Löschen fehlgeschlagen.";
+      }
+    },
     async clone(orderId: string) {
       const res = await nuiCallbackAsync<{ ok: boolean; order?: any }>("adminCloneOrder", { orderId });
       if (res.ok && res.order) {
@@ -316,6 +326,11 @@ export const useAdminMissionsStore = defineStore("adminMissions", {
     },
     async testRun(orderId: string) {
       return await nuiCallbackAsync<{ ok: boolean }>("adminTestRunOrder", { orderId });
+    },
+    async importSampleMissions() {
+      const res = await nuiCallbackAsync<{ ok: boolean }>("adminImportSampleMissions");
+      if (res.ok) await this.refetch();
+      return res.ok;
     },
     async refetch() {
       const res = await nuiCallbackAsync<{ ok: boolean; orders: any[] }>("adminListOrders");

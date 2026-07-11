@@ -14,7 +14,7 @@
             <input type="checkbox" v-model="onlyActive" /><span class="chk-box"></span> {{ t('admin.only_active') }}
           </label>
         </div>
-        <nav style="flex:1;overflow-y:auto;padding:4px 8px">
+        <nav v-if="store.orders.length" style="flex:1;overflow-y:auto;padding:4px 8px">
           <button
             v-for="o in filteredOrders"
             :key="o.id ?? ''"
@@ -26,6 +26,12 @@
             <div style="font-size:10px;color:#7a818c;margin-top:2px">{{ o.pickup_city || '?' }} → {{ o.dropoff_city || '?' }}{{ o.is_active ? '' : t('admin.inactive_suffix') }}</div>
           </button>
         </nav>
+        <div v-else style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;text-align:center">
+          <div style="font-size:11.5px;color:#7a818c">{{ t('admin.no_missions_hint') }}</div>
+          <button @click="onImportSampleMissions" :disabled="importing" style="padding:9px 14px;border:none;border-radius:9px;background:#e8b408;color:#22262d;font-weight:700;font-family:inherit;cursor:pointer">
+            {{ importing ? t('admin.importing') : t('admin.import_sample_missions_button') }}
+          </button>
+        </div>
         <button @click="store.newOrder()" style="margin:10px 12px 14px;padding:9px;border:none;border-radius:9px;background:#e8b408;color:#22262d;font-weight:700;font-family:inherit;cursor:pointer">{{ t('admin.new_mission_button') }}</button>
       </aside>
 
@@ -127,13 +133,41 @@
             v-if="!store.isNew"
             @click="onDelete"
             class="mini-btn danger"
-            :disabled="store.form.delivery_count > 0"
-            :title="store.form.delivery_count > 0 ? t('admin.delivery_history_blocks_delete') : ''"
-          >{{ t('admin.delete_button') }}</button>
+          >{{ store.form.delivery_count > 0 ? t('admin.force_delete_button') : t('admin.delete_button') }}</button>
           <div style="flex:1"></div>
           <button v-if="!store.isNew" @click="onTestRun" class="mini-btn" style="border-color:#e8b408;color:#8a6a00">{{ t('admin.test_mission_button') }}</button>
         </footer>
       </main>
+    </div>
+  </div>
+
+  <div
+    v-if="showDeleteConfirm"
+    style="position:fixed;inset:0;background:rgba(15,17,21,0.55);display:flex;align-items:center;justify-content:center;z-index:9999;font-family:'Archivo',system-ui,sans-serif"
+    @click.self="cancelDelete"
+  >
+    <div style="background:#fff;border-radius:16px;padding:26px 28px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.25)">
+      <div style="width:52px;height:52px;border-radius:14px;background:rgba(220,38,38,0.12);display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+        <iconify-icon :icon="isForceDelete ? 'tabler:alert-triangle' : 'tabler:trash'" width="26" style="color:#dc2626"></iconify-icon>
+      </div>
+      <div style="font-size:17px;font-weight:800;color:#1b1f24">{{ isForceDelete ? t('admin.force_delete_confirm_title') : t('admin.delete_confirm_title') }}</div>
+      <div style="font-size:13px;color:#6b7280;margin-top:8px;line-height:1.6">
+        {{ isForceDelete
+          ? t('admin.force_delete_confirm_message', { name: store.form?.name || t('admin.unnamed'), count: store.form?.delivery_count ?? 0 })
+          : t('admin.delete_confirm_message', { name: store.form?.name || t('admin.unnamed') }) }}
+      </div>
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button
+          :disabled="deleting"
+          style="flex:1;background:#dc2626;color:#fff;border:none;border-radius:11px;padding:12px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer"
+          @click="confirmDelete"
+        >{{ deleting ? t('admin.deleting') : (isForceDelete ? t('admin.force_delete_button') : t('admin.delete_confirm_button')) }}</button>
+        <button
+          :disabled="deleting"
+          style="flex:1;background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:11px;padding:12px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer"
+          @click="cancelDelete"
+        >{{ t('app.cancel') }}</button>
+      </div>
     </div>
   </div>
 </template>
@@ -151,6 +185,10 @@ const { t } = useI18n();
 const search = ref("");
 const onlyActive = ref(false);
 const distanceOverride = ref(false);
+const importing = ref(false);
+const showDeleteConfirm = ref(false);
+const deleting = ref(false);
+const isForceDelete = computed(() => (store.form?.delivery_count ?? 0) > 0);
 
 const filteredOrders = computed(() => {
   const term = search.value.trim().toLowerCase();
@@ -184,9 +222,38 @@ async function onSave() {
   await store.save();
 }
 
-async function onDelete() {
+function onDelete() {
   if (!store.form?.id) return;
-  await store.remove(store.form.id);
+  showDeleteConfirm.value = true;
+}
+
+function cancelDelete() {
+  if (deleting.value) return;
+  showDeleteConfirm.value = false;
+}
+
+async function confirmDelete() {
+  if (!store.form?.id) return;
+  deleting.value = true;
+  try {
+    if (isForceDelete.value) {
+      await store.forceRemove(store.form.id);
+    } else {
+      await store.remove(store.form.id);
+    }
+  } finally {
+    deleting.value = false;
+    showDeleteConfirm.value = false;
+  }
+}
+
+async function onImportSampleMissions() {
+  importing.value = true;
+  try {
+    await store.importSampleMissions();
+  } finally {
+    importing.value = false;
+  }
 }
 
 async function onTestRun() {

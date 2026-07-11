@@ -96,6 +96,10 @@ function DB.CountDeliveriesForOrder(orderId)
     return MySQL.scalar.await(("SELECT COUNT(*) FROM %s WHERE order_id = ?"):format(T.deliveries), { orderId })
 end
 
+function DB.DeleteDeliveriesForOrder(orderId)
+    MySQL.query.await(("DELETE FROM %s WHERE order_id = ?"):format(T.deliveries), { orderId })
+end
+
 function DB.DeleteOrderHard(orderId)
     MySQL.query.await(("DELETE FROM %s WHERE id = ?"):format(T.orders), { orderId })
 end
