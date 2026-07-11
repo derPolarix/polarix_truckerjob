@@ -32,7 +32,9 @@ RegisterNUICallback('rentBundle', function(data, cb)
 
         if data.mode == 'party' then
             lib.callback('polarix_trucker:startPartyMission', false, function(ok, startErr)
-                if not ok then
+                if ok then
+                    CloseNui()
+                else
                     Framework.Notify(startErr or Locale("notify.failed_start"), 'error')
                 end
                 cb({ ok = ok })
@@ -41,6 +43,7 @@ RegisterNUICallback('rentBundle', function(data, cb)
             lib.callback('polarix_trucker:acceptOrder', false, function(ok, orderData, acceptErr)
                 if ok then
                     Delivery.Start(orderData)
+                    CloseNui()
                 else
                     Framework.Notify(acceptErr or Locale("notify.failed_accept"), 'error')
                 end
