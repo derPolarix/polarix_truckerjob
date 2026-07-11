@@ -1,4 +1,5 @@
 local config = require("config.shared")
+local Locale = require("shared.locale")
 
 Rental = {}
 RentalState = {} -- source -> { nextChargeAt = <GetGameTimer() ms> }
@@ -10,9 +11,9 @@ function Rental.IsActive(source)
 end
 
 function Rental.Start(source)
-    if RentalState[source] then return false, "Rental bereits aktiv." end
+    if RentalState[source] then return false, Locale("error.rental_already_active") end
     if Framework.GetMoney(source) < config.Rental.IntervalCost then
-        return false, "Nicht genug Geld für erste Rate."
+        return false, Locale("error.not_enough_money_first_installment")
     end
 
     Framework.RemoveMoney(source, config.Rental.IntervalCost)
@@ -52,7 +53,7 @@ CreateThread(function()
                     state.nextChargeAt = now + INTERVAL_MS
                     TriggerClientEvent("polarix_trucker:rentalCharged", source, config.Rental.IntervalCost)
                 else
-                    Rental.Repossess(source, "Zahlung fehlgeschlagen")
+                    Rental.Repossess(source, Locale("notify.payment_failed"))
                 end
             end
         end

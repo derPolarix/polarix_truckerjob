@@ -1,9 +1,10 @@
 local cargo = require("shared.cargo")
+local Locale = require("shared.locale")
 
 AdminMissions = {}
 
 local function requireAdmin(source)
-    if not Framework.IsAdmin(source) then return false, "Keine Berechtigung." end
+    if not Framework.IsAdmin(source) then return false, Locale("error.no_permission") end
     return true
 end
 
@@ -35,7 +36,7 @@ end
 function AdminMissions.Update(source, orderId, order)
     local ok, err = requireAdmin(source)
     if not ok then return false, err end
-    if not DB.OrderIdExists(orderId) then return false, "Mission existiert nicht." end
+    if not DB.OrderIdExists(orderId) then return false, Locale("error.mission_does_not_exist") end
 
     local pData = Player.GetData(source)
     DB.UpdateOrder(orderId, order, pData and pData.identifier)
@@ -54,7 +55,7 @@ function AdminMissions.Delete(source, orderId)
     local ok, err = requireAdmin(source)
     if not ok then return false, err end
     if DB.CountDeliveriesForOrder(orderId) > 0 then
-        return false, "Mission hat Lieferhistorie — nur deaktivieren, nicht löschen."
+        return false, Locale("error.mission_delivery_history_deactivate_only")
     end
     DB.DeleteOrderHard(orderId)
     return true
@@ -64,7 +65,7 @@ function AdminMissions.Clone(source, orderId)
     local ok, err = requireAdmin(source)
     if not ok then return false, err end
     local order = DB.GetOrderById(orderId)
-    if not order then return false, "Mission nicht gefunden." end
+    if not order then return false, Locale("error.mission_not_found") end
     if type(order.pickup_pallet_coords) == "string" then order.pickup_pallet_coords = json.decode(order.pickup_pallet_coords) end
     order.id = nil
     order.name = order.name .. " (Kopie)"
@@ -78,8 +79,8 @@ function AdminMissions.TestRun(source, orderId)
     if not ok then return false, err end
     -- Bewusst KEIN Level/Hazmat/Long-Hauler-Gate — reiner Test-Button für Admins
     local order = DB.GetOrderById(orderId)
-    if not order or not order.is_active then return false, "Mission nicht verfügbar." end
-    if ActiveDeliveries[source] then return false, "Du hast bereits eine aktive Lieferung." end
+    if not order or not order.is_active then return false, Locale("error.mission_not_available") end
+    if ActiveDeliveries[source] then return false, Locale("error.already_active_delivery") end
     if type(order.pickup_pallet_coords) == "string" then order.pickup_pallet_coords = json.decode(order.pickup_pallet_coords) end
 
     local pData = Player.GetData(source)

@@ -22,6 +22,7 @@
 import { getCurrentInstance, onMounted } from "vue";
 import type { NuiMessage } from "./type";
 import { isDev } from "./main";
+import { i18n } from "./i18n";
 import Sidebar from "@/components/app/Sidebar.vue";
 import GameHud from "@/components/app/GameHud.vue";
 import RentalPromptModal from "@/components/app/RentalPromptModal.vue";
@@ -349,7 +350,11 @@ const handleMessage = (event: MessageEvent) => {
 	// Verarbeite die Nachricht basierend auf der Action
 	// Greife auf die Daten aus "data" zu, z.B. raw.data?.message
 	switch (action) {
-		case "openNui":
+		case "openNui": {
+			const lang = (raw.data as any)?.language;
+			if (lang && (i18n.global.availableLocales as string[]).includes(lang)) {
+				i18n.global.locale.value = lang as "de" | "en";
+			}
 			persistantStore.IsNuiOpen = true;
 			router.push("/dashboard");
 			dashboardStore.open(
@@ -361,6 +366,7 @@ const handleMessage = (event: MessageEvent) => {
 			partyStore.setState((raw.data as any)?.party ?? null);
 			partyStore.setMultiplier((raw.data as any)?.partyRewardMultiplier ?? null);
 			break;
+		}
 			case "openAdminMissions": {
 				persistantStore.IsNuiOpen = true;
 				router.push("/admin-missions");

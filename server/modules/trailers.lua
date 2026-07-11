@@ -1,5 +1,6 @@
 local config = require("config.server")
 local sharedConfig = require("config.shared")
+local Locale = require("shared.locale")
 
 Trailers = {}
 
@@ -9,21 +10,21 @@ end
 
 function Trailers.Buy(source, trailerSlot)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     local shopEntry = nil
     for _, t in ipairs(config.TrailerShop) do
         if t.slot == trailerSlot then shopEntry = t; break end
     end
-    if not shopEntry then return false, "Trailer nicht gefunden." end
+    if not shopEntry then return false, Locale("error.trailer_not_found") end
 
     if pData.level < shopEntry.level_required then
-        return false, ("Level %d erforderlich."):format(shopEntry.level_required)
+        return false, Locale("error.level_required"):format(shopEntry.level_required)
     end
 
     local owned = DB.GetPlayerTrailers(pData.identifier)
     for _, t in ipairs(owned) do
-        if t.trailer_slot == trailerSlot then return false, "Bereits besessen." end
+        if t.trailer_slot == trailerSlot then return false, Locale("error.already_owned") end
     end
 
     local price = shopEntry.price
@@ -31,7 +32,7 @@ function Trailers.Buy(source, trailerSlot)
         price = math.floor(price * 0.75)
     end
 
-    if Framework.GetMoney(source) < price then return false, "Nicht genug Geld." end
+    if Framework.GetMoney(source) < price then return false, Locale("error.not_enough_money") end
     Framework.RemoveMoney(source, price)
 
     DB.InsertTrailer(pData.identifier, trailerSlot, shopEntry.model)
@@ -47,7 +48,7 @@ end
 
 function Trailers.Equip(source, trailerSlot)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     local owned = DB.GetPlayerTrailers(pData.identifier)
     local trailerModel = nil
@@ -57,7 +58,7 @@ function Trailers.Equip(source, trailerSlot)
             break
         end
     end
-    if not trailerModel then return false, "Trailer nicht besessen." end
+    if not trailerModel then return false, Locale("error.trailer_not_owned") end
 
     pData.equipped_trailer = trailerSlot
     Player.Save(source)

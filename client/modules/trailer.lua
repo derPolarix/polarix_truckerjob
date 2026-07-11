@@ -1,3 +1,5 @@
+local Locale = require("shared.locale")
+
 LocalTrailer = {
     entity = nil,
     slot   = nil,
@@ -25,7 +27,7 @@ function Trailer.Spawn()
         timeout = timeout + 1
     end
     if not HasModelLoaded(modelHash) then
-        Framework.Notify("Trailer-Modell konnte nicht geladen werden.", "error")
+        Framework.Notify(Locale("notify.failed_load_trailer_model"), "error")
         return
     end
 

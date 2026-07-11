@@ -1,4 +1,5 @@
 local clientConfig = require("config.client")
+local Locale = require("shared.locale")
 
 LocalVehicle = {
     entity = nil,
@@ -37,7 +38,7 @@ end
 
 function Vehicle.Spawn()
     if not LocalVehicle.model then
-        Framework.Notify("Kein Fahrzeug ausgewählt.", "error")
+        Framework.Notify(Locale("notify.no_vehicle_selected"), "error")
         return
     end
 
@@ -53,7 +54,7 @@ function Vehicle.Spawn()
         timeout = timeout + 1
     end
     if not HasModelLoaded(modelHash) then
-        Framework.Notify("Fahrzeugmodell konnte nicht geladen werden.", "error")
+        Framework.Notify(Locale("notify.failed_load_vehicle_model"), "error")
         return
     end
 
@@ -68,7 +69,7 @@ function Vehicle.Spawn()
     Framework.GiveVehicleKeys(veh, "TRUCKER")
 
     LocalVehicle.entity = veh
-    Framework.Notify("Fahrzeug abgeholt!", "success")
+    Framework.Notify(Locale("notify.vehicle_picked_up"), "success")
     SendMessage("vehicleSpawnState", { slot = LocalVehicle.slot, spawned = true })
 end
 
@@ -105,13 +106,13 @@ end)
 -- Fahrzeug am Depot abholen
 RegisterCommand("getruck", function()
     if not LocalVehicle.slot then
-        Framework.Notify("Kein Fahrzeug ausgewählt.", "error")
+        Framework.Notify(Locale("notify.no_vehicle_selected"), "error")
         return
     end
     local depotPos  = clientConfig.TruckDepotCoords
     local playerPos = GetEntityCoords(PlayerPedId())
     if #(playerPos - vector3(depotPos.x, depotPos.y, depotPos.z)) > 30.0 then
-        Framework.Notify("Du musst am Depot sein, um dein Fahrzeug abzuholen.", "error")
+        Framework.Notify(Locale("notify.must_depot_pick_up_vehicle"), "error")
         return
     end
     Vehicle.Spawn()
@@ -119,7 +120,7 @@ RegisterCommand("getruck", function()
     if LocalTrailer.model then
         Trailer.Spawn()
     else
-        Framework.Notify("Kein Trailer ausgerüstet.", "error")
+        Framework.Notify(Locale("notify.no_trailer_equipped"), "error")
     end
 end, false)
 

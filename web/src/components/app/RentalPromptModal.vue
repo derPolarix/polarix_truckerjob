@@ -8,11 +8,11 @@
       <div style="width:52px;height:52px;border-radius:14px;background:rgba(232,180,8,0.14);display:flex;align-items:center;justify-content:center;margin-bottom:16px">
         <iconify-icon icon="tabler:truck" width="26" style="color:#b58a05"></iconify-icon>
       </div>
-      <div style="font-size:17px;font-weight:800;color:#1b1f24">No vehicle equipped</div>
+      <div style="font-size:17px;font-weight:800;color:#1b1f24">{{ t('app.rental_prompt_title') }}</div>
       <div style="font-size:13px;color:#6b7280;margin-top:8px;line-height:1.6">
-        You need a truck and trailer to start this job. Rent
+        {{ t('app.rental_prompt_intro') }}
         <strong>{{ store.rentalPrompt.vehicleName }}</strong> + <strong>{{ store.rentalPrompt.trailerName }}</strong>
-        for ${{ store.rentalPrompt.intervalCost.toLocaleString() }} every {{ store.rentalPrompt.intervalMinutes }} min?
+        {{ t('app.rental_prompt_cost', { cost: store.rentalPrompt.intervalCost.toLocaleString(), minutes: store.rentalPrompt.intervalMinutes }) }}
       </div>
       <div style="display:flex;gap:10px;margin-top:20px">
         <button
@@ -20,14 +20,14 @@
           style="flex:1;background:#E8B408;color:#1b1f24;border:none;border-radius:11px;padding:12px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer"
           @click="confirmRent"
         >
-          {{ isRenting ? 'Renting…' : 'Rent now' }}
+          {{ isRenting ? t('app.renting') : t('app.rent_now') }}
         </button>
         <button
           :disabled="isRenting"
           style="flex:1;background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:11px;padding:12px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer"
           @click="store.closeRentalPrompt()"
         >
-          Cancel
+          {{ t('app.cancel') }}
         </button>
       </div>
     </div>
@@ -36,11 +36,13 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallback } from "@/nui/nuiCallbacks";
 
 const store = useDashboardStore();
 const isRenting = ref(false);
+const { t } = useI18n();
 
 async function confirmRent() {
   if (!store.rentalPrompt) return;

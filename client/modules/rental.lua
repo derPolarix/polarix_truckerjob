@@ -1,5 +1,6 @@
 local clientConfig = require("config.client")
 local sharedConfig = require("config.shared")
+local Locale = require("shared.locale")
 
 LocalRental = {
     vehicleEntity = nil,
@@ -79,7 +80,7 @@ RegisterNetEvent("polarix_trucker:rentalStarted", function(vehicleModel, trailer
     local vehCoords = findFreeSpawnPoint(clientConfig.VehicleSpawnPoints)
     local vehEntity = spawnModelAt(vehicleModel, vehCoords)
     if not vehEntity then
-        Framework.Notify("Rental-Fahrzeug konnte nicht geladen werden.", "error")
+        Framework.Notify(Locale("notify.failed_load_rental_vehicle"), "error")
         return
     end
     SetVehicleNumberPlateText(vehEntity, "RENTAL")
@@ -100,20 +101,20 @@ RegisterNetEvent("polarix_trucker:rentalStarted", function(vehicleModel, trailer
     end
     Framework.GiveVehicleKeys(vehEntity, "RENTAL")
 
-    Framework.Notify("Rental-Fahrzeug abgeholt! Es wird laufend Miete abgebucht.", "success")
+    Framework.Notify(Locale("notify.rental_vehicle_picked_up_rent"), "success")
 end)
 
 RegisterNetEvent("polarix_trucker:rentalCharged", function(amount)
-    Framework.Notify(("Miete abgebucht: $%s"):format(amount), "info")
+    Framework.Notify(Locale("notify.rent_charged"):format(amount), "info")
 end)
 
 RegisterNetEvent("polarix_trucker:rentalEnded", function(reason)
     Rental.Despawn()
 
     if reason == "returned" then
-        Framework.Notify("Rental zurückgegeben.", "info")
+        Framework.Notify(Locale("notify.rental_returned"), "info")
     else
-        Framework.Notify("Dein Mietfahrzeug wurde eingezogen: " .. reason, "error")
+        Framework.Notify(Locale("notify.rental_vehicle_repossessed"):format(reason), "error")
         -- Server hat bei aktiver Delivery bereits Orders.Fail ausgelöst — hier nur Client-State nachziehen,
         -- ohne erneut failDelivery zu senden.
         if DeliveryState.status ~= "idle" then
@@ -131,7 +132,7 @@ end)
 
 RegisterCommand("returnrental", function()
     if not LocalRental.vehicleEntity then
-        Framework.Notify("Kein aktives Rental.", "error")
+        Framework.Notify(Locale("notify.no_active_rental"), "error")
         return
     end
     TriggerServerEvent("polarix_trucker:returnRental")

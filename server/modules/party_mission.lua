@@ -1,5 +1,6 @@
 local config = require("config.shared")
 local cargo = require("shared.cargo")
+local Locale = require("shared.locale")
 
 PartyMission = {}
 PartyMissions = {} -- partyId -> { orderId, order, totalPallets, remainingPallets,
@@ -10,22 +11,22 @@ local function isTruthy(v) return v == 1 or v == true end
 
 function PartyMission.Start(source, orderId)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     local party = Party.GetMembership(pData.identifier)
-    if not party then return false, "Du bist in keinem Convoy." end
+    if not party then return false, Locale("error.not_convoy") end
     local partyId = PlayerParty[pData.identifier]
-    if party.leader ~= pData.identifier then return false, "Nur der Leader kann starten." end
-    if PartyMissions[partyId] then return false, "Es läuft bereits eine Convoy-Mission." end
+    if party.leader ~= pData.identifier then return false, Locale("error.only_leader_can_start") end
+    if PartyMissions[partyId] then return false, Locale("error.convoy_mission_already_running") end
 
     local hasOwnGear = pData.equipped_vehicle and pData.equipped_trailer
     if not hasOwnGear and not Rental.IsActive(source) then return false, "no_vehicle_or_trailer" end
 
     local order = DB.GetOrderById(orderId)
-    if not order or not isTruthy(order.is_active) then return false, "Auftrag nicht verfügbar." end
-    if order.level_required > pData.level then return false, "Level nicht ausreichend." end
-    if isTruthy(order.requires_hazmat) and not Player.HasSkill(source, "h3") then return false, "Hazmat-Lizenz erforderlich." end
-    if isTruthy(order.requires_long_hauler) and not Player.HasSkill(source, "d3") then return false, "Long-Hauler-Skill erforderlich." end
+    if not order or not isTruthy(order.is_active) then return false, Locale("error.order_not_available") end
+    if order.level_required > pData.level then return false, Locale("error.level_not_sufficient") end
+    if isTruthy(order.requires_hazmat) and not Player.HasSkill(source, "h3") then return false, Locale("error.hazmat_license_required") end
+    if isTruthy(order.requires_long_hauler) and not Player.HasSkill(source, "d3") then return false, Locale("error.long_hauler_skill_required") end
     if type(order.pickup_pallet_coords) == "string" then order.pickup_pallet_coords = json.decode(order.pickup_pallet_coords) end
 
     local total = cargo.CalcPalletCount(order.weight_kg)
@@ -166,8 +167,8 @@ function PartyMission.Fail(partyId)
     if not mission then return end
     if party then
         for identifier in pairs(party.members) do
-            Notifications.Push(identifier, "party_mission_failed", "Convoy-Mission fehlgeschlagen",
-                "Alle Mitglieder haben den Convoy verlassen — die Mission wurde abgebrochen, kein Reward.", "tabler:alert-triangle")
+            Notifications.Push(identifier, "party_mission_failed", Locale("push.convoy_mission_failed"),
+                Locale("push.all_members_left_convoy_mission"), "tabler:alert-triangle")
         end
     end
     PartyMissions[partyId] = nil

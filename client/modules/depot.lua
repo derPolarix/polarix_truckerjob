@@ -1,11 +1,12 @@
 local clientConfig = require("config.client")
+local Locale = require("shared.locale")
 
 local depotNpc = nil
 
 local function openDashboard()
     lib.callback("polarix_trucker:openDashboard", false, function(data)
         if not data then
-            Framework.Notify("Fehler beim Laden der Daten.", "error")
+            Framework.Notify(Locale("notify.failed_load_data"), "error")
             return
         end
         SetFocus(true)
@@ -56,7 +57,7 @@ local function setupTarget(ped)
         exports.ox_target:addLocalEntity(ped, {
             {
                 icon = "fa-solid fa-truck",
-                label = "Trucker Job öffnen",
+                label = Locale("ui.open_trucker_job"),
                 onSelect = openDashboard,
             }
         })
@@ -75,7 +76,7 @@ local function setupTarget(ped)
             local dist = #(GetEntityCoords(PlayerPedId()) - npcPos)
             if dist < INTERACT_DIST and not promptVisible then
                 promptVisible = true
-                lib.showTextUI("[E] Trucker Job öffnen", { position = "top-center", icon = "truck" })
+                lib.showTextUI(Locale("ui.e_open_trucker_job"), { position = "top-center", icon = "truck" })
             elseif dist >= INTERACT_DIST and promptVisible then
                 promptVisible = false
                 lib.hideTextUI()

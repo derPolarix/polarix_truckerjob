@@ -2,11 +2,11 @@
   <div style="display:flex;flex-direction:column;gap:16px">
     <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;overflow:hidden">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px">
-        <div style="font-size:15px;font-weight:700;color:#1b1f24">Delivery history</div>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">{{ store.config.recentRuns.length }} runs</span>
+        <div style="font-size:15px;font-weight:700;color:#1b1f24">{{ t('leaderboard.delivery_history') }}</div>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">{{ t('leaderboard.runs_count', { count: store.config.recentRuns.length }) }}</span>
       </div>
       <div style="display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr;gap:12px;padding:11px 20px;background:#f6f7f8;border-bottom:1px solid #eef0f2;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab">
-        <span>Route</span><span>Status</span><span>Reward</span><span>When</span>
+        <span>{{ t('leaderboard.col_route') }}</span><span>{{ t('leaderboard.col_status') }}</span><span>{{ t('leaderboard.col_reward') }}</span><span>{{ t('leaderboard.col_when') }}</span>
       </div>
       <div
         v-for="r in store.config.recentRuns"
@@ -26,15 +26,17 @@
         <span style="font-size:13px;font-weight:700" :style="{ color: r.failed ? '#d24b3a' : '#1b1f24' }">{{ r.reward }}</span>
         <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab">{{ r.when }}</span>
       </div>
-      <div v-if="store.config.recentRuns.length === 0" style="padding:32px 20px;text-align:center;font-size:13px;color:#9aa1ab">No deliveries yet.</div>
+      <div v-if="store.config.recentRuns.length === 0" style="padding:32px 20px;text-align:center;font-size:13px;color:#9aa1ab">{{ t('leaderboard.no_deliveries_yet') }}</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 
 const store = useDashboardStore();
+const { t } = useI18n();
 
 function statusColor(status: string) {
   if (status === "failed") return "#d24b3a";

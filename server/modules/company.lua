@@ -1,4 +1,5 @@
 local config = require("config.shared")
+local Locale = require("shared.locale")
 
 Company = {}
 
@@ -8,15 +9,15 @@ end
 
 function Company.Create(source, name, tag, description)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     if Company.GetMembership(pData.identifier) then
-        return false, "Du bist bereits in einer Company."
+        return false, Locale("error.already_company")
     end
 
     local companyId = DB.CreateCompany(name, tag, description)
     if not companyId or companyId == 0 then
-        return false, "Name bereits vergeben."
+        return false, Locale("error.name_already_taken")
     end
 
     DB.AddCompanyMember(companyId, pData.identifier, "owner")
@@ -86,18 +87,18 @@ end
 
 function Company.Invite(source, targetIdentifier)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     local membership = Company.GetMembership(pData.identifier)
-    if not membership then return false, "Du bist in keiner Company." end
+    if not membership then return false, Locale("error.not_in_a_company") end
     if membership.role ~= "owner" and membership.role ~= "manager" then
-        return false, "Keine Berechtigung."
+        return false, Locale("error.no_permission")
     end
 
     local targetRow = DB.GetPlayer(targetIdentifier)
-    if not targetRow then return false, "Spieler nicht gefunden." end
+    if not targetRow then return false, Locale("error.player_not_found") end
     if Company.GetMembership(targetIdentifier) then
-        return false, "Spieler ist bereits in einer Company."
+        return false, Locale("error.player_already_company")
     end
 
     DB.InsertInvitation(membership.company_id, targetIdentifier, pData.identifier)
@@ -111,19 +112,19 @@ function Company.Invite(source, targetIdentifier)
             membership.company_id, companyName, pData.name, companyRow and companyRow.tax_rate or 0)
     end
 
-    Notifications.Push(targetIdentifier, "company_invite", "Company Invite",
-        ("%s invited you to [%s]."):format(pData.name, companyName), "tabler:mail")
+    Notifications.Push(targetIdentifier, "company_invite", Locale("push.company_invite"),
+        Locale("push.invited"):format(pData.name, companyName), "tabler:mail")
 
     return true
 end
 
 function Company.CancelInvite(source, targetIdentifier)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     local membership = Company.GetMembership(pData.identifier)
     if not membership or (membership.role ~= "owner" and membership.role ~= "manager") then
-        return false, "Keine Berechtigung."
+        return false, Locale("error.no_permission")
     end
 
     DB.DeleteInvitation(membership.company_id, targetIdentifier)
@@ -177,13 +178,13 @@ end
 
 function Company.RespondInvite(source, companyId, accept)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     DB.DeleteInvitation(companyId, pData.identifier)
 
     if accept then
         if Company.GetMembership(pData.identifier) then
-            return false, "Du bist bereits in einer Company."
+            return false, Locale("error.already_company")
         end
         DB.AddCompanyMember(companyId, pData.identifier, "recruit")
         Company.NotifyOwnerMemberJoined(companyId, pData.name)
@@ -194,21 +195,21 @@ end
 function Company.NotifyOwnerMemberJoined(companyId, memberName)
     local owner = DB.GetCompanyOwner(companyId)
     if owner then
-        Notifications.Push(owner.identifier, "member_joined", "New Member",
-            ("%s joined your company."):format(memberName), "tabler:user-plus")
+        Notifications.Push(owner.identifier, "member_joined", Locale("push.new_member"),
+            Locale("push.joined_company"):format(memberName), "tabler:user-plus")
     end
 end
 
 function Company.ChangeRole(source, targetIdentifier, newRole)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     local membership = Company.GetMembership(pData.identifier)
     if not membership or membership.role ~= "owner" then
-        return false, "Keine Berechtigung."
+        return false, Locale("error.no_permission")
     end
     if targetIdentifier == pData.identifier then
-        return false, "Eigene Rolle kann nicht geändert werden."
+        return false, Locale("error.cannot_change_own_role")
     end
 
     DB.UpdateMemberRole(targetIdentifier, membership.company_id, newRole)
@@ -217,14 +218,14 @@ end
 
 function Company.KickMember(source, targetIdentifier)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     local membership = Company.GetMembership(pData.identifier)
     if not membership or (membership.role ~= "owner" and membership.role ~= "manager") then
-        return false, "Keine Berechtigung."
+        return false, Locale("error.no_permission")
     end
     if targetIdentifier == pData.identifier then
-        return false, "Kannst dich nicht selbst kicken."
+        return false, Locale("error.cannot_kick_yourself")
     end
 
     DB.DeleteMember(targetIdentifier, membership.company_id)
@@ -233,11 +234,11 @@ end
 
 function Company.SaveSettings(source, settings)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     local membership = Company.GetMembership(pData.identifier)
     if not membership or membership.role ~= "owner" then
-        return false, "Keine Berechtigung."
+        return false, Locale("error.no_permission")
     end
 
     local taxRate = tonumber(settings.taxRate) or 0
@@ -256,11 +257,11 @@ end
 
 function Company.Disband(source)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     local membership = Company.GetMembership(pData.identifier)
     if not membership or membership.role ~= "owner" then
-        return false, "Keine Berechtigung."
+        return false, Locale("error.no_permission")
     end
 
     local companyId = membership.company_id
@@ -282,19 +283,19 @@ end
 
 function Company.Leave(source)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     local membership = Company.GetMembership(pData.identifier)
-    if not membership then return false, "Du bist in keiner Company." end
+    if not membership then return false, Locale("error.not_in_a_company") end
     if membership.role == "owner" then
-        return false, "Als Owner musst du die Company auflösen."
+        return false, Locale("error.as_owner_must_disband_company")
     end
 
     local owner = DB.GetCompanyOwner(membership.company_id)
     DB.DeleteMember(pData.identifier, membership.company_id)
     if owner then
-        Notifications.Push(owner.identifier, "member_left", "Member Left",
-            ("%s left your company."):format(pData.name), "tabler:user-minus")
+        Notifications.Push(owner.identifier, "member_left", Locale("push.member_left"),
+            Locale("push.left_company"):format(pData.name), "tabler:user-minus")
     end
     return true
 end
@@ -315,8 +316,8 @@ function Company.AddXP(companyId, amount)
     if newLevel > company.level then
         DB.SetCompanyLevel(companyId, newLevel)
         for _, m in ipairs(DB.GetCompanyMembers(companyId)) do
-            Notifications.Push(m.identifier, "company_level_up", "Company Level Up!",
-                ("Your company reached level %d!"):format(newLevel), "tabler:building")
+            Notifications.Push(m.identifier, "company_level_up", Locale("push.company_level_up"),
+                Locale("push.company_reached_level"):format(newLevel), "tabler:building")
         end
     end
 end
@@ -406,21 +407,21 @@ end)
 
 function Company.RequestJoin(source, companyId)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     if Company.GetMembership(pData.identifier) then
-        return false, "Du bist bereits in einer Company."
+        return false, Locale("error.already_company")
     end
 
     local company = DB.GetCompanyById(companyId)
-    if not company then return false, "Company nicht gefunden." end
+    if not company then return false, Locale("error.company_not_found") end
 
     local isOpen = company.open_recruitment == 1 or company.open_recruitment == true
-    if not isOpen then return false, "Diese Company nimmt keine Bewerbungen an." end
+    if not isOpen then return false, Locale("error.company_not_accepting_applications") end
 
     local minLevel = company.min_level_to_join or 1
     if pData.level < minLevel then
-        return false, ("Mindestlevel %d erforderlich."):format(minLevel)
+        return false, Locale("error.minimum_level_required"):format(minLevel)
     end
 
     DB.AddCompanyMember(companyId, pData.identifier, "recruit")

@@ -1,5 +1,6 @@
 local config = require("config.server")
 local cargo = require("shared.cargo")
+local Locale = require("shared.locale")
 
 Orders = {}
 ActiveDeliveries = {} -- source -> { deliveryId, orderId, totalPallets, remainingPallets, deliveredPallets, cargoDamageTotal }
@@ -35,10 +36,10 @@ function Orders.GetAvailableForPlayer(source)
 end
 
 function Orders.Accept(source, orderId)
-    if ActiveDeliveries[source] then return false, "Du hast bereits eine aktive Lieferung." end
+    if ActiveDeliveries[source] then return false, Locale("error.already_active_delivery") end
 
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten nicht gefunden." end
+    if not pData then return false, Locale("error.player_data_not_found") end
 
     local hasOwnGear = pData.equipped_vehicle and pData.equipped_trailer
     if not hasOwnGear and not Rental.IsActive(source) then
@@ -46,10 +47,10 @@ function Orders.Accept(source, orderId)
     end
 
     local order = DB.GetOrderById(orderId)
-    if not order or not isTruthy(order.is_active) then return false, "Auftrag nicht verfügbar." end
-    if order.level_required > pData.level then return false, "Level nicht ausreichend." end
-    if isTruthy(order.requires_hazmat) and not Player.HasSkill(source, "h3") then return false, "Hazmat-Lizenz erforderlich." end
-    if isTruthy(order.requires_long_hauler) and not Player.HasSkill(source, "d3") then return false, "Long-Hauler-Skill erforderlich." end
+    if not order or not isTruthy(order.is_active) then return false, Locale("error.order_not_available") end
+    if order.level_required > pData.level then return false, Locale("error.level_not_sufficient") end
+    if isTruthy(order.requires_hazmat) and not Player.HasSkill(source, "h3") then return false, Locale("error.hazmat_license_required") end
+    if isTruthy(order.requires_long_hauler) and not Player.HasSkill(source, "d3") then return false, Locale("error.long_hauler_skill_required") end
 
     if type(order.pickup_pallet_coords) == "string" then
         order.pickup_pallet_coords = json.decode(order.pickup_pallet_coords)

@@ -1,3 +1,5 @@
+local Locale = require("shared.locale")
+
 RegisterNetEvent("polarix_trucker:partyUpdate", function(state)
     SendMessage("partyUpdate", state)
 end)
@@ -7,11 +9,11 @@ RegisterNetEvent("polarix_trucker:partyInviteReceived", function(partyId, fromNa
 end)
 
 RegisterNetEvent("polarix_trucker:partyKicked", function()
-    Framework.Notify("Du wurdest aus dem Convoy entfernt.", "error")
+    Framework.Notify(Locale("notify.removed_from_convoy"), "error")
     SendMessage("partyUpdate", nil)
 end)
 
 RegisterNetEvent("polarix_trucker:partyDisbanded", function()
-    Framework.Notify("Der Convoy wurde aufgelöst.", "info")
+    Framework.Notify(Locale("notify.convoy_was_disbanded"), "info")
     SendMessage("partyUpdate", nil)
 end)

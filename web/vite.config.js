@@ -15,4 +15,10 @@ export default defineConfig({
     outDir: "../html",
   },
   base: "",
+  // locales/*.json (SSOT, shared with Lua) lives one level above the vite root — allow reading it.
+  server: {
+    fs: {
+      allow: [".."],
+    },
+  },
 });

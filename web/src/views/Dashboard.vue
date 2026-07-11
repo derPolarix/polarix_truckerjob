@@ -11,7 +11,7 @@
           </div>
           <div style="flex:1;min-width:0">
             <div style="font-weight:700;font-size:16px;color:#fff;line-height:1.05">{{ store.config.brandName }}</div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#7a818c;margin-top:2px">Trucker OS</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#7a818c;margin-top:2px">{{ t('dashboard.trucker_os') }}</div>
           </div>
           <iconify-icon icon="tabler:layout-sidebar-left-collapse" width="18" style="color:#5b626c"></iconify-icon>
         </div>
@@ -41,7 +41,7 @@
               <div style="width:38px;height:38px;border-radius:11px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#22262d;flex-shrink:0">{{ store.config.driverName[0] }}</div>
               <div style="flex:1;min-width:0">
                 <div style="font-weight:600;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ store.config.driverName }}</div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#7a818c;margin-top:1px">{{ store.config.driverLevelTitle }} · Lvl {{ store.config.driverLevel }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#7a818c;margin-top:1px">{{ store.config.driverLevelTitle }} · {{ t('app.level_short', { lvl: store.config.driverLevel }) }}</div>
               </div>
             </div>
             <div style="margin-top:11px;display:flex;align-items:center;gap:8px">
@@ -53,7 +53,7 @@
           </div>
         </div>
         <button style="margin:6px 12px 14px;display:flex;align-items:center;gap:10px;padding:10px 13px;border:none;background:transparent;color:#7a818c;font-family:inherit;font-size:13px;cursor:pointer;border-radius:10px" @click="closeNui">
-          <iconify-icon icon="tabler:logout" width="18"></iconify-icon> Exit
+          <iconify-icon icon="tabler:logout" width="18"></iconify-icon> {{ t('dashboard.exit') }}
         </button>
       </aside>
 
@@ -63,12 +63,12 @@
         <header style="height:62px;flex-shrink:0;display:flex;align-items:center;gap:14px;padding:0 22px;background:#fff;border-bottom:1px solid #dfe2e6">
           <div style="display:flex;align-items:center;gap:10px;height:38px;width:380px;max-width:42%;padding:9px 14px;border-radius:11px;background:#f1f2f4;border:1px solid #e4e6e9">
             <iconify-icon icon="tabler:search" width="17" style="color:#9aa1ab"></iconify-icon>
-            <input placeholder="Search by order ID, cargo or city…" style="flex:1;border:none;background:transparent;outline:none;font-size:13px;color:#1b1f24;font-family:inherit" />
+            <input :placeholder="t('dashboard.search_placeholder')" style="flex:1;border:none;background:transparent;outline:none;font-size:13px;color:#1b1f24;font-family:inherit" />
           </div>
           <div style="flex:1"></div>
           <div style="display:flex;align-items:center;gap:7px;padding:6px 8px 6px 12px;border-radius:20px;background:#f1f2f4;border:1px solid #e4e6e9">
             <iconify-icon icon="tabler:bolt" width="15" style="color:var(--accent)"></iconify-icon>
-            <span style="font-size:12px;color:#6b7280;font-weight:500">Skill points</span>
+            <span style="font-size:12px;color:#6b7280;font-weight:500">{{ t('dashboard.skill_points') }}</span>
             <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#1b1f24;background:#fff;border:1px solid #e4e6e9;border-radius:10px;padding:1px 8px">{{ store.config.skillPoints }}</span>
           </div>
           <div style="text-align:right;line-height:1.15;padding:0 4px">
@@ -92,8 +92,8 @@
           <!-- Coming soon fallback -->
           <div v-else style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;height:100%;min-height:420px">
             <div style="width:70px;height:70px;border-radius:20px;background:#fff;border:1px solid #dfe2e6;display:flex;align-items:center;justify-content:center"><iconify-icon icon="tabler:tools" width="34" style="color:#aab0b8"></iconify-icon></div>
-            <div style="font-size:17px;font-weight:700;color:#3c424b;margin-top:18px">Coming soon</div>
-            <div style="font-size:13px;color:#9aa1ab;margin-top:5px">This section is still being built.</div>
+            <div style="font-size:17px;font-weight:700;color:#3c424b;margin-top:18px">{{ t('dashboard.coming_soon') }}</div>
+            <div style="font-size:13px;color:#9aa1ab;margin-top:5px">{{ t('dashboard.section_being_built') }}</div>
           </div>
         </div>
       </main>
@@ -103,6 +103,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import { usePersistantStore } from "@/stores/persistantStore";
@@ -118,6 +119,7 @@ import PartyDropdown from "@/components/app/PartyDropdown.vue";
 
 const store = useDashboardStore();
 const persistantStore = usePersistantStore();
+const { t } = useI18n();
 
 const now = ref(new Date());
 let timer: ReturnType<typeof setInterval>;
@@ -130,13 +132,13 @@ const date = computed(() => now.value.toLocaleDateString([], { weekday: "short",
 const xpPct = computed(() => Math.round((store.config.driverXp / store.config.driverXpMax) * 100));
 
 const navItems = computed(() => [
-  { key: "dashboard", label: "Dashboard", icon: "tabler:layout-dashboard", badge: "" },
-  { key: "orders", label: "Orders", icon: "tabler:package", badge: String(store.config.openOrders) },
-  { key: "vehicles", label: "Vehicles", icon: "tabler:truck", badge: "" },
-  { key: "skills", label: "Skills", icon: "tabler:bolt", badge: "" },
-  { key: "company", label: "Company", icon: "tabler:building-warehouse", badge: String(store.config.companyMembers) },
-  { key: "leaderboard", label: "Leaderboard", icon: "tabler:trophy", badge: "" },
-  { key: "history", label: "History", icon: "tabler:history", badge: "" },
+  { key: "dashboard", label: t('dashboard.nav_dashboard'), icon: "tabler:layout-dashboard", badge: "" },
+  { key: "orders", label: t('dashboard.nav_orders'), icon: "tabler:package", badge: String(store.config.openOrders) },
+  { key: "vehicles", label: t('dashboard.nav_vehicles'), icon: "tabler:truck", badge: "" },
+  { key: "skills", label: t('dashboard.nav_skills'), icon: "tabler:bolt", badge: "" },
+  { key: "company", label: t('dashboard.nav_company'), icon: "tabler:building-warehouse", badge: String(store.config.companyMembers) },
+  { key: "leaderboard", label: t('dashboard.nav_leaderboard'), icon: "tabler:trophy", badge: "" },
+  { key: "history", label: t('dashboard.nav_history'), icon: "tabler:history", badge: "" },
 ]);
 
 async function closeNui() {

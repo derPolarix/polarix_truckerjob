@@ -1,4 +1,5 @@
 local config = require("config.shared")
+local Locale = require("shared.locale")
 
 Party = {}
 Parties = {}             -- partyId -> { leader, members = { [identifier] = { source, name, joinedAt } } }
@@ -65,22 +66,22 @@ end
 
 function Party.Invite(source, targetIdentifier)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
-    if Party.GetMembership(targetIdentifier) then return false, "Spieler ist bereits in einem Convoy." end
+    if Party.GetMembership(targetIdentifier) then return false, Locale("error.player_already_convoy") end
 
     local companyMembership = Company.GetMembership(pData.identifier)
     local targetCompany = Company.GetMembership(targetIdentifier)
     if not companyMembership or not targetCompany or companyMembership.company_id ~= targetCompany.company_id then
-        return false, "Nur Mitglieder deiner Company können eingeladen werden."
+        return false, Locale("error.only_company_members_can_be_invited")
     end
 
     local myPartyId = PlayerParty[pData.identifier]
     if myPartyId and Parties[myPartyId].leader ~= pData.identifier then
-        return false, "Nur der Convoy-Leader kann einladen."
+        return false, Locale("error.only_convoy_leader_can_invite")
     end
     if myPartyId and PartyMissions and PartyMissions[myPartyId] then
-        return false, "Convoy-Mission läuft, aktuell keine Einladungen möglich."
+        return false, Locale("error.convoy_mission_in_progress_no_invites")
     end
 
     if not myPartyId then
@@ -95,40 +96,40 @@ function Party.Invite(source, targetIdentifier)
     local party = Parties[myPartyId]
     local memberCount = 0
     for _ in pairs(party.members) do memberCount = memberCount + 1 end
-    if memberCount >= config.PartyMaxSize then return false, "Convoy ist voll." end
+    if memberCount >= config.PartyMaxSize then return false, Locale("error.convoy_full") end
 
     local targetSource = Player.GetSourceByIdentifier(targetIdentifier)
-    if not targetSource then return false, "Spieler ist nicht online." end
+    if not targetSource then return false, Locale("error.player_not_online") end
 
     PendingPartyInvites[targetIdentifier] = myPartyId
     TriggerClientEvent("polarix_trucker:partyInviteReceived", targetSource, myPartyId, pData.name)
-    Notifications.Push(targetIdentifier, "party_invite", "Convoy Invite", ("%s invited you to their convoy."):format(pData.name), "tabler:users")
+    Notifications.Push(targetIdentifier, "party_invite", Locale("push.convoy_invite"), Locale("push.invited_their_convoy"):format(pData.name), "tabler:users")
 
     return true, myPartyId
 end
 
 function Party.RespondInvite(source, partyId, accept)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     if PendingPartyInvites[pData.identifier] ~= partyId then
-        return false, "Einladung ist nicht mehr gültig."
+        return false, Locale("error.invite_no_longer_valid")
     end
     PendingPartyInvites[pData.identifier] = nil
 
     if not accept then return true end
 
-    if PlayerParty[pData.identifier] then return false, "Du bist bereits in einem Convoy." end
+    if PlayerParty[pData.identifier] then return false, Locale("error.already_convoy") end
 
     local party = Parties[partyId]
-    if not party then return false, "Convoy existiert nicht mehr." end
+    if not party then return false, Locale("error.convoy_no_longer_exists") end
     if PartyMissions and PartyMissions[partyId] then
-        return false, "Convoy-Mission läuft, aktuell keine Einladungen möglich."
+        return false, Locale("error.convoy_mission_in_progress_no_invites")
     end
 
     local memberCount = 0
     for _ in pairs(party.members) do memberCount = memberCount + 1 end
-    if memberCount >= config.PartyMaxSize then return false, "Convoy ist voll." end
+    if memberCount >= config.PartyMaxSize then return false, Locale("error.convoy_full") end
 
     party.members[pData.identifier] = { source = source, name = pData.name, joinedAt = os.time() }
     PlayerParty[pData.identifier] = partyId
@@ -140,9 +141,9 @@ function Party.TransferLeader(source, targetIdentifier)
     local pData = Player.GetData(source)
     local partyId = pData and PlayerParty[pData.identifier]
     local party = partyId and Parties[partyId]
-    if not party or party.leader ~= pData.identifier then return false, "Nur der Leader kann übergeben." end
+    if not party or party.leader ~= pData.identifier then return false, Locale("error.only_leader_can_hand_over") end
     if not party.members[targetIdentifier] or not party.members[targetIdentifier].source then
-        return false, "Zielspieler ist kein Online-Convoy-Mitglied."
+        return false, Locale("error.target_player_not_online_convoy")
     end
     party.leader = targetIdentifier
     broadcastPartyState(partyId)
@@ -153,9 +154,9 @@ function Party.Kick(source, targetIdentifier)
     local pData = Player.GetData(source)
     local partyId = pData and PlayerParty[pData.identifier]
     local party = partyId and Parties[partyId]
-    if not party or party.leader ~= pData.identifier then return false, "Nur der Leader kann kicken." end
-    if targetIdentifier == pData.identifier then return false, "Kannst dich nicht selbst kicken." end
-    if not party.members[targetIdentifier] then return false, "Spieler ist nicht im Convoy." end
+    if not party or party.leader ~= pData.identifier then return false, Locale("error.only_leader_can_kick") end
+    if targetIdentifier == pData.identifier then return false, Locale("error.cannot_kick_yourself") end
+    if not party.members[targetIdentifier] then return false, Locale("error.player_not_convoy") end
 
     local targetSource = party.members[targetIdentifier].source
     if PartyMissions and PartyMissions[partyId] and PartyMission and targetSource then
@@ -182,7 +183,7 @@ function Party.Disband(source)
     local pData = Player.GetData(source)
     local partyId = pData and PlayerParty[pData.identifier]
     local party = partyId and Parties[partyId]
-    if not party or party.leader ~= pData.identifier then return false, "Nur der Leader kann den Convoy auflösen." end
+    if not party or party.leader ~= pData.identifier then return false, Locale("error.only_leader_can_disband_convoy") end
 
     if PartyMissions and PartyMissions[partyId] and PartyMission then PartyMission.Fail(partyId) end
 

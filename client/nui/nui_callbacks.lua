@@ -1,6 +1,7 @@
 local debug = require("shared.debug")
 local client = require("config.client")
 local shared = require("shared.debug")
+local Locale = require("shared.locale")
 
 -- Callback um UI wieder zu schließen
 
@@ -17,7 +18,7 @@ RegisterNUICallback('acceptOrder', function(data, cb)
         elseif err == 'no_vehicle_or_trailer' then
             Rental.OfferInline(data.orderId, 'solo')
         else
-            Framework.Notify(err or 'Fehler beim Annehmen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_accept"), 'error')
         end
         cb({ ok = success })
     end, data.orderId)
@@ -26,7 +27,7 @@ end)
 RegisterNUICallback('rentBundle', function(data, cb)
     lib.callback('polarix_trucker:startRental', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Miete fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.rental_failed"), 'error')
             cb({ ok = false })
             return
         end
@@ -34,7 +35,7 @@ RegisterNUICallback('rentBundle', function(data, cb)
         if data.mode == 'party' then
             lib.callback('polarix_trucker:startPartyMission', false, function(ok, startErr)
                 if not ok then
-                    Framework.Notify(startErr or 'Fehler beim Starten.', 'error')
+                    Framework.Notify(startErr or Locale("notify.failed_start"), 'error')
                 end
                 cb({ ok = ok })
             end, data.orderId)
@@ -43,7 +44,7 @@ RegisterNUICallback('rentBundle', function(data, cb)
                 if ok then
                     Delivery.Start(orderData)
                 else
-                    Framework.Notify(acceptErr or 'Fehler beim Annehmen.', 'error')
+                    Framework.Notify(acceptErr or Locale("notify.failed_accept"), 'error')
                 end
                 cb({ ok = ok })
             end, data.orderId)
@@ -54,13 +55,13 @@ end)
 RegisterNUICallback('buyVehicle', function(data, cb)
     lib.callback('polarix_trucker:buyVehicle', false, function(success, price, err, ownedVehicles)
         if success then
-            Framework.Notify(('Fahrzeug gekauft für $%s!'):format(lib.math.groupdigits(price, ',')), 'success')
+            Framework.Notify(Locale("notify.vehicle_bought"):format(lib.math.groupdigits(price, ',')), 'success')
             SendMessage('updateOwnedVehicles', {
                 ownedVehicles = ownedVehicles,
                 equippedSlot  = LocalVehicle.slot,
             })
         else
-            Framework.Notify(err or 'Kauf fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.purchase_failed"), 'error')
         end
         cb({ ok = success })
     end, data.slot)
@@ -71,7 +72,7 @@ RegisterNUICallback('equipVehicle', function(data, cb)
         if success then
             SendMessage('equippedVehicleSlot', { slot = data.slot })
         else
-            Framework.Notify(err or 'Equip fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_equip"), 'error')
         end
         cb({ ok = success })
     end, data.slot)
@@ -80,13 +81,13 @@ end)
 RegisterNUICallback('buyTrailer', function(data, cb)
     lib.callback('polarix_trucker:buyTrailer', false, function(success, price, err, ownedTrailers)
         if success then
-            Framework.Notify(('Trailer gekauft für $%s!'):format(lib.math.groupdigits(price, ',')), 'success')
+            Framework.Notify(Locale("notify.trailer_bought"):format(lib.math.groupdigits(price, ',')), 'success')
             SendMessage('updateOwnedTrailers', {
                 ownedTrailers = ownedTrailers,
                 equippedSlot  = LocalTrailer.slot,
             })
         else
-            Framework.Notify(err or 'Kauf fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.purchase_failed"), 'error')
         end
         cb({ ok = success })
     end, data.slot)
@@ -97,7 +98,7 @@ RegisterNUICallback('equipTrailer', function(data, cb)
         if success then
             SendMessage('equippedTrailerSlot', { slot = data.slot })
         else
-            Framework.Notify(err or 'Equip fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_equip"), 'error')
         end
         cb({ ok = success })
     end, data.slot)
@@ -106,7 +107,7 @@ end)
 RegisterNUICallback('unlockSkill', function(data, cb)
     lib.callback('polarix_trucker:unlockSkill', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Skill-Freischaltung fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_unlock_skill"), 'error')
         end
         cb({ ok = success })
     end, data.skillId)
@@ -115,9 +116,9 @@ end)
 RegisterNUICallback('createCompany', function(data, cb)
     lib.callback('polarix_trucker:createCompany', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Erstellen fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_create"), 'error')
         else
-            Framework.Notify('Company erstellt!', 'success')
+            Framework.Notify(Locale("notify.company_created"), 'success')
         end
         cb({ ok = success })
     end, data.name, data.tag, data.description)
@@ -126,9 +127,9 @@ end)
 RegisterNUICallback('inviteMember', function(data, cb)
     lib.callback('polarix_trucker:inviteMember', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Einladung fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_invite"), 'error')
         else
-            Framework.Notify('Einladung gesendet!', 'success')
+            Framework.Notify(Locale("notify.invite_sent"), 'success')
         end
         cb({ ok = success })
     end, data.identifier)
@@ -137,7 +138,7 @@ end)
 RegisterNUICallback('cancelInvite', function(data, cb)
     lib.callback('polarix_trucker:cancelInvite', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Zurückziehen fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_withdraw"), 'error')
         end
         cb({ ok = success })
     end, data.identifier)
@@ -152,7 +153,7 @@ end)
 RegisterNUICallback('respondInvite', function(data, cb)
     lib.callback('polarix_trucker:respondInvite', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Fehler.', 'error')
+            Framework.Notify(err or Locale("notify.error"), 'error')
         end
         cb({ ok = success })
     end, data.companyId, data.accept)
@@ -161,9 +162,9 @@ end)
 RegisterNUICallback('kickMember', function(data, cb)
     lib.callback('polarix_trucker:kickMember', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Kick fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_kick"), 'error')
         else
-            Framework.Notify('Mitglied entfernt.', 'success')
+            Framework.Notify(Locale("notify.member_removed"), 'success')
         end
         cb({ ok = success })
     end, data.identifier)
@@ -172,9 +173,9 @@ end)
 RegisterNUICallback('changeRole', function(data, cb)
     lib.callback('polarix_trucker:changeRole', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Rolle konnte nicht geändert werden.', 'error')
+            Framework.Notify(err or Locale("notify.failed_change_role"), 'error')
         else
-            Framework.Notify('Rolle geändert.', 'success')
+            Framework.Notify(Locale("notify.role_changed"), 'success')
         end
         cb({ ok = success })
     end, data.identifier, data.role)
@@ -183,9 +184,9 @@ end)
 RegisterNUICallback('saveCompanySettings', function(data, cb)
     lib.callback('polarix_trucker:saveCompanySettings', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Speichern fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_save"), 'error')
         else
-            Framework.Notify('Einstellungen gespeichert.', 'success')
+            Framework.Notify(Locale("notify.settings_saved"), 'success')
         end
         cb({ ok = success })
     end, { name = data.name, tag = data.tag, description = data.description, openRecruitment = data.openRecruitment, taxRate = data.taxRate, minLevel = data.minLevel })
@@ -194,9 +195,9 @@ end)
 RegisterNUICallback('disbandCompany', function(_, cb)
     lib.callback('polarix_trucker:disbandCompany', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Auflösen fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_disband"), 'error')
         else
-            Framework.Notify('Company aufgelöst.', 'success')
+            Framework.Notify(Locale("notify.company_disband_confirmed"), 'success')
         end
         cb({ ok = success })
     end)
@@ -205,9 +206,9 @@ end)
 RegisterNUICallback('leaveCompany', function(_, cb)
     lib.callback('polarix_trucker:leaveCompany', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Verlassen fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_leave"), 'error')
         else
-            Framework.Notify('Company verlassen.', 'success')
+            Framework.Notify(Locale("notify.left_company"), 'success')
         end
         cb({ ok = success })
     end)
@@ -216,9 +217,9 @@ end)
 RegisterNUICallback('depositBank', function(data, cb)
     lib.callback('polarix_trucker:depositBank', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Einzahlung fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.deposit_failed"), 'error')
         else
-            Framework.Notify(('$%s eingezahlt.'):format(lib.math.groupdigits(data.amount, ',')), 'success')
+            Framework.Notify(Locale("notify.deposited"):format(lib.math.groupdigits(data.amount, ',')), 'success')
         end
         cb({ ok = success })
     end, data.amount)
@@ -227,9 +228,9 @@ end)
 RegisterNUICallback('withdrawBank', function(data, cb)
     lib.callback('polarix_trucker:withdrawBank', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Auszahlung fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.withdrawal_failed"), 'error')
         else
-            Framework.Notify(('$%s ausgezahlt.'):format(lib.math.groupdigits(data.amount, ',')), 'success')
+            Framework.Notify(Locale("notify.withdrawn"):format(lib.math.groupdigits(data.amount, ',')), 'success')
         end
         cb({ ok = success })
     end, data.amount)
@@ -238,7 +239,7 @@ end)
 RegisterNUICallback('requestJoin', function(data, cb)
     lib.callback('polarix_trucker:requestJoin', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Beitreten fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_join"), 'error')
         end
         cb({ ok = success })
     end, data.companyId)
@@ -271,9 +272,9 @@ end)
 RegisterNUICallback('invitePartyMember', function(data, cb)
     lib.callback('polarix_trucker:invitePartyMember', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Einladung fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_invite"), 'error')
         else
-            Framework.Notify('Convoy-Einladung gesendet!', 'success')
+            Framework.Notify(Locale("notify.convoy_invite_sent"), 'success')
         end
         cb({ ok = success })
     end, data.identifier)
@@ -282,7 +283,7 @@ end)
 RegisterNUICallback('respondPartyInvite', function(data, cb)
     lib.callback('polarix_trucker:respondPartyInvite', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Fehler.', 'error')
+            Framework.Notify(err or Locale("notify.error"), 'error')
         end
         cb({ ok = success })
     end, data.partyId, data.accept)
@@ -291,9 +292,9 @@ end)
 RegisterNUICallback('kickPartyMember', function(data, cb)
     lib.callback('polarix_trucker:kickPartyMember', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Kick fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_kick"), 'error')
         else
-            Framework.Notify('Mitglied entfernt.', 'success')
+            Framework.Notify(Locale("notify.member_removed"), 'success')
         end
         cb({ ok = success })
     end, data.identifier)
@@ -302,7 +303,7 @@ end)
 RegisterNUICallback('leaveParty', function(_, cb)
     lib.callback('polarix_trucker:leaveParty', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Verlassen fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_leave"), 'error')
         end
         cb({ ok = success })
     end)
@@ -311,9 +312,9 @@ end)
 RegisterNUICallback('disbandParty', function(_, cb)
     lib.callback('polarix_trucker:disbandParty', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Auflösen fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_disband"), 'error')
         else
-            Framework.Notify('Convoy aufgelöst.', 'success')
+            Framework.Notify(Locale("notify.convoy_disband_confirmed"), 'success')
         end
         cb({ ok = success })
     end)
@@ -322,7 +323,7 @@ end)
 RegisterNUICallback('transferPartyLeader', function(data, cb)
     lib.callback('polarix_trucker:transferPartyLeader', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Übergabe fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_hand_over"), 'error')
         end
         cb({ ok = success })
     end, data.identifier)
@@ -334,7 +335,7 @@ RegisterNUICallback('startPartyMission', function(data, cb)
             if err == 'no_vehicle_or_trailer' then
                 Rental.OfferInline(data.orderId, 'party')
             else
-                Framework.Notify(err or 'Fehler beim Starten.', 'error')
+                Framework.Notify(err or Locale("notify.failed_start"), 'error')
             end
         end
         cb({ ok = success })
@@ -362,7 +363,7 @@ end)
 RegisterNUICallback('adminCreateOrder', function(data, cb)
     lib.callback('polarix_trucker:adminCreateOrder', false, function(success, result)
         if not success then
-            Framework.Notify(result or 'Erstellen fehlgeschlagen.', 'error')
+            Framework.Notify(result or Locale("notify.failed_create"), 'error')
         end
         cb({ ok = success, orderId = success and result or nil, err = not success and result or nil })
     end, data.order)
@@ -371,7 +372,7 @@ end)
 RegisterNUICallback('adminUpdateOrder', function(data, cb)
     lib.callback('polarix_trucker:adminUpdateOrder', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Speichern fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_save"), 'error')
         end
         cb({ ok = success, err = not success and err or nil })
     end, data.orderId, data.order)
@@ -380,7 +381,7 @@ end)
 RegisterNUICallback('adminSetOrderActive', function(data, cb)
     lib.callback('polarix_trucker:adminSetOrderActive', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Fehler.', 'error')
+            Framework.Notify(err or Locale("notify.error"), 'error')
         end
         cb({ ok = success })
     end, data.orderId, data.isActive)
@@ -389,7 +390,7 @@ end)
 RegisterNUICallback('adminDeleteOrder', function(data, cb)
     lib.callback('polarix_trucker:adminDeleteOrder', false, function(success, err)
         if not success then
-            Framework.Notify(err or 'Löschen fehlgeschlagen.', 'error')
+            Framework.Notify(err or Locale("notify.failed_delete"), 'error')
         end
         cb({ ok = success, err = not success and err or nil })
     end, data.orderId)
@@ -398,7 +399,7 @@ end)
 RegisterNUICallback('adminCloneOrder', function(data, cb)
     lib.callback('polarix_trucker:adminCloneOrder', false, function(success, result)
         if not success then
-            Framework.Notify(result or 'Duplizieren fehlgeschlagen.', 'error')
+            Framework.Notify(result or Locale("notify.failed_duplicate"), 'error')
         end
         cb({ ok = success, order = success and result or nil })
     end, data.orderId)
@@ -411,7 +412,7 @@ RegisterNUICallback('adminTestRunOrder', function(data, cb)
         if success then
             Delivery.Start(result)
         else
-            Framework.Notify(result or 'Test fehlgeschlagen.', 'error')
+            Framework.Notify(result or Locale("notify.test_failed"), 'error')
         end
         cb({ ok = success })
     end, data.orderId)

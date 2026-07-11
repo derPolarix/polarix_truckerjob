@@ -1,4 +1,5 @@
 local config = require("config.server")
+local Locale = require("shared.locale")
 
 Vehicles = {}
 
@@ -8,21 +9,21 @@ end
 
 function Vehicles.Buy(source, vehicleSlot)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     local shopEntry = nil
     for _, v in ipairs(config.VehicleShop) do
         if v.slot == vehicleSlot then shopEntry = v; break end
     end
-    if not shopEntry then return false, "Fahrzeug nicht gefunden." end
+    if not shopEntry then return false, Locale("error.vehicle_not_found") end
 
     if pData.level < shopEntry.level_required then
-        return false, ("Level %d erforderlich."):format(shopEntry.level_required)
+        return false, Locale("error.level_required"):format(shopEntry.level_required)
     end
 
     local owned = DB.GetPlayerVehicles(pData.identifier)
     for _, v in ipairs(owned) do
-        if v.vehicle_slot == vehicleSlot then return false, "Bereits besessen." end
+        if v.vehicle_slot == vehicleSlot then return false, Locale("error.already_owned") end
     end
 
     -- Bulk Deals Skill: 25% Rabatt
@@ -31,7 +32,7 @@ function Vehicles.Buy(source, vehicleSlot)
         price = math.floor(price * 0.75)
     end
 
-    if Framework.GetMoney(source) < price then return false, "Nicht genug Geld." end
+    if Framework.GetMoney(source) < price then return false, Locale("error.not_enough_money") end
     Framework.RemoveMoney(source, price)
 
     DB.InsertVehicle(pData.identifier, vehicleSlot, shopEntry.model)
@@ -40,7 +41,7 @@ end
 
 function Vehicles.Equip(source, vehicleSlot)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     local owned = DB.GetPlayerVehicles(pData.identifier)
     local vehicleModel = nil
@@ -50,7 +51,7 @@ function Vehicles.Equip(source, vehicleSlot)
             break
         end
     end
-    if not vehicleModel then return false, "Fahrzeug nicht besessen." end
+    if not vehicleModel then return false, Locale("error.vehicle_not_owned") end
 
     pData.equipped_vehicle = vehicleSlot
     Player.Save(source)

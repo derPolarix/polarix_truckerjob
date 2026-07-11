@@ -8,8 +8,8 @@
       <div v-if="store.config.incomingInvites.length > 0" style="background:#fff;border:1px solid #dfe2e6;border-radius:16px;overflow:hidden">
         <div style="padding:16px 20px;border-bottom:1px solid #eef0f2;display:flex;align-items:center;gap:9px">
           <iconify-icon icon="tabler:mail" width="18" style="color:var(--accent)"></iconify-icon>
-          <span style="font-size:15px;font-weight:700;color:#1b1f24">Incoming invitations</span>
-          <span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">{{ store.config.incomingInvites.length }} pending</span>
+          <span style="font-size:15px;font-weight:700;color:#1b1f24">{{ t('company.incoming_invitations') }}</span>
+          <span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">{{ t('company.pending_count', { count: store.config.incomingInvites.length }) }}</span>
         </div>
         <div
           v-for="inv in store.config.incomingInvites"
@@ -21,7 +21,7 @@
           </div>
           <div style="flex:1;min-width:0">
             <div style="font-size:14px;font-weight:700;color:#1b1f24">{{ inv.companyName }}</div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:2px">Invited by {{ inv.invitedBy }} · {{ inv.sent }}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:2px">{{ t('company.invited_by', { name: inv.invitedBy, sent: inv.sent }) }}</div>
           </div>
           <button
             style="width:34px;height:34px;border-radius:9px;border:1px solid #e4e6e9;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#d24b3a"
@@ -40,7 +40,7 @@
         <!-- Loading spinner -->
         <template v-if="isRefetching">
           <div class="spin" style="width:44px;height:44px;border-radius:50%;border:3px solid #eef0f2;border-top-color:var(--accent)"></div>
-          <div style="font-size:15px;font-weight:700;color:#1b1f24;margin-top:18px">Setting up your company…</div>
+          <div style="font-size:15px;font-weight:700;color:#1b1f24;margin-top:18px">{{ t('company.setting_up') }}</div>
         </template>
 
         <!-- Empty state (default) -->
@@ -48,35 +48,35 @@
           <div style="width:72px;height:72px;border-radius:18px;background:rgba(232,180,8,0.12);display:flex;align-items:center;justify-content:center">
             <iconify-icon icon="tabler:building-warehouse" width="38" style="color:var(--accent)"></iconify-icon>
           </div>
-          <div style="font-size:22px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24;margin-top:20px">Not part of a fleet yet</div>
-          <div style="font-size:13px;color:#9aa1ab;margin-top:8px;max-width:360px;line-height:1.6">Found your own company or request to join an open fleet below.</div>
+          <div style="font-size:22px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24;margin-top:20px">{{ t('company.not_part_of_fleet') }}</div>
+          <div style="font-size:13px;color:#9aa1ab;margin-top:8px;max-width:360px;line-height:1.6">{{ t('company.found_or_join_hint') }}</div>
           <button class="accent-btn" style="margin-top:22px;padding:12px 26px;font-size:13px;gap:8px" @click="showCreate = true">
             <iconify-icon icon="tabler:plus" width="16"></iconify-icon>
-            Found a Company
+            {{ t('company.found_a_company') }}
           </button>
         </template>
 
         <!-- Create form -->
         <template v-else>
           <div style="width:100%;max-width:460px;text-align:left">
-            <div style="font-size:18px;font-weight:800;color:#1b1f24;margin-bottom:20px;text-align:center">Found a Company</div>
+            <div style="font-size:18px;font-weight:800;color:#1b1f24;margin-bottom:20px;text-align:center">{{ t('company.found_a_company') }}</div>
             <div style="display:flex;flex-direction:column;gap:14px">
               <div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Company name</div>
-                <input v-model="createName" placeholder="e.g. Apex Logistics" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">{{ t('company.company_name_label') }}</div>
+                <input v-model="createName" :placeholder="t('company.company_name_placeholder')" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
               </div>
               <div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Tag <span style="color:#cfd3d8;font-style:normal">(max 8 chars)</span></div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">{{ t('company.tag_label') }} <span style="color:#cfd3d8;font-style:normal">{{ t('company.max_8_chars') }}</span></div>
                 <input v-model="createTag" placeholder="APEX" maxlength="8" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit;text-transform:uppercase" />
               </div>
               <div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Description <span style="color:#cfd3d8;font-style:normal">(optional)</span></div>
-                <textarea v-model="createDesc" placeholder="What your fleet stands for..." style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;resize:none;height:68px;font-family:inherit"></textarea>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">{{ t('company.description_label') }} <span style="color:#cfd3d8;font-style:normal">{{ t('company.optional') }}</span></div>
+                <textarea v-model="createDesc" :placeholder="t('company.description_placeholder')" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;resize:none;height:68px;font-family:inherit"></textarea>
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:10px;background:#f6f7f8;border:1px solid #eef0f2;cursor:pointer" @click="createOpenRec = !createOpenRec">
                 <div>
-                  <div style="font-size:13px;font-weight:600;color:#1b1f24">Open recruitment</div>
-                  <div style="font-size:11px;color:#9aa1ab;margin-top:2px">Allow drivers to request joining.</div>
+                  <div style="font-size:13px;font-weight:600;color:#1b1f24">{{ t('company.open_recruitment') }}</div>
+                  <div style="font-size:11px;color:#9aa1ab;margin-top:2px">{{ t('company.allow_join_requests') }}</div>
                 </div>
                 <div :style="{ background: createOpenRec ? 'var(--accent)' : '#cfd3d8' }" style="width:40px;height:22px;border-radius:12px;position:relative;flex-shrink:0;transition:background 0.2s">
                   <div :style="{ right: createOpenRec ? '3px' : 'auto', left: createOpenRec ? 'auto' : '3px' }" style="position:absolute;top:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left 0.2s,right 0.2s"></div>
@@ -91,9 +91,9 @@
                 :disabled="!createName.trim() || !createTag.trim()"
                 @click="createCompanyAction"
               >
-                Create Company
+                {{ t('company.create_company') }}
               </button>
-              <button style="background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:11px;padding:12px 22px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="showCreate = false">Cancel</button>
+              <button style="background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:11px;padding:12px 22px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="showCreate = false">{{ t('app.cancel') }}</button>
             </div>
           </div>
         </template>
@@ -104,8 +104,8 @@
       <div v-if="store.config.openCompanies.length > 0" style="background:#fff;border:1px solid #dfe2e6;border-radius:16px;overflow:hidden">
         <div style="padding:16px 20px;border-bottom:1px solid #eef0f2;display:flex;align-items:center;gap:9px">
           <iconify-icon icon="tabler:users-plus" width="18" style="color:var(--accent)"></iconify-icon>
-          <span style="font-size:15px;font-weight:700;color:#1b1f24">Open recruitment</span>
-          <span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">{{ store.config.openCompanies.length }} fleet{{ store.config.openCompanies.length !== 1 ? 's' : '' }}</span>
+          <span style="font-size:15px;font-weight:700;color:#1b1f24">{{ t('company.open_recruitment') }}</span>
+          <span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">{{ store.config.openCompanies.length }} {{ store.config.openCompanies.length !== 1 ? t('company.fleet_plural') : t('company.fleet_singular') }}</span>
         </div>
         <div
           v-for="c in store.config.openCompanies"
@@ -117,14 +117,14 @@
           </div>
           <div style="flex:1;min-width:0">
             <div style="font-size:14px;font-weight:700;color:#1b1f24">{{ c.name }}</div>
-            <div style="font-size:12px;color:#9aa1ab;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.description || 'No description.' }}</div>
+            <div style="font-size:12px;color:#9aa1ab;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.description || t('company.no_description') }}</div>
           </div>
           <div style="display:flex;align-items:center;gap:18px;flex-shrink:0;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">
-            <span style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:medal" width="13"></iconify-icon>Lvl {{ c.level }}</span>
-            <span v-if="c.minLevel > 1" style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:shield-lock" width="13"></iconify-icon>Min. Lvl {{ c.minLevel }}</span>
+            <span style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:medal" width="13"></iconify-icon>{{ t('app.level_short', { lvl: c.level }) }}</span>
+            <span v-if="c.minLevel > 1" style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:shield-lock" width="13"></iconify-icon>{{ t('company.min_level_prefix', { level: c.minLevel }) }}</span>
             <span style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:users" width="13"></iconify-icon>{{ c.members }}</span>
             <span style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:packages" width="13"></iconify-icon>{{ c.deliveries }}</span>
-            <span style="display:inline-flex;align-items:center;gap:5px" :style="{ color: c.taxRate > 0 ? '#d24b3a' : '#9aa1ab' }"><iconify-icon icon="tabler:receipt-tax" width="13"></iconify-icon>{{ c.taxRate }}% tax</span>
+            <span style="display:inline-flex;align-items:center;gap:5px" :style="{ color: c.taxRate > 0 ? '#d24b3a' : '#9aa1ab' }"><iconify-icon icon="tabler:receipt-tax" width="13"></iconify-icon>{{ t('company.tax_suffix', { rate: c.taxRate }) }}</span>
           </div>
           <button
             class="accent-btn"
@@ -134,7 +134,7 @@
             @click="requestJoinAction(c)"
           >
             <iconify-icon :icon="joinedId === c.id ? 'tabler:check' : 'tabler:door-enter'" width="14"></iconify-icon>
-            {{ joinedId === c.id ? 'Joined' : 'Request to join' }}
+            {{ joinedId === c.id ? t('company.joined') : t('company.request_to_join') }}
           </button>
         </div>
       </div>
@@ -156,9 +156,9 @@
           </div>
           <div style="font-size:13px;color:#6b7280;margin-top:5px">{{ store.config.companyDescription }}</div>
           <div style="display:flex;align-items:center;gap:16px;margin-top:9px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">
-            <span style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:users" width="13"></iconify-icon>{{ store.config.companyMembers }} members</span>
-            <span style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:calendar" width="13"></iconify-icon>Founded {{ store.config.companyFoundedDate }}</span>
-            <span style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:medal" width="13"></iconify-icon>Lvl {{ store.config.companyLevel }}</span>
+            <span style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:users" width="13"></iconify-icon>{{ t('company.members_suffix', { count: store.config.companyMembers }) }}</span>
+            <span style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:calendar" width="13"></iconify-icon>{{ t('company.founded_prefix', { date: store.config.companyFoundedDate }) }}</span>
+            <span style="display:inline-flex;align-items:center;gap:5px"><iconify-icon icon="tabler:medal" width="13"></iconify-icon>{{ t('app.level_short', { lvl: store.config.companyLevel }) }}</span>
           </div>
         </div>
       </div>
@@ -187,7 +187,7 @@
             </div>
             <div style="font-size:24px;font-weight:800;letter-spacing:-0.02em;color:#1b1f24;margin-top:15px">{{ cs.value }}</div>
             <div style="font-size:13px;font-weight:600;color:#3c424b;margin-top:2px">{{ cs.label }}</div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:6px">{{ cs.sub }}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:6px">{{ t(cs.sub) }}</div>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1.45fr 1fr;gap:14px;align-items:start">
@@ -195,9 +195,9 @@
           <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
               <div style="font-size:15px;font-weight:700;color:#1b1f24;display:inline-flex;align-items:center;gap:8px">
-                <iconify-icon icon="tabler:activity" width="18" style="color:var(--accent)"></iconify-icon>Live activity
+                <iconify-icon icon="tabler:activity" width="18" style="color:var(--accent)"></iconify-icon>{{ t('company.live_activity') }}
               </div>
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">ui.company.events</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">{{ t('ui.company.events') }}</span>
             </div>
             <template v-if="store.config.activity.length > 0">
               <div v-for="a in store.config.activity" :key="a.when + a.who" style="display:flex;align-items:center;gap:12px;padding:10px 2px;border-bottom:1px solid #eef0f2">
@@ -209,14 +209,14 @@
                 </div>
               </div>
             </template>
-            <div v-else style="padding:28px 0;text-align:center;font-size:13px;color:#9aa1ab">No activity recorded yet.</div>
+            <div v-else style="padding:28px 0;text-align:center;font-size:13px;color:#9aa1ab">{{ t('company.no_activity_yet') }}</div>
           </div>
           <!-- Progression -->
           <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px">
-            <div style="font-size:15px;font-weight:700;color:#1b1f24;margin-bottom:14px">Company progression</div>
+            <div style="font-size:15px;font-weight:700;color:#1b1f24;margin-bottom:14px">{{ t('company.company_progression') }}</div>
             <div style="display:flex;align-items:center;justify-content:space-between">
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:#9aa1ab">Company level</span>
-              <span style="font-size:18px;font-weight:800;color:var(--accent)">Lvl {{ store.config.companyLevel }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:#9aa1ab">{{ t('company.company_level_label') }}</span>
+              <span style="font-size:18px;font-weight:800;color:var(--accent)">{{ t('app.level_short', { lvl: store.config.companyLevel }) }}</span>
             </div>
             <div style="margin-top:8px;height:7px;border-radius:4px;background:#eef0f2;overflow:hidden">
               <div style="height:100%;background:var(--accent)" :style="{ width: companyXpPct + '%' }"></div>
@@ -226,15 +226,15 @@
               <span>{{ store.config.companyXpMax.toLocaleString() }} XP</span>
             </div>
             <div style="margin-top:16px;padding-top:16px;border-top:1px solid #eef0f2">
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab">Founded</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab">{{ t('company.founded_heading') }}</div>
               <div style="font-size:15px;font-weight:700;color:#1b1f24;margin-top:3px">{{ store.config.companyFoundedDate }}</div>
             </div>
             <div style="margin-top:14px">
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab">About</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab">{{ t('company.about_heading') }}</div>
               <div style="font-size:13px;color:#3c424b;margin-top:4px;line-height:1.5">{{ store.config.companyDescription || '—' }}</div>
             </div>
             <div style="margin-top:16px;padding-top:14px;border-top:1px solid #eef0f2;display:flex;align-items:center;justify-content:space-between">
-              <span style="font-size:12px;color:#6b7280">Server ranking</span>
+              <span style="font-size:12px;color:#6b7280">{{ t('company.server_ranking') }}</span>
               <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:#1b1f24">{{ store.config.companyServerRank }}</span>
             </div>
           </div>
@@ -245,7 +245,7 @@
       <template v-if="store.ctab === 'members'">
         <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;overflow:hidden">
           <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 0.8fr;gap:12px;padding:13px 20px;background:#f6f7f8;border-bottom:1px solid #eef0f2;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab">
-            <span>Member</span><span>Role</span><span>Deliveries</span><span>Earned</span><span>Status</span>
+            <span>{{ t('company.col_member') }}</span><span>{{ t('company.col_role') }}</span><span>{{ t('company.col_deliveries') }}</span><span>{{ t('company.col_earned') }}</span><span>{{ t('company.col_status') }}</span>
           </div>
           <div
             v-for="m in store.config.members"
@@ -257,7 +257,7 @@
               <div style="width:36px;height:36px;border-radius:10px;background:#f1f2f4;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#6b7280;flex-shrink:0">{{ m.name[0] }}</div>
               <div style="min-width:0">
                 <div style="font-size:14px;font-weight:600;color:#1b1f24;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.name }}</div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9aa1ab">Lvl {{ m.lvl }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9aa1ab">{{ t('app.level_short', { lvl: m.lvl }) }}</div>
               </div>
             </div>
             <div style="font-size:13px;font-weight:600" :style="{ color: roleColor(m.role) }">{{ m.role }}</div>
@@ -276,8 +276,8 @@
           <div v-if="canInvite" style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px">
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div>
-                <div style="font-size:15px;font-weight:700;color:#1b1f24">Invite a driver</div>
-                <div style="font-size:13px;color:#9aa1ab;margin-top:4px">No username system — pick a driver near you.</div>
+                <div style="font-size:15px;font-weight:700;color:#1b1f24">{{ t('company.invite_a_driver') }}</div>
+                <div style="font-size:13px;color:#9aa1ab;margin-top:4px">{{ t('company.no_username_hint') }}</div>
               </div>
               <button
                 style="width:34px;height:34px;border-radius:9px;border:1px solid #e4e6e9;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280;flex-shrink:0"
@@ -295,26 +295,26 @@
                 <div style="width:30px;height:30px;border-radius:8px;background:#f1f2f4;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#6b7280;flex-shrink:0">{{ r.name[0] }}</div>
                 <div style="flex:1;min-width:0">
                   <div style="font-size:13px;font-weight:600;color:#1b1f24;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div>
-                  <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9aa1ab">Lvl {{ r.lvl }}</div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9aa1ab">{{ t('app.level_short', { lvl: r.lvl }) }}</div>
                 </div>
-                <button class="accent-btn" style="padding:7px 12px;font-size:12px;flex-shrink:0" @click="sendInvite(r.identifier)">Invite</button>
+                <button class="accent-btn" style="padding:7px 12px;font-size:12px;flex-shrink:0" @click="sendInvite(r.identifier)">{{ t('app.invite') }}</button>
               </div>
-              <div v-if="!nearbyLoading && nearbyRecruits.length === 0" style="padding:16px 0;text-align:center;font-size:13px;color:#9aa1ab">No nearby drivers without a company. Get closer and refresh.</div>
+              <div v-if="!nearbyLoading && nearbyRecruits.length === 0" style="padding:16px 0;text-align:center;font-size:13px;color:#9aa1ab">{{ t('company.no_nearby_drivers') }}</div>
             </div>
           </div>
           <div v-else style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;color:#9aa1ab;font-size:13px">
-            Only owners and managers can invite drivers.
+            {{ t('company.only_owners_managers_invite') }}
           </div>
           <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-              <div style="font-size:15px;font-weight:700;color:#1b1f24">Pending invitations</div>
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">{{ store.config.invitations.length }} sent</span>
+              <div style="font-size:15px;font-weight:700;color:#1b1f24">{{ t('company.pending_invitations') }}</div>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">{{ t('company.sent_count', { count: store.config.invitations.length }) }}</span>
             </div>
             <div v-for="v in store.config.invitations" :key="v.identifier" style="display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid #eef0f2">
               <div style="width:36px;height:36px;border-radius:10px;background:#f1f2f4;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#6b7280;flex-shrink:0">{{ v.name[0] }}</div>
               <div style="flex:1;min-width:0">
                 <div style="font-size:14px;font-weight:600;color:#1b1f24">{{ v.name }}</div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9aa1ab;margin-top:2px">Lvl {{ v.lvl }} · sent {{ v.sent }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9aa1ab;margin-top:2px">{{ t('app.level_short', { lvl: v.lvl }) }} · {{ t('company.sent_suffix', { sent: v.sent }) }}</div>
               </div>
               <button
                 v-if="canInvite"
@@ -322,7 +322,7 @@
                 @click="cancelInvite(v.identifier)"
               ><iconify-icon icon="tabler:x" width="16"></iconify-icon></button>
             </div>
-            <div v-if="store.config.invitations.length === 0" style="padding:20px 0;text-align:center;font-size:13px;color:#9aa1ab">No pending invitations.</div>
+            <div v-if="store.config.invitations.length === 0" style="padding:20px 0;text-align:center;font-size:13px;color:#9aa1ab">{{ t('company.no_pending_invitations') }}</div>
           </div>
         </div>
       </template>
@@ -332,8 +332,8 @@
         <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:14px;align-items:start">
           <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-              <div style="font-size:15px;font-weight:700;color:#1b1f24">Deliveries this week</div>
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">{{ store.config.companyDeliveries }} total</span>
+              <div style="font-size:15px;font-weight:700;color:#1b1f24">{{ t('company.deliveries_this_week') }}</div>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab">{{ t('company.total_suffix', { count: store.config.companyDeliveries }) }}</span>
             </div>
             <template v-if="store.config.statChart.length > 0">
               <div style="display:flex;align-items:flex-end;gap:14px;height:180px;padding:0 4px">
@@ -346,11 +346,11 @@
             </template>
             <div v-else style="height:180px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px">
               <iconify-icon icon="tabler:chart-bar-off" width="32" style="color:#cfd3d8"></iconify-icon>
-              <div style="font-size:13px;color:#9aa1ab">No weekly data yet.</div>
+              <div style="font-size:13px;color:#9aa1ab">{{ t('company.no_weekly_data') }}</div>
             </div>
           </div>
           <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px">
-            <div style="font-size:15px;font-weight:700;color:#1b1f24;margin-bottom:14px">Top haulers</div>
+            <div style="font-size:15px;font-weight:700;color:#1b1f24;margin-bottom:14px">{{ t('company.top_haulers') }}</div>
             <template v-if="store.config.topHaulers.length > 0">
               <div v-for="h in store.config.topHaulers" :key="h.name" style="margin-bottom:14px">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -362,7 +362,7 @@
                 </div>
               </div>
             </template>
-            <div v-else style="padding:28px 0;text-align:center;font-size:13px;color:#9aa1ab">No deliveries recorded yet.</div>
+            <div v-else style="padding:28px 0;text-align:center;font-size:13px;color:#9aa1ab">{{ t('company.no_deliveries_recorded') }}</div>
           </div>
         </div>
       </template>
@@ -373,28 +373,28 @@
           <div style="background:#22262d;border-radius:16px;padding:22px 24px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden">
             <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:repeating-linear-gradient(45deg,var(--accent) 0 9px,#1b1f24 9px 18px)"></div>
             <div>
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#9aa1ab">Company treasury</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#9aa1ab">{{ t('company.treasury') }}</div>
               <div style="font-size:32px;font-weight:800;letter-spacing:-0.02em;color:#fff;margin-top:6px">{{ store.config.companyTreasury }}</div>
             </div>
             <div style="display:flex;gap:10px;align-items:center">
-              <input v-model.number="bankAmount" type="number" min="1" placeholder="Amount" class="no-spinner" style="width:120px;padding:11px 14px;border-radius:10px;border:1px solid #3a414b;background:#2e333b;color:#fff;font-size:13px;outline:none;font-family:inherit" />
-              <button class="accent-btn" style="padding:12px 20px;font-size:13px;gap:7px" @click="deposit"><iconify-icon icon="tabler:arrow-down" width="16"></iconify-icon>Deposit</button>
-              <button style="background:#2e333b;color:#fff;border:1px solid #3a414b;border-radius:11px;padding:12px 20px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:7px" @click="withdraw"><iconify-icon icon="tabler:arrow-up" width="16"></iconify-icon>Withdraw</button>
+              <input v-model.number="bankAmount" type="number" min="1" :placeholder="t('company.amount_placeholder')" class="no-spinner" style="width:120px;padding:11px 14px;border-radius:10px;border:1px solid #3a414b;background:#2e333b;color:#fff;font-size:13px;outline:none;font-family:inherit" />
+              <button class="accent-btn" style="padding:12px 20px;font-size:13px;gap:7px" @click="deposit"><iconify-icon icon="tabler:arrow-down" width="16"></iconify-icon>{{ t('company.deposit') }}</button>
+              <button style="background:#2e333b;color:#fff;border:1px solid #3a414b;border-radius:11px;padding:12px 20px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:7px" @click="withdraw"><iconify-icon icon="tabler:arrow-up" width="16"></iconify-icon>{{ t('company.withdraw') }}</button>
             </div>
           </div>
           <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px">
-            <div style="font-size:15px;font-weight:700;color:#1b1f24;margin-bottom:6px">Recent transactions</div>
-            <div v-for="t in store.config.transactions" :key="t.label" style="display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid #eef0f2">
-              <div style="width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0" :style="{ background: t.pos ? 'rgba(47,158,99,0.12)' : 'rgba(210,75,58,0.10)' }">
-                <iconify-icon :icon="t.icon" width="17" :style="{ color: t.pos ? '#2f9e63' : '#d24b3a' }"></iconify-icon>
+            <div style="font-size:15px;font-weight:700;color:#1b1f24;margin-bottom:6px">{{ t('company.recent_transactions') }}</div>
+            <div v-for="tx in store.config.transactions" :key="tx.label" style="display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid #eef0f2">
+              <div style="width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0" :style="{ background: tx.pos ? 'rgba(47,158,99,0.12)' : 'rgba(210,75,58,0.10)' }">
+                <iconify-icon :icon="tx.icon" width="17" :style="{ color: tx.pos ? '#2f9e63' : '#d24b3a' }"></iconify-icon>
               </div>
               <div style="flex:1;min-width:0">
-                <div style="font-size:13px;font-weight:600;color:#1b1f24">{{ t.label }}</div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:2px">{{ t.when }}</div>
+                <div style="font-size:13px;font-weight:600;color:#1b1f24">{{ tx.label }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:2px">{{ tx.when }}</div>
               </div>
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600" :style="{ color: t.pos ? '#2f9e63' : '#d24b3a' }">{{ t.amt }}</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600" :style="{ color: tx.pos ? '#2f9e63' : '#d24b3a' }">{{ tx.amt }}</div>
             </div>
-            <div v-if="store.config.transactions.length === 0" style="padding:20px 0;text-align:center;font-size:13px;color:#9aa1ab">No transactions yet.</div>
+            <div v-if="store.config.transactions.length === 0" style="padding:20px 0;text-align:center;font-size:13px;color:#9aa1ab">{{ t('company.no_transactions_yet') }}</div>
           </div>
         </div>
       </template>
@@ -402,19 +402,19 @@
       <!-- Settings -->
       <template v-if="store.ctab === 'settings'">
         <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:22px 24px;max-width:640px">
-          <div style="font-size:15px;font-weight:700;color:#1b1f24;margin-bottom:18px">Company settings</div>
+          <div style="font-size:15px;font-weight:700;color:#1b1f24;margin-bottom:18px">{{ t('company.company_settings') }}</div>
           <div style="display:flex;flex-direction:column;gap:16px">
             <div>
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Company name</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">{{ t('company.company_name_label') }}</div>
               <input v-model="settingsName" :readonly="!isOwner" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Tag</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">{{ t('company.tag_label') }}</div>
                 <input v-model="settingsTag" maxlength="8" :readonly="!isOwner" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
               </div>
               <div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Min. level to join</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">{{ t('company.min_level_to_join') }}</div>
                 <input
                   v-model.number="settingsMinLevel"
                   type="number" min="1" max="11" step="1" class="no-spinner"
@@ -425,11 +425,11 @@
               </div>
             </div>
             <div>
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Description</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">{{ t('company.description_label') }}</div>
               <textarea v-model="settingsDesc" :readonly="!isOwner" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;resize:none;height:72px;font-family:inherit"></textarea>
             </div>
             <div>
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">Company tax <span style="color:#cfd3d8;font-style:normal">(0-25%, auto-deducted from every member's delivery reward)</span></div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">{{ t('company.company_tax_label') }} <span style="color:#cfd3d8;font-style:normal">{{ t('company.tax_hint') }}</span></div>
               <template v-if="isOwner">
                 <input
                   v-model.number="settingsTaxRate"
@@ -444,30 +444,30 @@
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:11px;background:#f6f7f8;border:1px solid #eef0f2" :style="{ cursor: isOwner ? 'pointer' : 'default' }" @click="isOwner && (settingsOpenRec = !settingsOpenRec)">
               <div>
-                <div style="font-size:13px;font-weight:600;color:#1b1f24">Open recruitment</div>
-                <div style="font-size:12px;color:#9aa1ab;margin-top:2px">Let drivers request to join.</div>
+                <div style="font-size:13px;font-weight:600;color:#1b1f24">{{ t('company.open_recruitment') }}</div>
+                <div style="font-size:12px;color:#9aa1ab;margin-top:2px">{{ t('company.allow_join_requests_settings') }}</div>
               </div>
               <div :style="{ background: settingsOpenRec ? 'var(--accent)' : '#cfd3d8', cursor: isOwner ? 'pointer' : 'default' }" style="width:42px;height:24px;border-radius:14px;position:relative;flex-shrink:0;transition:background 0.2s">
                 <div :style="{ right: settingsOpenRec ? '3px' : 'auto', left: settingsOpenRec ? 'auto' : '3px' }" style="position:absolute;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left 0.2s,right 0.2s"></div>
               </div>
             </div>
             <div v-if="isOwner" style="display:flex;gap:10px;margin-top:4px">
-              <button class="accent-btn" style="padding:12px 22px;font-size:13px" @click="saveSettings">Save changes</button>
-              <button style="background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:11px;padding:12px 22px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="resetSettings">Cancel</button>
+              <button class="accent-btn" style="padding:12px 22px;font-size:13px" @click="saveSettings">{{ t('company.save_changes') }}</button>
+              <button style="background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:11px;padding:12px 22px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="resetSettings">{{ t('app.cancel') }}</button>
             </div>
           </div>
         </div>
 
         <!-- Danger zone -->
         <div style="background:#fff;border:1px solid #f3d9d5;border-radius:15px;padding:22px 24px;max-width:640px;margin-top:14px">
-          <div style="font-size:15px;font-weight:700;color:#d24b3a;margin-bottom:6px">Danger zone</div>
+          <div style="font-size:15px;font-weight:700;color:#d24b3a;margin-bottom:6px">{{ t('company.danger_zone') }}</div>
           <template v-if="store.config.companyMyRole === 'owner'">
-            <div style="font-size:13px;color:#6b7280;margin-bottom:14px">Disbanding kicks all members and permanently deletes the company. This cannot be undone.</div>
-            <button style="background:#fff;color:#d24b3a;border:1px solid #eecfc9;border-radius:11px;padding:11px 20px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer" @click="confirmMode = 'disband'">Disband company</button>
+            <div style="font-size:13px;color:#6b7280;margin-bottom:14px">{{ t('company.disband_warning') }}</div>
+            <button style="background:#fff;color:#d24b3a;border:1px solid #eecfc9;border-radius:11px;padding:11px 20px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer" @click="confirmMode = 'disband'">{{ t('company.disband_company') }}</button>
           </template>
           <template v-else>
-            <div style="font-size:13px;color:#6b7280;margin-bottom:14px">Leaving has no effect on the company's stats or treasury.</div>
-            <button style="background:#fff;color:#d24b3a;border:1px solid #eecfc9;border-radius:11px;padding:11px 20px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer" @click="confirmMode = 'leave'">Leave company</button>
+            <div style="font-size:13px;color:#6b7280;margin-bottom:14px">{{ t('company.leave_warning') }}</div>
+            <button style="background:#fff;color:#d24b3a;border:1px solid #eecfc9;border-radius:11px;padding:11px 20px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer" @click="confirmMode = 'leave'">{{ t('company.leave_company') }}</button>
           </template>
         </div>
       </template>
@@ -484,17 +484,17 @@
         <div style="width:52px;height:52px;border-radius:14px;background:rgba(210,75,58,0.12);display:flex;align-items:center;justify-content:center;margin-bottom:16px">
           <iconify-icon icon="tabler:alert-triangle" width="26" style="color:#d24b3a"></iconify-icon>
         </div>
-        <div style="font-size:17px;font-weight:800;color:#1b1f24">{{ confirmMode === 'disband' ? 'Disband company?' : 'Leave company?' }}</div>
+        <div style="font-size:17px;font-weight:800;color:#1b1f24">{{ confirmMode === 'disband' ? t('company.confirm_disband_title') : t('company.confirm_leave_title') }}</div>
         <div style="font-size:13px;color:#6b7280;margin-top:8px;line-height:1.6">
           {{ confirmMode === 'disband'
-            ? `This will kick all members and permanently delete "${store.config.companyName}". This action cannot be undone.`
-            : `You will leave "${store.config.companyName}". This has no effect on the company's stats or treasury.` }}
+            ? t('company.confirm_disband_body', { name: store.config.companyName })
+            : t('company.confirm_leave_body', { name: store.config.companyName }) }}
         </div>
         <div style="display:flex;gap:10px;margin-top:20px">
           <button style="flex:1;background:#d24b3a;color:#fff;border:none;border-radius:11px;padding:12px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer" @click="confirmDanger">
-            {{ confirmMode === 'disband' ? 'Disband company' : 'Leave company' }}
+            {{ confirmMode === 'disband' ? t('company.disband_company') : t('company.leave_company') }}
           </button>
-          <button style="flex:1;background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:11px;padding:12px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="confirmMode = null">Cancel</button>
+          <button style="flex:1;background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:11px;padding:12px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="confirmMode = null">{{ t('app.cancel') }}</button>
         </div>
       </div>
     </div>
@@ -504,11 +504,13 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import type { OpenCompanyEntry, NearbyRecruit } from "@/stores/dashboardStore";
 import { nuiCallback } from "@/nui/nuiCallbacks";
 
 const store = useDashboardStore();
+const { t } = useI18n();
 const accentDark = "#b58a05";
 const isOwner = computed(() => store.config.companyMyRole === 'owner');
 const canInvite = computed(() => store.config.companyMyRole === 'owner' || store.config.companyMyRole === 'manager');
@@ -659,20 +661,20 @@ async function confirmDanger() {
   isRefetching.value = false;
 }
 
-const ctabDefs = [
-  { key: "overview",    label: "Overview",    icon: "tabler:layout-grid" },
-  { key: "members",     label: "Members",     icon: "tabler:users" },
-  { key: "invitations", label: "Invitations", icon: "tabler:mail" },
-  { key: "statistics",  label: "Statistics",  icon: "tabler:chart-bar" },
-  { key: "bank",        label: "Bank",        icon: "tabler:building-bank" },
-  { key: "settings",    label: "Settings",    icon: "tabler:settings" },
-];
+const ctabDefs = computed(() => [
+  { key: "overview",    label: t('company.tab_overview'),    icon: "tabler:layout-grid" },
+  { key: "members",     label: t('company.tab_members'),     icon: "tabler:users" },
+  { key: "invitations", label: t('company.tab_invitations'), icon: "tabler:mail" },
+  { key: "statistics",  label: t('company.tab_statistics'),  icon: "tabler:chart-bar" },
+  { key: "bank",        label: t('company.tab_bank'),        icon: "tabler:building-bank" },
+  { key: "settings",    label: t('company.tab_settings'),    icon: "tabler:settings" },
+]);
 
 const companyStats = computed(() => [
-  { icon: "tabler:cash-banknote",   value: store.config.companyEarnings,   label: "Company earnings",  sub: "ui.company.earnings",   color: "#b58a05", bg: "rgba(232,180,8,0.16)" },
-  { icon: "tabler:packages",        value: store.config.companyDeliveries, label: "Total deliveries",  sub: "ui.company.deliveries", color: "#2f9e63", bg: "rgba(47,158,99,0.14)" },
-  { icon: "tabler:route",           value: store.config.companyDistance,   label: "Distance hauled",   sub: "ui.company.km",         color: "#3b82f6", bg: "rgba(59,130,246,0.14)" },
-  { icon: "tabler:trophy",          value: store.config.companyServerRank, label: "Server rank",       sub: "global fleet standing", color: "#8b5cf6", bg: "rgba(139,92,246,0.14)" },
+  { icon: "tabler:cash-banknote",   value: store.config.companyEarnings,   label: t('company.company_earnings_label'), sub: "ui.company.earnings",   color: "#b58a05", bg: "rgba(232,180,8,0.16)" },
+  { icon: "tabler:packages",        value: store.config.companyDeliveries, label: t('company.total_deliveries_label'), sub: "ui.company.deliveries", color: "#2f9e63", bg: "rgba(47,158,99,0.14)" },
+  { icon: "tabler:route",           value: store.config.companyDistance,   label: t('company.distance_hauled_label'), sub: "ui.company.km",         color: "#3b82f6", bg: "rgba(59,130,246,0.14)" },
+  { icon: "tabler:trophy",          value: store.config.companyServerRank, label: t('company.server_rank_label'),     sub: "company.global_fleet_standing", color: "#8b5cf6", bg: "rgba(139,92,246,0.14)" },
 ]);
 
 const companyXpPct = computed(() =>

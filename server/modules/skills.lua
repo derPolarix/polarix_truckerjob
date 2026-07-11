@@ -1,4 +1,5 @@
 local config = require("config.shared")
+local Locale = require("shared.locale")
 
 Skills = {}
 
@@ -14,15 +15,15 @@ end
 function Skills.GetBranchesForPlayer(source)
     local result = {}
     for _, branch in ipairs(config.Skills.branches) do
-        local branchOut = { name = branch.name, icon = branch.icon, skills = {} }
+        local branchOut = { name = Locale(branch.name), icon = branch.icon, skills = {} }
         for i, skill in ipairs(branch.skills) do
             local acquired    = Player.HasSkill(source, skill.id)
             local prevAcquired = i == 1 or Player.HasSkill(source, branch.skills[i - 1].id)
             local state       = acquired and "acquired" or (prevAcquired and "available" or "locked")
             branchOut.skills[#branchOut.skills + 1] = {
                 id       = skill.id,
-                name     = skill.name,
-                desc     = skill.desc,
+                name     = Locale(skill.name),
+                desc     = Locale(skill.desc),
                 cost     = skill.cost,
                 requires = skill.requires,
                 state    = state,
@@ -35,19 +36,19 @@ end
 
 function Skills.Unlock(source, skillId)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
-    if Player.HasSkill(source, skillId) then return false, "Bereits freigeschaltet." end
+    if Player.HasSkill(source, skillId) then return false, Locale("error.already_unlocked") end
 
     local def = Skills.GetSkillDef(skillId)
-    if not def then return false, "Skill nicht gefunden." end
+    if not def then return false, Locale("error.skill_not_found") end
 
     if def.requires and not Player.HasSkill(source, def.requires) then
-        return false, "Voraussetzung nicht erfüllt."
+        return false, Locale("error.requirement_not_met")
     end
 
     if pData.skill_points < def.cost then
-        return false, "Nicht genug Skill-Punkte."
+        return false, Locale("error.not_enough_skill_points")
     end
 
     pData.skill_points = pData.skill_points - def.cost

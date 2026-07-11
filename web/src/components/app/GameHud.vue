@@ -13,7 +13,7 @@
         <div v-if="store.phase" style="width:1px;height:20px;background:rgba(255,255,255,0.12)"></div>
         <span style="display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#c9ced6">
           <iconify-icon icon="tabler:stack-2" width="14" style="color:#9aa1ab"></iconify-icon>
-          {{ store.palletsLoaded }} / {{ store.palletsRequired }} Paletten
+          {{ t('app.pallets_progress', { loaded: store.palletsLoaded, required: store.palletsRequired }) }}
         </span>
       </template>
 
@@ -21,20 +21,20 @@
         <div style="width:1px;height:20px;background:rgba(255,255,255,0.12)"></div>
         <span style="display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#c9ced6">
           <iconify-icon icon="tabler:users" width="14" style="color:#9aa1ab"></iconify-icon>
-          Pool: {{ store.poolDelivered }} / {{ store.poolTotal }}
+          {{ t('app.pool_progress', { delivered: store.poolDelivered, total: store.poolTotal }) }}
         </span>
       </template>
 
       <template v-if="store.damage > 0">
         <div style="width:1px;height:20px;background:rgba(255,255,255,0.12)"></div>
-        <span :style="{ fontFamily: `'IBM Plex Mono',monospace`, fontSize: '12px', fontWeight: 700, color: store.damage > 500 ? '#d24b3a' : '#E8B408' }">DMG: {{ store.damage }}</span>
+        <span :style="{ fontFamily: `'IBM Plex Mono',monospace`, fontSize: '12px', fontWeight: 700, color: store.damage > 500 ? '#d24b3a' : '#E8B408' }">{{ t('app.damage_label', { damage: store.damage }) }}</span>
       </template>
 
       <template v-if="store.inForklift">
         <div style="width:1px;height:20px;background:rgba(255,255,255,0.12)"></div>
         <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#c9ced6">
           <iconify-icon icon="tabler:forklift" width="15" style="color:#E8B408"></iconify-icon>
-          {{ store.forkliftCarrying ? 'Palette an Gabel' : 'Gabel leer' }}
+          {{ store.forkliftCarrying ? t('app.pallet_on_forks') : t('app.forks_empty') }}
         </span>
       </template>
     </div>
@@ -51,13 +51,15 @@
 
 <script setup lang="ts">
 import { computed, getCurrentInstance } from "vue";
+import { useI18n } from "vue-i18n";
 import { useGameHudStore } from "@/stores/gameHudStore";
 
 const store = useGameHudStore();
 const proxy = getCurrentInstance()!.proxy!;
 const persistantStore = proxy.$persistantStore;
+const { t } = useI18n();
 
-const statusText = computed(() => (store.phase === "pickup" ? "PICKUP" : store.phase === "delivering" ? "DELIVERING" : ""));
+const statusText = computed(() => (store.phase === "pickup" ? t('app.status_pickup') : store.phase === "delivering" ? t('app.status_delivering') : ""));
 const heldAction = computed(() => (persistantStore?.isHoldingAction ? persistantStore.heldAction : null));
 const visible = computed(() => store.visible || heldAction.value !== null);
 </script>

@@ -16,17 +16,17 @@
       style="position:absolute;top:44px;right:0;width:340px;max-height:420px;display:flex;flex-direction:column;background:#fff;border-radius:14px;border:1px solid #e4e6e9;box-shadow:0 20px 60px rgba(0,0,0,0.18);z-index:1000;font-family:'Archivo',system-ui,sans-serif"
     >
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #eef0f2;flex-shrink:0">
-        <span style="font-size:14px;font-weight:700;color:#1b1f24">Notifications</span>
+        <span style="font-size:14px;font-weight:700;color:#1b1f24">{{ t('app.notifications_title') }}</span>
         <button
           v-if="store.unreadCount > 0"
           style="border:none;background:transparent;color:#6b7280;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit"
           @click="markAllRead"
-        >Mark all read</button>
+        >{{ t('app.mark_all_read') }}</button>
       </div>
 
       <div style="overflow-y:auto;flex:1">
         <div v-if="store.items.length === 0" style="padding:32px 16px;text-align:center;color:#9aa1ab;font-size:13px">
-          No notifications yet.
+          {{ t('app.no_notifications_yet') }}
         </div>
         <button
           v-for="n in store.items"
@@ -52,11 +52,13 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useNotificationsStore, type AppNotification } from "@/stores/notificationsStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 
 const store = useNotificationsStore();
 const rootEl = ref<HTMLElement | null>(null);
+const { t } = useI18n();
 
 function relativeTime(value: string): string {
   if (!value) return "";
@@ -64,12 +66,12 @@ function relativeTime(value: string): string {
   if (isNaN(d.getTime())) return "";
   const diffMs = Date.now() - d.getTime();
   const mins = Math.floor(diffMs / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return t('app.time_just_now');
+  if (mins < 60) return t('app.time_minutes_ago', { mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t('app.time_hours_ago', { hours });
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return t('app.time_days_ago', { days });
 }
 
 async function markRead(n: AppNotification) {

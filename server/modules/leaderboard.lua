@@ -1,3 +1,5 @@
+local Locale = require("shared.locale")
+
 Leaderboard = {}
 
 -- companyId -> true while notified for current top-3 streak; cleared once rank drops out.
@@ -16,8 +18,8 @@ function Leaderboard.CheckCompanyTop3(companyId)
         if not owner then return end
 
         local place = rank == 1 and "1st" or (rank == 2 and "2nd" or "3rd")
-        Notifications.Push(owner.identifier, "leaderboard_top3", "Top 3!",
-            ("Your company reached %s place on the leaderboard!"):format(place), "tabler:trophy")
+        Notifications.Push(owner.identifier, "leaderboard_top3", Locale("push.top_3"),
+            Locale("push.company_reached_place_leaderboard"):format(place), "tabler:trophy")
     else
         companyTop3Notified[companyId] = nil
     end

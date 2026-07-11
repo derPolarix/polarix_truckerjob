@@ -1,3 +1,5 @@
+local Locale = require("shared.locale")
+
 LocalSkills = {}
 
 Skills = Skills or {}
@@ -12,7 +14,7 @@ end)
 AddEventHandler("polarix_trucker:skillUnlocked", function(skillId, newPoints)
     table.insert(LocalSkills, skillId)
     LocalPlayerData.skill_points = newPoints
-    Framework.Notify("Skill freigeschaltet!", "success")
+    Framework.Notify(Locale("notify.skill_unlocked"), "success")
 end)
 
 function Skills.HasSkill(skillId)

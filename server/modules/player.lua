@@ -1,4 +1,5 @@
 local config = require("config.shared")
+local Locale = require("shared.locale")
 
 PlayerCache = {} -- source -> playerData
 
@@ -94,7 +95,7 @@ function Player.AddXP(source, amount)
         data.level = data.level + 1
         data.skill_points = data.skill_points + config.SkillPointsPerLevel
         TriggerClientEvent("polarix_trucker:levelUp", source, data.level)
-        Notifications.Push(data.identifier, "level_up", "Level Up!", ("You reached level %d!"):format(data.level), "tabler:star")
+        Notifications.Push(data.identifier, "level_up", Locale("push.level_up"), Locale("push.reached_level"):format(data.level), "tabler:star")
     end
 
     TriggerClientEvent("polarix_trucker:playerUpdate", source, {

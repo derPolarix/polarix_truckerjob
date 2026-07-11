@@ -1,6 +1,7 @@
 local debug = require("shared.debug")
 local client = require("config.client")
 local shared = require("shared.debug")
+local Locale = require("shared.locale")
 
 -- Leerer Befehl zum kopieren
 -- Source: Der ausführende Spieler
@@ -35,7 +36,7 @@ end, false)
 RegisterCommand('truckerui', function()
     lib.callback('polarix_trucker:openDashboard', false, function(data)
         if not data then
-            Framework.Notify('Keine Spielerdaten verfügbar.', 'error')
+            Framework.Notify(Locale("notify.no_player_data_available"), 'error')
             return
         end
         OpenNui()

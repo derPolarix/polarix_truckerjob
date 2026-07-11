@@ -1,10 +1,17 @@
 local server = require("config.server")
 local sharedConfig = require("config.shared")
+local Locale = require("shared.locale")
 
 -- lib.callback.register('polarix_template:getPlayerJob', function(source, item, metadata, target)
 --     local player = exports.qbx_core:GetPlayer(source)
 --     return player.PlayerData.job.name
 -- end)
+
+local function localizeList(keys)
+    local out = {}
+    for i, key in ipairs(keys) do out[i] = Locale(key) end
+    return out
+end
 
 lib.callback.register("polarix_trucker:openDashboard", function(source)
     local pData = Player.GetData(source)
@@ -36,6 +43,7 @@ lib.callback.register("polarix_trucker:openDashboard", function(source)
     end
 
     return {
+        language = sharedConfig.Language,
         player = {
             name              = pData.name,
             level             = pData.level,
@@ -55,7 +63,7 @@ lib.callback.register("polarix_trucker:openDashboard", function(source)
         ownedTrailers = ownedTrailers,
         trailerShop   = trailerShop,
         skillBranches = Skills.GetBranchesForPlayer(source),
-        levelTitles   = sharedConfig.LevelTitles,
+        levelTitles   = localizeList(sharedConfig.LevelTitles),
         xpThresholds  = sharedConfig.XPThresholds,
         company            = companyData,
         myRole             = membership and membership.role or nil,

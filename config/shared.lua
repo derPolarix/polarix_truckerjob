@@ -4,25 +4,30 @@ return {
     Debug = false,
     PrintDebug = true,
 
+    -- Sprache für locales/<Language>.json (SSOT für alle User-facing Texte, Lua + NUI).
+    Language = "de",
+
+    -- name/desc sind locales/*.json-Keys, nicht Anzeigetexte — aufgelöst via Locale() in
+    -- server/modules/skills.lua (Skills.GetBranchesForPlayer), damit die NUI bereits übersetzten Text bekommt.
     Skills = {
         branches = {
-            { name = "Hauling", icon = "tabler:truck", skills = {
-                { id = "h1", name = "Steady Hands",   desc = "Reduziert Cargo-Schaden um 15%.",          cost = 1, requires = nil,  effects = { cargo_damage_reduction = 0.15 } },
-                { id = "h2", name = "Heavy Hauler",   desc = "Ermöglicht Aufträge über 20.000 kg.",       cost = 2, requires = "h1", effects = { max_weight_unlock = 20000 } },
-                { id = "h3", name = "Hazmat License", desc = "Schaltet Gefahrgut-Aufträge frei.",         cost = 2, requires = "h2", effects = { unlock_hazmat = true } },
-                { id = "h4", name = "Master Hauler",  desc = "+25% Reward auf Heavy-Aufträge.",           cost = 3, requires = "h3", effects = { heavy_reward_bonus = 0.25 } },
+            { name = "skill.hauling", icon = "tabler:truck", skills = {
+                { id = "h1", name = "skill.steady_hands",   desc = "skill.reduces_cargo_damage_by_15",       cost = 1, requires = nil,  effects = { cargo_damage_reduction = 0.15 } },
+                { id = "h2", name = "skill.heavy_hauler",   desc = "skill.unlocks_orders_over_20_000",       cost = 2, requires = "h1", effects = { max_weight_unlock = 20000 } },
+                { id = "h3", name = "skill.hazmat_license", desc = "skill.unlocks_hazmat_orders",            cost = 2, requires = "h2", effects = { unlock_hazmat = true } },
+                { id = "h4", name = "skill.master_hauler",  desc = "skill.25_reward_heavy_orders",           cost = 3, requires = "h3", effects = { heavy_reward_bonus = 0.25 } },
             }},
-            { name = "Economy", icon = "tabler:coin", skills = {
-                { id = "e1", name = "Fuel Saver",  desc = "10% weniger Kraftstoffverbrauch.",             cost = 1, requires = nil,  effects = { fuel_modifier = 0.10 } },
-                { id = "e2", name = "Negotiator",  desc = "+8% auf alle Auszahlungen.",                   cost = 2, requires = "e1", effects = { payout_bonus = 0.08 } },
-                { id = "e3", name = "Bulk Deals",  desc = "25% Rabatt beim Fahrzeugkauf.",                cost = 2, requires = "e2", effects = { vehicle_discount = 0.25 } },
-                { id = "e4", name = "Tycoon",      desc = "+20% Company-Dividenden.",                     cost = 3, requires = "e3", effects = { dividend_bonus = 0.20 } },
+            { name = "skill.economy", icon = "tabler:coin", skills = {
+                { id = "e1", name = "skill.fuel_saver",  desc = "skill.10_less_fuel_consumption",            cost = 1, requires = nil,  effects = { fuel_modifier = 0.10 } },
+                { id = "e2", name = "skill.negotiator",  desc = "skill.8_all_payouts",                       cost = 2, requires = "e1", effects = { payout_bonus = 0.08 } },
+                { id = "e3", name = "skill.bulk_deals",  desc = "skill.25_discount_vehicle_purchases",       cost = 2, requires = "e2", effects = { vehicle_discount = 0.25 } },
+                { id = "e4", name = "skill.tycoon",      desc = "skill.20_company_dividends",                cost = 3, requires = "e3", effects = { dividend_bonus = 0.20 } },
             }},
-            { name = "Endurance", icon = "tabler:bolt", skills = {
-                { id = "d1", name = "Iron Will",    desc = "+30 Minuten Fatigue-Timer.",                  cost = 1, requires = nil,  effects = { fatigue_bonus_minutes = 30 } },
-                { id = "d2", name = "Night Owl",    desc = "Keine Nacht-Penalty beim Fahren.",            cost = 2, requires = "d1", effects = { night_penalty_immune = true } },
-                { id = "d3", name = "Long Hauler",  desc = "Schaltet Langstrecken-Aufträge frei.",        cost = 2, requires = "d2", effects = { unlock_long_routes = true } },
-                { id = "d4", name = "Unstoppable",  desc = "+15% XP auf alle Lieferungen.",               cost = 3, requires = "d3", effects = { xp_bonus = 0.15 } },
+            { name = "skill.endurance", icon = "tabler:bolt", skills = {
+                { id = "d1", name = "skill.iron_will",    desc = "skill.30_minutes_fatigue_timer",           cost = 1, requires = nil,  effects = { fatigue_bonus_minutes = 30 } },
+                { id = "d2", name = "skill.night_owl",    desc = "skill.no_night_penalty_while_driving",     cost = 2, requires = "d1", effects = { night_penalty_immune = true } },
+                { id = "d3", name = "skill.long_hauler",  desc = "skill.unlocks_long_haul_orders",           cost = 2, requires = "d2", effects = { unlock_long_routes = true } },
+                { id = "d4", name = "skill.unstoppable",  desc = "skill.15_xp_all_deliveries",                cost = 3, requires = "d3", effects = { xp_bonus = 0.15 } },
             }},
         }
     },
@@ -33,9 +38,10 @@ return {
 
     -- Gleiche Konvention wie XPThresholds, aber für Company-Level (Company.AddXP).
     CompanyXPThresholds = { 0, 500, 1200, 2200, 3600, 5500, 8000, 11000, 15000, 20000 },
+    -- Einträge sind locales/*.json-Keys (siehe Skills-Kommentar oben), aufgelöst in server/callback.lua.
     LevelTitles = {
-        "Rookie", "Apprentice", "Driver", "Pro Driver", "Senior Driver",
-        "Expert", "Road Master", "Elite", "Legend", "Grand Champion", "Titan"
+        "skill.rookie", "skill.apprentice", "skill.driver", "skill.pro_driver", "skill.senior_driver",
+        "skill.expert", "skill.road_master", "skill.elite", "skill.legend", "skill.grand_champion", "skill.titan"
     },
 
     PalletWeightKg     = 1000,

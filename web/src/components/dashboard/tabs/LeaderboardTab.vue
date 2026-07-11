@@ -5,10 +5,10 @@
       <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;overflow:hidden">
         <div style="padding:16px 20px 12px;display:flex;align-items:center;gap:9px">
           <iconify-icon icon="tabler:trophy" width="18" style="color:var(--accent)"></iconify-icon>
-          <div style="font-size:15px;font-weight:700;color:#1b1f24">Top drivers</div>
+          <div style="font-size:15px;font-weight:700;color:#1b1f24">{{ t('leaderboard.top_drivers') }}</div>
         </div>
         <div style="display:grid;grid-template-columns:0.5fr 2fr 0.8fr 1fr 1fr;gap:12px;padding:11px 20px;background:#f6f7f8;border-bottom:1px solid #eef0f2;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab">
-          <span>#</span><span>Driver</span><span>Lvl</span><span>Deliveries</span><span>Earned</span>
+          <span>{{ t('leaderboard.col_rank') }}</span><span>{{ t('leaderboard.col_driver') }}</span><span>{{ t('leaderboard.col_lvl') }}</span><span>{{ t('leaderboard.col_deliveries') }}</span><span>{{ t('leaderboard.col_earned') }}</span>
         </div>
         <div
           v-for="r in store.config.leaderboard"
@@ -25,33 +25,35 @@
           <span style="font-size:13px;color:#3c424b">{{ r.deliveries }}</span>
           <span style="font-size:13px;font-weight:600;color:#1b1f24">{{ r.earned }}</span>
         </div>
-        <div v-if="store.config.leaderboard.length === 0" style="padding:24px 20px;text-align:center;font-size:13px;color:#9aa1ab">No drivers ranked yet.</div>
+        <div v-if="store.config.leaderboard.length === 0" style="padding:24px 20px;text-align:center;font-size:13px;color:#9aa1ab">{{ t('leaderboard.no_drivers_ranked') }}</div>
       </div>
 
       <!-- Companies -->
       <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;overflow:hidden">
         <div style="padding:16px 20px 12px;display:flex;align-items:center;gap:9px">
           <iconify-icon icon="tabler:building-warehouse" width="18" style="color:var(--accent)"></iconify-icon>
-          <div style="font-size:15px;font-weight:700;color:#1b1f24">Top companies</div>
+          <div style="font-size:15px;font-weight:700;color:#1b1f24">{{ t('leaderboard.top_companies') }}</div>
         </div>
         <div v-for="c in store.config.companyLeaderboard" :key="c.rank" style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid #f1f2f4">
           <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;width:16px" :style="{ color: rankColor(c.rank) }">{{ c.rank }}</span>
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:600;color:#1b1f24;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9aa1ab">{{ c.tag }} · Lvl {{ c.level }} · {{ c.deliveries }} deliveries</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9aa1ab">{{ c.tag }} · {{ t('app.level_short', { lvl: c.level }) }} · {{ t('leaderboard.deliveries_suffix', { count: c.deliveries }) }}</div>
           </div>
           <span style="font-size:13px;font-weight:600;color:#1b1f24;flex-shrink:0">{{ c.earned }}</span>
         </div>
-        <div v-if="store.config.companyLeaderboard.length === 0" style="padding:24px 20px;text-align:center;font-size:13px;color:#9aa1ab">No companies ranked yet.</div>
+        <div v-if="store.config.companyLeaderboard.length === 0" style="padding:24px 20px;text-align:center;font-size:13px;color:#9aa1ab">{{ t('leaderboard.no_companies_ranked') }}</div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 
 const store = useDashboardStore();
+const { t } = useI18n();
 
 function rankColor(rank: number) {
   if (rank === 1) return "#e8b408";

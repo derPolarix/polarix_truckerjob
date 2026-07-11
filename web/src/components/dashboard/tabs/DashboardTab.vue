@@ -4,20 +4,20 @@
     <div style="position:relative;border-radius:18px;overflow:hidden;background:#22262d;padding:26px 30px;display:flex;align-items:center;gap:24px">
       <div style="position:absolute;left:0;top:0;right:0;height:4px;background:repeating-linear-gradient(45deg,var(--accent) 0 11px,#1b1f24 11px 22px)"></div>
       <div style="flex:1;min-width:0">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);margin-bottom:9px">Dashboard</div>
-        <div style="font-size:30px;font-weight:800;color:#fff;letter-spacing:-0.02em;line-height:1.05">Welcome back, {{ store.config.driverName }}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);margin-bottom:9px">{{ t('dashboard.nav_dashboard') }}</div>
+        <div style="font-size:30px;font-weight:800;color:#fff;letter-spacing:-0.02em;line-height:1.05">{{ t('dashboard.welcome_back', { name: store.config.driverName }) }}</div>
         <div style="margin-top:9px;font-size:13px;color:#9aa1ab;display:flex;align-items:center;gap:14px">
-          <span>Lvl {{ store.config.driverLevel }}</span>
+          <span>{{ t('app.level_short', { lvl: store.config.driverLevel }) }}</span>
           <span style="color:#454c56">·</span>
-          <span>{{ store.config.openOrders }} orders open</span>
+          <span>{{ t('dashboard.orders_open_count', { count: store.config.openOrders }) }}</span>
           <span style="color:#454c56">·</span>
           <span style="display:inline-flex;align-items:center;gap:6px">
-            <span :style="{ width: '7px', height: '7px', borderRadius: '50%', background: hasActiveDelivery ? '#2f9e63' : '#6b7280' }"></span>{{ hasActiveDelivery ? `${hud.phase === 'pickup' ? 'Heading to pickup' : 'Delivering'}: ${hud.orderName}` : 'No active delivery' }}
+            <span :style="{ width: '7px', height: '7px', borderRadius: '50%', background: hasActiveDelivery ? '#2f9e63' : '#6b7280' }"></span>{{ hasActiveDelivery ? `${hud.phase === 'pickup' ? t('dashboard.heading_to_pickup') : t('dashboard.delivering')}: ${hud.orderName}` : t('dashboard.no_active_delivery') }}
           </span>
         </div>
       </div>
       <button class="accent-btn" style="padding:13px 20px;font-size:14px;display:inline-flex;align-items:center;gap:9px;white-space:nowrap" @click="store.setTab('orders')">
-        Browse orders <iconify-icon icon="tabler:arrow-right" width="18"></iconify-icon>
+        {{ t('dashboard.browse_orders') }} <iconify-icon icon="tabler:arrow-right" width="18"></iconify-icon>
       </button>
     </div>
 
@@ -29,7 +29,7 @@
         </div>
         <div style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:#1b1f24;margin-top:16px">{{ stat.value }}</div>
         <div style="font-size:13px;font-weight:600;color:#3c424b;margin-top:2px">{{ stat.label }}</div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.04em;color:#9aa1ab;margin-top:6px">{{ stat.sub }}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.04em;color:#9aa1ab;margin-top:6px">{{ t(stat.sub) }}</div>
       </div>
     </div>
 
@@ -37,8 +37,8 @@
       <!-- Active delivery -->
       <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px 18px 0;min-height:330px;display:flex;flex-direction:column">
         <div style="display:flex;align-items:center;justify-content:space-between">
-          <div style="font-size:15px;font-weight:700;color:#1b1f24">Active delivery</div>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.06em;color:#9aa1ab;text-transform:uppercase">{{ hasActiveDelivery ? hud.phase : 'Idle' }}</span>
+          <div style="font-size:15px;font-weight:700;color:#1b1f24">{{ t('dashboard.active_delivery') }}</div>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.06em;color:#9aa1ab;text-transform:uppercase">{{ hasActiveDelivery ? hud.phase : t('dashboard.idle') }}</span>
         </div>
         <div v-if="hasActiveDelivery" style="display:flex;flex-direction:column;padding:16px 4px 30px;gap:14px">
           <div style="display:flex;align-items:center;gap:14px">
@@ -51,20 +51,20 @@
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
-            <div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">Pickup</span><span style="color:#1b1f24;font-weight:600">{{ hud.pickupLabel }}</span></div>
-            <div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">Drop-off</span><span style="color:#1b1f24;font-weight:600">{{ hud.dropoffLabel }}</span></div>
-            <div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">Reward</span><span style="color:#2f9e63;font-weight:700">${{ hud.reward.toLocaleString() }}</span></div>
-            <div v-if="hud.palletsRequired > 0" style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">Pallets</span><span style="color:#1b1f24;font-weight:600">{{ hud.palletsLoaded }} / {{ hud.palletsRequired }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t('dashboard.pickup_label') }}</span><span style="color:#1b1f24;font-weight:600">{{ hud.pickupLabel }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t('dashboard.dropoff_label') }}</span><span style="color:#1b1f24;font-weight:600">{{ hud.dropoffLabel }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t('dashboard.reward_label') }}</span><span style="color:#2f9e63;font-weight:700">${{ hud.reward.toLocaleString() }}</span></div>
+            <div v-if="hud.palletsRequired > 0" style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t('dashboard.pallets_label') }}</span><span style="color:#1b1f24;font-weight:600">{{ hud.palletsLoaded }} / {{ hud.palletsRequired }}</span></div>
           </div>
         </div>
         <div v-else style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 24px 30px">
           <div style="width:64px;height:64px;border-radius:18px;background:#f1f2f4;display:flex;align-items:center;justify-content:center">
             <iconify-icon icon="tabler:truck" width="32" style="color:#aab0b8"></iconify-icon>
           </div>
-          <div style="font-size:15px;font-weight:600;color:#3c424b;margin-top:16px">No active delivery</div>
-          <div style="font-size:13px;color:#9aa1ab;margin-top:4px">Accept an order to start earning</div>
+          <div style="font-size:15px;font-weight:600;color:#3c424b;margin-top:16px">{{ t('dashboard.no_active_delivery') }}</div>
+          <div style="font-size:13px;color:#9aa1ab;margin-top:4px">{{ t('dashboard.accept_order_hint') }}</div>
           <button style="margin-top:18px;background:#22262d;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:8px" @click="store.setTab('orders')">
-            Browse orders <iconify-icon icon="tabler:arrow-right" width="16"></iconify-icon>
+            {{ t('dashboard.browse_orders') }} <iconify-icon icon="tabler:arrow-right" width="16"></iconify-icon>
           </button>
         </div>
       </div>
@@ -72,9 +72,9 @@
       <!-- Recent runs -->
       <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <div style="font-size:15px;font-weight:700;color:#1b1f24">Recent runs</div>
+          <div style="font-size:15px;font-weight:700;color:#1b1f24">{{ t('dashboard.recent_runs') }}</div>
           <button style="background:transparent;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--accent);display:inline-flex;align-items:center;gap:4px" @click="store.setTab('history')">
-            View all <iconify-icon icon="tabler:chevron-right" width="14"></iconify-icon>
+            {{ t('dashboard.view_all') }} <iconify-icon icon="tabler:chevron-right" width="14"></iconify-icon>
           </button>
         </div>
         <div v-for="r in store.config.recentRuns.slice(0, 4)" :key="r.code" style="display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid #eef0f2">
@@ -97,11 +97,13 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { useGameHudStore } from "@/stores/gameHudStore";
 
 const store = useDashboardStore();
 const hud = useGameHudStore();
+const { t } = useI18n();
 const hasActiveDelivery = computed(() => hud.visible && hud.phase !== null);
 
 function statusColor(status: string) {
@@ -112,9 +114,9 @@ function statusColor(status: string) {
 }
 
 const stats = computed(() => [
-  { icon: "tabler:cash-banknote", value: store.config.earnings, label: "Total earnings", sub: "ui.common.earnings", color: "#b58a05", tileBg: "rgba(232,180,8,0.16)" },
-  { icon: "tabler:checks", value: String(store.config.completedOrders), label: "Completed", sub: "ui.common.deliveries", color: "#2f9e63", tileBg: "rgba(47,158,99,0.14)" },
-  { icon: "tabler:trending-up", value: store.config.successRate, label: "Success rate", sub: "haul stats", color: "#3b82f6", tileBg: "rgba(59,130,246,0.14)" },
-  { icon: "tabler:package", value: String(store.config.openOrders), label: "Available", sub: "ui.dashboard.orders_open", color: "#8b5cf6", tileBg: "rgba(139,92,246,0.14)" },
+  { icon: "tabler:cash-banknote", value: store.config.earnings, label: t('dashboard.stat_total_earnings'), sub: "ui.common.earnings", color: "#b58a05", tileBg: "rgba(232,180,8,0.16)" },
+  { icon: "tabler:checks", value: String(store.config.completedOrders), label: t('dashboard.stat_completed'), sub: "ui.common.deliveries", color: "#2f9e63", tileBg: "rgba(47,158,99,0.14)" },
+  { icon: "tabler:trending-up", value: store.config.successRate, label: t('dashboard.stat_success_rate'), sub: "dashboard.stat_sub_success_rate", color: "#3b82f6", tileBg: "rgba(59,130,246,0.14)" },
+  { icon: "tabler:package", value: String(store.config.openOrders), label: t('dashboard.stat_available'), sub: "ui.dashboard.orders_open", color: "#8b5cf6", tileBg: "rgba(139,92,246,0.14)" },
 ]);
 </script>

@@ -1,5 +1,6 @@
 local shared = require("config.shared")
 local cargo  = require("shared.cargo")
+local Locale = require("shared.locale")
 
 MissionCargo = { requiredCount = 0, loadedCount = 0, pickupSpawned = false }
 MissionPallets = {}
@@ -142,11 +143,11 @@ end
 
 function PickupPalletWithForklift(sourcePallet)
     if not IsPlayerInForklift() then
-        Framework.Notify("Du musst in einem Gabelstapler sitzen.", "error")
+        Framework.Notify(Locale("notify.must_sitting_forklift"), "error")
         return
     end
     if ForkliftPallet.entity then
-        Framework.Notify("Du hast bereits eine Palette auf der Gabel.", "error")
+        Framework.Notify(Locale("notify.already_pallet_forks"), "error")
         return
     end
     if not sourcePallet or not DoesEntityExist(sourcePallet) then return end
@@ -160,7 +161,7 @@ function PickupPalletWithForklift(sourcePallet)
     DeleteEntity(sourcePallet)
 
     AttachPalletToForklift()
-    Framework.Notify("Palette aufgenommen.", "success")
+    Framework.Notify(Locale("notify.pallet_picked_up"), "success")
 end
 
 local currentPickupCandidate = nil
@@ -234,20 +235,20 @@ function TryLoadPalletOnTrailer()
     local trailerModel = GetTrailerModelName()
     local trailerConfig = trailerModel and shared.CompatibleTrailers[trailerModel]
     if not trailerConfig then
-        Framework.Notify("Dieser Trailer unterstützt keine Paletten.", "error")
+        Framework.Notify(Locale("notify.trailer_does_not_support_pallets"), "error")
         return
     end
 
     local slot = GetFreeTrailerSlot(trailerConfig.maxPallets)
     if not slot then
-        Framework.Notify("Trailer ist voll.", "error")
+        Framework.Notify(Locale("notify.trailer_full"), "error")
         return
     end
 
     local ok = lib.progressCircle({
         duration = 4000,
         position = "bottom",
-        label = "Palette wird verladen...",
+        label = Locale("ui.loading_pallet"),
         canCancel = true,
         disable = { car = true, move = true, combat = true },
     })
@@ -259,7 +260,7 @@ function TryLoadPalletOnTrailer()
 
     local offset = trailerConfig.attachOffsets[slot]
     if not offset then
-        Framework.Notify("Slot-Offset für diesen Trailer fehlt (nicht kalibriert).", "error")
+        Framework.Notify(Locale("notify.slot_offset_missing_not_calibrated"), "error")
         return
     end
 
@@ -285,28 +286,28 @@ function TryLoadPalletOnTrailer()
     MissionCargo.loadedCount = MissionCargo.loadedCount + 1
 
     if MissionCargo.loadedCount >= MissionCargo.requiredCount then
-        Framework.Notify("Alle Paletten geladen! Verstaue den Gabelstapler am Trailer.", "success")
+        Framework.Notify(Locale("notify.all_pallets_loaded_stow_forklift"), "success")
     else
-        Framework.Notify(("Palette geladen (%d/%d)."):format(MissionCargo.loadedCount, MissionCargo.requiredCount), "success")
+        Framework.Notify(Locale("notify.pallet_loaded"):format(MissionCargo.loadedCount, MissionCargo.requiredCount), "success")
     end
 end
 
 -- Test-Command: lädt alle verbleibenden Paletten sofort auf den Trailer (überspringt Gabelstapler-Handling)
 function AutoLoadAllPallets()
     if MissionCargo.requiredCount == 0 then
-        Framework.Notify("Kein aktiver Auftrag.", "error")
+        Framework.Notify(Locale("notify.no_active_order"), "error")
         return
     end
 
     if not LocalTrailer.entity or not DoesEntityExist(LocalTrailer.entity) then
-        Framework.Notify("Kein Trailer vorhanden.", "error")
+        Framework.Notify(Locale("notify.no_trailer_present"), "error")
         return
     end
 
     local trailerModel = GetTrailerModelName()
     local trailerConfig = trailerModel and shared.CompatibleTrailers[trailerModel]
     if not trailerConfig then
-        Framework.Notify("Dieser Trailer unterstützt keine Paletten.", "error")
+        Framework.Notify(Locale("notify.trailer_does_not_support_pallets"), "error")
         return
     end
 
@@ -355,12 +356,12 @@ function AutoLoadAllPallets()
     DespawnMissionPallets()
 
     if MissionCargo.loadedCount >= MissionCargo.requiredCount then
-        Framework.Notify("Test: alle Paletten geladen.", "success")
+        Framework.Notify(Locale("notify.test_all_pallets_loaded"), "success")
         if Delivery and Delivery.EnterTransitPhase then
             Delivery.EnterTransitPhase()
         end
     else
-        Framework.Notify(("Test: %d/%d Paletten geladen (Trailer voll)."):format(MissionCargo.loadedCount, MissionCargo.requiredCount), "success")
+        Framework.Notify(Locale("notify.test_pallets_loaded_trailer_full"):format(MissionCargo.loadedCount, MissionCargo.requiredCount), "success")
     end
 end
 
@@ -387,7 +388,7 @@ CreateThread(function()
                     MissionCargo.loadedCount = 0
                     SpawnMissionPallets(o)
                 else
-                    Framework.Notify("Keine Paletten mehr im Pool.", "info")
+                    Framework.Notify(Locale("notify.no_pallets_left_pool"), "info")
                 end
             elseif dist >= 40.0 and MissionCargo.pickupSpawned then
                 DespawnMissionPallets()

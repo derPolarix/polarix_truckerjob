@@ -1,5 +1,6 @@
 local clientConfig = require("config.client")
 local sharedConfig = require("config.shared")
+local Locale = require("shared.locale")
 
 ForkliftDockState = {}
 
@@ -59,12 +60,12 @@ end
 function Forklift.Deploy()
     local netId = GetTrailerNetId()
     if not netId then
-        Framework.Notify("Kein Trailer ausgerüstet oder gespawnt.", "error")
+        Framework.Notify(Locale("notify.no_trailer_equipped_or_spawned"), "error")
         return
     end
 
     if IsForkliftDeployed(netId) then
-        Framework.Notify("Gabelstapler bereits im Einsatz.", "error")
+        Framework.Notify(Locale("notify.forklift_already_use"), "error")
         return
     end
 
@@ -81,14 +82,14 @@ function Forklift.Deploy()
         timeout = timeout + 1
     end
     if not HasModelLoaded(modelHash) then
-        Framework.Notify("Gabelstapler-Modell konnte nicht geladen werden.", "error")
+        Framework.Notify(Locale("notify.failed_load_forklift_model"), "error")
         return
     end
 
     local ok = lib.progressCircle({
         duration = 3500,
         position = "bottom",
-        label = "Gabelstapler wird ausgeladen...",
+        label = Locale("ui.unloading_forklift"),
         canCancel = true,
         disable = { car = true, move = true, combat = true },
     })
@@ -107,7 +108,7 @@ function Forklift.Deploy()
     Framework.GiveVehicleKeys(forklift, "FORKLIFT")
 
     ForkliftDockState[netId] = { deployed = true, entity = forklift }
-    Framework.Notify("Gabelstapler ausgeladen.", "success")
+    Framework.Notify(Locale("notify.forklift_unloaded"), "success")
 end
 
 function Forklift.Stow()
@@ -121,20 +122,20 @@ function Forklift.Stow()
     end
 
     if GetForkliftPalletPayload and GetForkliftPalletPayload() then
-        Framework.Notify("Erst die Palette von der Gabel nehmen.", "error")
+        Framework.Notify(Locale("notify.take_pallet_off_forks_first"), "error")
         return
     end
 
     local dist = #(GetEntityCoords(dock.entity) - GetEntityCoords(LocalTrailer.entity))
     if dist > 10.0 then
-        Framework.Notify("Bring den Gabelstapler näher zum Trailer.", "error")
+        Framework.Notify(Locale("notify.bring_forklift_closer_trailer"), "error")
         return
     end
 
     local ok = lib.progressCircle({
         duration = 3000,
         position = "bottom",
-        label = "Gabelstapler wird verstaut...",
+        label = Locale("ui.stowing_forklift"),
         canCancel = true,
         disable = { car = true, move = true, combat = true },
     })
@@ -148,7 +149,7 @@ function Forklift.Stow()
 
     DeleteEntity(dock.entity)
     ForkliftDockState[netId] = nil
-    Framework.Notify("Gabelstapler verstaut.", "success")
+    Framework.Notify(Locale("notify.forklift_stowed"), "success")
 
     if MissionCargo and MissionCargo.requiredCount and MissionCargo.loadedCount >= MissionCargo.requiredCount then
         if Delivery and Delivery.EnterTransitPhase then
@@ -164,11 +165,11 @@ local lastLabel = nil
 
 local function GetForkliftDockLabel()
     if GetForkliftPalletPayload and GetForkliftPalletPayload() then
-        return "[E] Palette einladen"
+        return Locale("ui.e_load_pallet")
     elseif IsForkliftDeployed(GetTrailerNetId()) then
-        return "[E] Gabelstapler verstauen"
+        return Locale("ui.e_stow_forklift")
     else
-        return "[E] Gabelstapler ausladen"
+        return Locale("ui.e_unload_forklift")
     end
 end
 
@@ -190,7 +191,7 @@ local function EnsureOxTargetRegistered(trailer)
         {
             name = "trailer_forklift_load_pallet",
             icon = "fa-solid fa-pallet",
-            label = "Palette einladen",
+            label = Locale("ui.load_pallet"),
             distance = clientConfig.ForkliftInteractionRadiusVehicle,
             canInteract = function()
                 return IsInForkliftInteractionRange() and GetForkliftPalletPayload and GetForkliftPalletPayload() ~= nil
@@ -200,7 +201,7 @@ local function EnsureOxTargetRegistered(trailer)
         {
             name = "trailer_forklift_stow",
             icon = "fa-solid fa-warehouse",
-            label = "Gabelstapler verstauen",
+            label = Locale("ui.stow_forklift"),
             distance = clientConfig.ForkliftInteractionRadiusVehicle,
             canInteract = function()
                 return IsInForkliftInteractionRange()
@@ -212,7 +213,7 @@ local function EnsureOxTargetRegistered(trailer)
         {
             name = "trailer_forklift_deploy",
             icon = "fa-solid fa-truck-loading",
-            label = "Gabelstapler ausladen",
+            label = Locale("ui.unload_forklift"),
             distance = clientConfig.ForkliftInteractionRadiusVehicle,
             canInteract = function()
                 return IsInForkliftInteractionRange()

@@ -3,19 +3,22 @@
     <div v-if="!pickup || !dropoff" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#dfe1e4;color:#aab0b8">
       <div style="text-align:center">
         <iconify-icon icon="tabler:map-off" width="40"></iconify-icon>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;margin-top:8px">No route data</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;margin-top:8px">{{ t('orders.no_route_data') }}</div>
       </div>
     </div>
     <div v-else ref="mapContainer" style="width:100%;height:100%" />
-    <div style="position:absolute;top:12px;left:12px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;background:rgba(255,255,255,0.85);padding:4px 9px;border-radius:7px">Route preview</div>
+    <div style="position:absolute;top:12px;left:12px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;background:rgba(255,255,255,0.85);padding:4px 9px;border-radius:7px">{{ t('orders.route_preview') }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import gtaMapUrl from "@/assets/maps/gta_map.jpg";
+
+const { t } = useI18n();
 
 type Coords = { x: number; y: number; z: number } | null;
 
@@ -73,11 +76,11 @@ function renderRoute() {
   }).addTo(routeLayer);
 
   L.marker(from, { icon: pinIcon("#2f9e63", "tabler:map-pin-filled") })
-    .bindTooltip(props.pickupLabel || "Pickup", { direction: "top", offset: [0, -28], className: "route-tooltip" })
+    .bindTooltip(props.pickupLabel || t('orders.pickup_marker'), { direction: "top", offset: [0, -28], className: "route-tooltip" })
     .addTo(routeLayer);
 
   L.marker(to, { icon: pinIcon("#22262d", "tabler:flag-filled") })
-    .bindTooltip(props.dropoffLabel || "Drop-off", { direction: "top", offset: [0, -28], className: "route-tooltip" })
+    .bindTooltip(props.dropoffLabel || t('orders.dropoff_marker'), { direction: "top", offset: [0, -28], className: "route-tooltip" })
     .addTo(routeLayer);
 
   map.fitBounds(L.latLngBounds([from, to]), { padding: [48, 48], maxZoom: 1 });

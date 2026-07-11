@@ -1,4 +1,5 @@
 local cargo = require("shared.cargo")
+local Locale = require("shared.locale")
 
 DeliveryState = {
     status = "idle", -- idle | awaiting_pickup | delivering
@@ -53,7 +54,7 @@ function Delivery.Start(orderData, mode)
     if ResetMissionCargo then ResetMissionCargo(orderData) end
     Delivery.HUD.Start()
 
-    Framework.Notify(("Fahre zur Abholstelle: %s (%d Paletten insgesamt)"):format(orderData.pickup_label, cargo.CalcPalletCount(orderData.weight_kg)), "info")
+    Framework.Notify(Locale("notify.drive_pickup_point_pallets_total"):format(orderData.pickup_label, cargo.CalcPalletCount(orderData.weight_kg)), "info")
 end
 
 -- Fragt am Pickup ab, wie viele Paletten für den nächsten Trip beansprucht werden dürfen
@@ -69,7 +70,7 @@ function Delivery.Cancel()
     DeliveryState.status = "idle"
     DeliveryState.orderData = nil
     TriggerServerEvent("polarix_trucker:failDelivery")
-    Framework.Notify("Lieferung abgebrochen.", "error")
+    Framework.Notify(Locale("notify.delivery_cancelled"), "error")
 end
 
 function Delivery.EnterTransitPhase()
@@ -82,7 +83,7 @@ function Delivery.EnterTransitPhase()
     SetBlipRoute(DeliveryState.dropoffBlip, true)
     SetBlipRouteColour(DeliveryState.dropoffBlip, 5)
 
-    Framework.Notify("Fahre zum Drop-off: " .. DeliveryState.orderData.dropoff_label, "success")
+    Framework.Notify(Locale("notify.drive_drop_off"):format(DeliveryState.orderData.dropoff_label), "success")
 
     if LocalVehicle.entity and DoesEntityExist(LocalVehicle.entity) then
         Delivery.StartDamageMonitor(LocalVehicle.entity)
@@ -98,7 +99,7 @@ function Delivery.StartUnloading()
     if isUnloading then return end
     if DeliveryState.status ~= "delivering" then return end
     if not IsTrailerParkedCorrectly(DeliveryState.orderData) then
-        Framework.Notify("Trailer ist nicht richtig eingeparkt.", "error")
+        Framework.Notify(Locale("notify.trailer_not_parked_correctly"), "error")
         return
     end
 
@@ -108,7 +109,7 @@ function Delivery.StartUnloading()
     local success = lib.progressCircle({
         duration = 8000,
         position = "bottom",
-        label = "Cargo wird entladen: " .. o.name,
+        label = Locale("ui.unloading_cargo"):format(o.name),
         useWhileDead = false,
         canCancel = false,
         disable = { car = true, combat = true },
@@ -139,23 +140,23 @@ function Delivery.StartDamageMonitor(veh)
         while DeliveryState.status == "delivering" do
             Wait(2000)
             if not DoesEntityExist(veh) then
-                Delivery.ForceFailure("Fahrzeug zerstört!")
+                Delivery.ForceFailure(Locale("notify.vehicle_destroyed"))
                 break
             end
 
             local engineHealth = GetVehicleEngineHealth(veh)
             if engineHealth < 100.0 then
-                Delivery.ForceFailure("Fahrzeug zu stark beschädigt!")
+                Delivery.ForceFailure(Locale("notify.vehicle_too_badly_damaged"))
                 break
             end
 
             local trailerEntity = (LocalTrailer and LocalTrailer.entity) or (LocalRental and LocalRental.trailerEntity)
             if trailerEntity then
                 if not DoesEntityExist(trailerEntity) then
-                    Delivery.ForceFailure("Trailer zerstört!")
+                    Delivery.ForceFailure(Locale("notify.trailer_destroyed"))
                     break
                 elseif GetVehicleTrailerVehicle(veh) ~= trailerEntity then
-                    Delivery.ForceFailure("Trailer abgekoppelt!")
+                    Delivery.ForceFailure(Locale("notify.trailer_detached"))
                     break
                 end
             end
@@ -170,12 +171,12 @@ function Delivery.StartDamageMonitor(veh)
                     DeliveryState.cargoDamage = DeliveryState.cargoDamage + damage
 
                     if DeliveryState.cargoDamage > 500 then
-                        Framework.Notify("Cargo wird beschädigt! Langsamer fahren!", "error")
+                        Framework.Notify(Locale("notify.cargo_taking_damage_slow_down"), "error")
                     end
 
                     local maxDamage = DeliveryState.orderData.reward_base * 0.30
                     if DeliveryState.cargoDamage >= maxDamage then
-                        Delivery.ForceFailure("Cargo zu stark beschädigt!")
+                        Delivery.ForceFailure(Locale("notify.cargo_too_badly_damaged"))
                         break
                     end
                 end
@@ -203,18 +204,18 @@ function Delivery.ForceFailure(reason)
     DeliveryState.orderData = nil
     DeliveryState.cargoDamage = nil
     TriggerServerEvent("polarix_trucker:failDelivery")
-    Framework.Notify("Lieferung fehlgeschlagen: " .. reason, "error")
+    Framework.Notify(Locale("notify.delivery_failed"):format(reason), "error")
 end
 
 RegisterNetEvent("polarix_trucker:deliveryCompleted", function(reward, xp, damagePenalty, companyTax)
     Delivery.Reset()
 
-    local msg = ("Lieferung abgeschlossen! +$%s, +%s XP"):format(reward, xp)
+    local msg = Locale("notify.delivery_completed_xp"):format(reward, xp)
     if damagePenalty and damagePenalty > 0 then
-        msg = msg .. (" (-%s Schaden-Abzug)"):format(damagePenalty)
+        msg = msg .. Locale("notify.damage_deduction"):format(damagePenalty)
     end
     if companyTax and companyTax > 0 then
-        msg = msg .. (" (-$%s Company-Abgabe)"):format(companyTax)
+        msg = msg .. Locale("notify.company_tax"):format(companyTax)
     end
     Framework.Notify(msg, "success")
     SendMessage("deliveryComplete", { reward = reward, xp = xp })
@@ -226,11 +227,11 @@ RegisterNetEvent("polarix_trucker:tripSettled", function(remainingPallets)
     SetBlipRoute(DeliveryState.dropoffBlip, false)
     SetBlipRoute(DeliveryState.pickupBlip, true)
     SetBlipRouteColour(DeliveryState.pickupBlip, 5)
-    Framework.Notify(("Trip geliefert. Noch %d Paletten im Pool — zurück zum Pickup!"):format(remainingPallets), "info")
+    Framework.Notify(Locale("notify.trip_delivered_pallets_left_pool"):format(remainingPallets), "info")
 end)
 
 RegisterNetEvent("polarix_trucker:staleFailed", function()
-    Framework.Notify("Deine letzte Lieferung wurde als abgebrochen markiert (Disconnect).", "info")
+    Framework.Notify(Locale("notify.last_delivery_marked_as_cancelled"), "info")
 end)
 
 -- Disconnect/Resource-Stop während aktiver Delivery → beim nächsten Join auto-fail (server-seitig via CleanupStaleDelivery)

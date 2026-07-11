@@ -1,14 +1,16 @@
+local Locale = require("shared.locale")
+
 Bank = {}
 
 function Bank.Deposit(source, amount)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     local membership = Company.GetMembership(pData.identifier)
-    if not membership then return false, "Nicht in einer Company." end
+    if not membership then return false, Locale("error.no_company_membership") end
 
-    if type(amount) ~= "number" or amount <= 0 then return false, "Ungültiger Betrag." end
-    if Framework.GetMoney(source) < amount then return false, "Nicht genug Geld." end
+    if type(amount) ~= "number" or amount <= 0 then return false, Locale("error.invalid_amount") end
+    if Framework.GetMoney(source) < amount then return false, Locale("error.not_enough_money") end
 
     Framework.RemoveMoney(source, amount)
     DB.UpdateCompanyTreasury(membership.company_id, amount)
@@ -18,19 +20,19 @@ end
 
 function Bank.Withdraw(source, amount)
     local pData = Player.GetData(source)
-    if not pData then return false, "Spielerdaten fehlen." end
+    if not pData then return false, Locale("error.player_data_missing") end
 
     local membership = Company.GetMembership(pData.identifier)
-    if not membership then return false, "Nicht in einer Company." end
+    if not membership then return false, Locale("error.no_company_membership") end
     if membership.role ~= "owner" and membership.role ~= "manager" then
-        return false, "Keine Berechtigung."
+        return false, Locale("error.no_permission")
     end
 
-    if type(amount) ~= "number" or amount <= 0 then return false, "Ungültiger Betrag." end
+    if type(amount) ~= "number" or amount <= 0 then return false, Locale("error.invalid_amount") end
 
     local company = DB.GetCompanyById(membership.company_id)
     if not company or company.treasury < amount then
-        return false, "Nicht genug Geld in der Kasse."
+        return false, Locale("error.not_enough_money_company_account")
     end
 
     DB.UpdateCompanyTreasury(membership.company_id, -amount)

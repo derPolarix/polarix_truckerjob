@@ -2,22 +2,22 @@
   <div style="display:flex;flex-direction:column;gap:18px">
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
       <div>
-        <div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24">Skill tree</div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">Hover a node for details · earn points by hauling</div>
+        <div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24">{{ t('skills.title') }}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">{{ t('skills.hover_hint') }}</div>
       </div>
       <div style="display:flex;align-items:center;gap:18px">
         <div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#6b7280">
-          <span style="width:13px;height:13px;border-radius:50%;background:var(--accent)"></span>Acquired
+          <span style="width:13px;height:13px;border-radius:50%;background:var(--accent)"></span>{{ t('skills.legend_acquired') }}
         </div>
         <div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#6b7280">
-          <span style="width:13px;height:13px;border-radius:50%;background:#fff;border:2px solid var(--accent)"></span>Available
+          <span style="width:13px;height:13px;border-radius:50%;background:#fff;border:2px solid var(--accent)"></span>{{ t('skills.legend_available') }}
         </div>
         <div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#6b7280">
-          <span style="width:13px;height:13px;border-radius:50%;background:#e9ebee;border:1px solid #d2d6db"></span>Locked
+          <span style="width:13px;height:13px;border-radius:50%;background:#e9ebee;border:1px solid #d2d6db"></span>{{ t('skills.legend_locked') }}
         </div>
         <div style="display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:20px;background:#22262d;color:#fff;font-size:12px;font-weight:600">
           <iconify-icon icon="tabler:bolt" width="15" :style="{ color: store.config.accentColor }"></iconify-icon>
-          {{ store.config.skillPoints }} points
+          {{ t('skills.points_badge', { points: store.config.skillPoints }) }}
         </div>
       </div>
     </div>
@@ -53,7 +53,7 @@
             >
               <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
                 <span style="font-size:13px;font-weight:700">{{ skill.name }}</span>
-                <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.08em;padding:2px 6px;border-radius:5px" :style="tagStyle(skill.state)">{{ skill.state.toUpperCase() }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.08em;padding:2px 6px;border-radius:5px" :style="tagStyle(skill.state)">{{ stateLabel(skill.state) }}</span>
               </div>
               <div style="font-size:12px;color:#aeb4bd;margin-top:7px;line-height:1.45">{{ skill.desc }}</div>
               <div style="position:absolute;top:100%;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid #22262d"></div>
@@ -73,11 +73,13 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import type { SkillNode } from "@/stores/dashboardStore";
 import { nuiCallback } from "@/nui/nuiCallbacks";
 
 const store = useDashboardStore();
+const { t } = useI18n();
 
 async function onSkillClick(skill: SkillNode) {
   if (skill.state !== "available") return;
@@ -106,6 +108,12 @@ function nodeIconColor(state: SkillNode["state"]) {
   if (state === "acquired") return "#22262d";
   if (state === "available") return acc;
   return "#aab0b8";
+}
+
+function stateLabel(state: SkillNode["state"]): string {
+  if (state === "acquired") return t('skills.state_acquired');
+  if (state === "available") return t('skills.state_available');
+  return t('skills.state_locked');
 }
 
 function tagStyle(state: SkillNode["state"]): Record<string, string> {
