@@ -2,11 +2,6 @@ local server = require("config.server")
 local sharedConfig = require("config.shared")
 local Locale = require("shared.locale")
 
--- lib.callback.register('polarix_template:getPlayerJob', function(source, item, metadata, target)
---     local player = exports.qbx_core:GetPlayer(source)
---     return player.PlayerData.job.name
--- end)
-
 local function localizeList(keys)
     local out = {}
     for i, key in ipairs(keys) do out[i] = Locale(key) end

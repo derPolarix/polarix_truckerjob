@@ -28,9 +28,9 @@ function AdminMissions.Create(source, order)
     local pData = Player.GetData(source)
     order.id = slugify(order.name)
     order.pickup_pallet_coords = order.pickup_pallet_coords or {}
-    DB.InsertOrder(order) -- setzt is_active = 1 fest (bestehende Signatur, siehe database.lua)
+    DB.InsertOrder(order) -- forces is_active = 1
     DB.SetOrderCreatedBy(order.id, pData and pData.identifier)
-    DB.UpdateOrder(order.id, order, pData and pData.identifier) -- vergibt zusätzlich updated_by
+    DB.UpdateOrder(order.id, order, pData and pData.identifier) -- also sets updated_by
     return true, order.id
 end
 
@@ -62,8 +62,8 @@ function AdminMissions.Delete(source, orderId)
     return true
 end
 
--- Bewusster Bruch der Delivery-History-Sperre: löscht auch die zugehörigen deliveries-Zeilen.
--- Nur über den eigenen, deutlich beschrifteten "Force Delete"-Bestätigungsdialog im Web erreichbar.
+-- Deliberately bypasses the delivery-history lock, deletes deliveries rows too.
+-- Only reachable via the "Force Delete" confirm dialog in the web UI.
 function AdminMissions.ForceDelete(source, orderId)
     local ok, err = requireAdmin(source)
     if not ok then return false, err end
@@ -80,7 +80,7 @@ function AdminMissions.Clone(source, orderId)
     if type(order.pickup_pallet_coords) == "string" then order.pickup_pallet_coords = json.decode(order.pickup_pallet_coords) end
     order.id = nil
     order.name = order.name .. " (Kopie)"
-    return true, order -- Client bekommt vorausgefülltes Formular, speichert separat via Create
+    return true, order -- caller re-submits via Create to persist
 end
 
 local function shallowCopy(t)
@@ -89,10 +89,8 @@ local function shallowCopy(t)
     return copy
 end
 
--- Sample-IDs sind statisch (order-lv, order-cr, ...). Nach einem Löschen+Reimport würde die
--- alte deliveries-Historie unter derselben ID sonst weiterhin den Hard-Delete blockieren
--- (DB.CountDeliveriesForOrder prüft nur order_id, nicht ob die Order selbst noch existiert).
--- Deshalb hier auch auf verwaiste Lieferhistorie prüfen, nicht nur auf existierende Orders.
+-- Sample IDs are static (order-lv, ...); after delete+reimport, orphaned deliveries rows
+-- under the same ID would still block a hard delete, so check those too, not just existing orders.
 local function freshSampleId(baseId)
     local candidate = baseId
     local suffix = 0
@@ -103,8 +101,7 @@ local function freshSampleId(baseId)
     return candidate
 end
 
--- Button im leeren Editor (kein Missionsbestand) für ein sofort spielbares Ready-to-use-Script.
--- Nur solange keine Order existiert — kein Merge/Overwrite-Fall zu behandeln.
+-- Only allowed while no orders exist — no merge/overwrite case to handle.
 function AdminMissions.ImportSampleMissions(source)
     local ok, err = requireAdmin(source)
     if not ok then return false, err end
@@ -121,12 +118,10 @@ function AdminMissions.ImportSampleMissions(source)
     return true
 end
 
--- Reiner Test-Button für Admins (QA), kein "Zuweisen"-Feature — startet die Mission nur für den
--- aufrufenden Admin selbst, umgeht Gates, damit neue Missionen sofort durchgespielt werden können.
+-- QA-only test button: starts the mission for the calling admin, bypasses level/hazmat/long-hauler gates.
 function AdminMissions.TestRun(source, orderId)
     local ok, err = requireAdmin(source)
     if not ok then return false, err end
-    -- Bewusst KEIN Level/Hazmat/Long-Hauler-Gate — reiner Test-Button für Admins
     local order = DB.GetOrderById(orderId)
     if not order or not order.is_active then return false, Locale("error.mission_not_available") end
     if ActiveDeliveries[source] then return false, Locale("error.already_active_delivery") end
@@ -139,11 +134,8 @@ function AdminMissions.TestRun(source, orderId)
     return true, order
 end
 
--- Web-Formular braucht pickup_pallet_coords als Array (nicht JSON-String) sowie delivery_count
--- pro Order, um den Löschen-Button gaten zu können (siehe admin-mission-editor-plan.md Phase D).
--- Global (nicht local), da server/commands.lua (/truckeradmin, initiales Öffnen) dieselbe
--- Aufbereitung braucht wie der lib.callback für den späteren "adminListOrders"-Refetch —
--- sonst bekäme das Formular beim ersten Öffnen JSON-Strings statt Arrays.
+-- Global, not local: server/commands.lua needs the same array/delivery_count shaping
+-- as the adminListOrders callback.
 function AdminMissions.ListForWeb()
     local orders = DB.GetAllOrdersAdmin()
     for _, order in ipairs(orders) do

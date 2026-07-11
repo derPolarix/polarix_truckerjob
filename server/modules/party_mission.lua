@@ -3,8 +3,7 @@ local cargo = require("shared.cargo")
 local Locale = require("shared.locale")
 
 PartyMission = {}
-PartyMissions = {} -- partyId -> { orderId, order, totalPallets, remainingPallets,
-                    --              contributions = { [identifier] = { claimed, delivered, damage } } }
+PartyMissions = {} -- partyId -> { orderId, order, totalPallets, remainingPallets, contributions = { [identifier] = { claimed, delivered, damage } } }
 
 -- oxmysql returns TINYINT(1) as Lua boolean, not integer 1
 local function isTruthy(v) return v == 1 or v == true end
@@ -38,8 +37,8 @@ function PartyMission.Start(source, orderId)
     return true
 end
 
--- Wie Orders.ClaimTripPallets, aber Pool über die ganze Party geteilt. Nutzt GetActiveMaxPallets
--- (nicht GetEquippedMaxPallets), sonst bekommen Rental-Spieler in der Party nie einen Claim.
+-- Like Orders.ClaimTripPallets but the pool is shared across the party. Uses GetActiveMaxPallets
+-- (not GetEquippedMaxPallets), otherwise rental players in the party never get a claim.
 function PartyMission.ClaimPallets(source)
     local pData = Player.GetData(source)
     local partyId = pData and PlayerParty[pData.identifier]
@@ -81,7 +80,7 @@ function PartyMission.CompleteTrip(source, tripPalletCount, cargoDamage)
     return false, mission.remainingPallets
 end
 
--- Fahrzeug zerstört / Disconnect / freiwilliges Leave MIT noch nicht abgeliefertem Claim
+-- Vehicle destroyed / disconnect / voluntary leave while still holding an undelivered claim
 function PartyMission.HandleMemberDropout(source)
     local pData = Player.GetData(source)
     local partyId = pData and PlayerParty[pData.identifier]
@@ -89,7 +88,7 @@ function PartyMission.HandleMemberDropout(source)
     if not mission then return end
     local c = mission.contributions[pData.identifier]
     if not c then return end
-    local unclaimed = c.claimed - c.delivered -- was er noch geladen, aber nicht abgeliefert hatte
+    local unclaimed = c.claimed - c.delivered
     if unclaimed > 0 then
         mission.remainingPallets = mission.remainingPallets + unclaimed
         c.claimed = c.claimed - unclaimed
@@ -129,7 +128,7 @@ function PartyMission.Finish(partyId)
                 local reward, xp = Skills.ApplyRewardModifiers(memberSource, baseReward, mission.order.cargo_type, mission.order)
                 xp = Skills.ApplyXPModifiers(memberSource, xp)
 
-                -- Party-Bonus-Multiplier (config-gesteuert, on top der Skill-Modifier)
+                -- party bonus multiplier (config-driven, applied on top of skill modifiers)
                 reward = math.floor(reward * (config.PartyRewardMultiplier and config.PartyRewardMultiplier.cash or 1.0))
                 xp = math.floor(xp * (config.PartyRewardMultiplier and config.PartyRewardMultiplier.xp or 1.0))
 
@@ -160,7 +159,7 @@ function PartyMission.Finish(partyId)
     PartyMissions[partyId] = nil
 end
 
--- Aufgerufen von Party.removeMember, wenn nach einem Austritt 0 Online-Mitglieder übrig sind
+-- called from Party.removeMember when a leave drops the party to 0 online members
 function PartyMission.Fail(partyId)
     local mission = PartyMissions[partyId]
     local party = Parties[partyId]
@@ -180,6 +179,6 @@ lib.callback.register("polarix_trucker:claimPartyPallets", function(source) retu
 RegisterNetEvent("polarix_trucker:completePartyTrip", function(tripPalletCount, cargoDamage)
     local finished, remaining = PartyMission.CompleteTrip(source, tripPalletCount, cargoDamage)
     if not finished then TriggerClientEvent("polarix_trucker:tripSettled", source, remaining) end
-    -- bei finished=true kommt "partyMissionFinished" bereits per Broadcast aus Finish() an ALLE,
-    -- inkl. des Spielers, der gerade den letzten Trip geliefert hat
+    -- on finished=true, "partyMissionFinished" already reaches everyone via Finish()'s broadcast,
+    -- including the player who just delivered the last trip
 end)

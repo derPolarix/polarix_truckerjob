@@ -212,7 +212,7 @@ function onDropoffCoordsChange() {
   if (store.form?.dropoff_x != null) store.setDropoffPreview(true);
 }
 
-// Distanz automatisch nachziehen, solange der Admin sie nicht manuell überschreibt.
+// Auto-recalculate distance unless the admin has manually overridden it.
 watch(
   () => [store.form?.pickup_x, store.form?.pickup_y, store.form?.pickup_z, store.form?.dropoff_x, store.form?.dropoff_y, store.form?.dropoff_z],
   () => { if (!distanceOverride.value) store.recalcDistance(); },
@@ -385,7 +385,7 @@ async function closeEditor() {
 .admin-form-scroll::-webkit-scrollbar { width: 8px; }
 .admin-form-scroll::-webkit-scrollbar-thumb { background: #c9cdd3; border-radius: 8px; }
 
-/* Custom Checkbox — native input bleibt für a11y/Klickfläche, aber unsichtbar */
+/* Custom checkbox — native input stays for a11y/click target, but hidden */
 .chk {
   display: flex;
   align-items: center;

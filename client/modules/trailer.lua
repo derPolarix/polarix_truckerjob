@@ -8,8 +8,8 @@ LocalTrailer = {
 
 Trailer = {}
 
--- Trailer wird immer zusammen mit dem Fahrzeug geparkt (nie alleine) — Spawn-Punkt ergibt sich
--- direkt aus der Fahrzeugposition, da AttachVehicleToTrailer ihn ohnehin sofort an die Anhängerkupplung snappt.
+-- Spawn point is derived from the vehicle since AttachVehicleToTrailer immediately
+-- snaps the trailer to the hitch anyway — it's never parked standalone.
 function Trailer.Spawn()
     if not LocalTrailer.model then return end
     if not (LocalVehicle.entity and DoesEntityExist(LocalVehicle.entity)) then return end

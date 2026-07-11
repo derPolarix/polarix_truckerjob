@@ -1,9 +1,8 @@
 import { defineStore } from "pinia";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 
-// Feldnamen bewusst 1:1 wie die DB-Spalten (snake_case) — kein Mapping-Layer wie im
-// dashboardStore, da dieser Store nur von Admins genutzt wird und die Nähe zum Schema
-// Wartung vereinfacht (siehe admin-mission-editor-plan.md: "so simpel wie möglich").
+// field names intentionally match DB columns 1:1 (snake_case) - no mapping layer like dashboardStore,
+// since this store is admin-only and staying close to the schema simplifies maintenance.
 
 export interface PalletCoord {
   x: number;
@@ -58,9 +57,8 @@ export interface CargoTypePreset {
   icon: string;
 }
 
-// Werte übernommen aus server/sample_missions.lua (siehe admin-mission-editor-plan.md
-// "Cargo-Type-Presets"). "valuable" steht zwar im Plantext, hat aber kein Sample-Mission-Gegenstück —
-// Preset hier mit plausiblen Werten ergänzt (offene Frage, siehe Plan-Dokumentation Phase D).
+// values mirror server/sample_missions.lua; "valuable" has no sample-mission counterpart there,
+// so its preset values here are plausible guesses, not sourced from an existing sample.
 export const CARGO_TYPE_PRESETS: Record<string, CargoTypePreset> = {
   standard: { label: "Standard", cargo: "Standard", tag: "STD", tag_color: "#3b82f6", tag_bg: "rgba(59,130,246,0.16)", icon: "tabler:package" },
   fragile: { label: "Fragile", cargo: "Fragile", tag: "FRAGILE", tag_color: "#b58a05", tag_bg: "rgba(232,180,8,0.16)", icon: "tabler:bottle" },
@@ -106,8 +104,8 @@ function emptyOrder(): AdminOrder {
   };
 }
 
-// 1:1-Duplikat von shared/cargo.lua Cargo.CalcPalletCount — web/ kann kein Lua einbinden,
-// PalletWeightKg/MaxPalletsPerOrder kommen daher als Zahlen aus dem openAdminMissions-Payload.
+// 1:1 duplicate of shared/cargo.lua Cargo.CalcPalletCount - web/ can't use Lua, so
+// PalletWeightKg/MaxPalletsPerOrder are passed as numbers via the openAdminMissions payload.
 export function calcPalletCount(weightKg: number, palletWeightKg: number, maxPalletsPerOrder: number): number {
   const count = Math.ceil((weightKg || 0) / (palletWeightKg || 1000));
   return Math.max(1, Math.min(count, maxPalletsPerOrder || 10));
@@ -156,7 +154,7 @@ function mapRawOrder(raw: any): AdminOrder {
 export const useAdminMissionsStore = defineStore("adminMissions", {
   state: () => ({
     orders: [] as AdminOrder[],
-    selectedId: null as string | null, // null + isNew=true => neue Order
+    selectedId: null as string | null, // null + isNew=true => new order being created
     isNew: false,
     form: null as AdminOrder | null,
     palletWeightKg: 1000,

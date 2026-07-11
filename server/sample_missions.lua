@@ -1,5 +1,5 @@
--- Const-Daten für den "Import Sample Missions"-Button im Admin-Mission-Editor (siehe
--- server/modules/admin_missions.lua AdminMissions.ImportSampleMissions)
+-- Data for the "Import Sample Missions" button in the admin mission editor
+-- (see server/modules/admin_missions.lua AdminMissions.ImportSampleMissions).
 return {
     {
         id = "order-al", name = "Alcohols", cargo = "Fragile", cargo_type = "fragile",

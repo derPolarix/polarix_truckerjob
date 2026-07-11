@@ -10,10 +10,7 @@ declare global {
   function GetParentResourceName(): string;
 }
 
-// Augemente die in allen Vue Komponenten verfügbaren globalen Properties
-// Hier werden der Router und der Persistant Store hinzugefügt
-// So können diese in jeder Komponente via this.$router bzw. this.$persistantStore genutzt werden
-
+// Adds router and persistant store to $router / $persistantStore on every component instance
 declare module "@vue/runtime-core" {
   interface ComponentCustomProperties {
     $persistantStore: import("./stores/persistantStore").PersistantStore;

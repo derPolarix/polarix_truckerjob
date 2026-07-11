@@ -131,8 +131,7 @@ function Company.CancelInvite(source, targetIdentifier)
     return true
 end
 
--- Scannt online Spieler in Reichweite (kein Username-Feld vorhanden — Company-Namen können
--- doppelt vergeben sein, daher Auswahl per Nähe statt Texteingabe).
+-- No username field to search by, and company names aren't unique, so recruits are picked by proximity.
 function Company.GetNearbyRecruits(source)
     local pData = Player.GetData(source)
     if not pData then return {} end
@@ -322,8 +321,7 @@ function Company.AddXP(companyId, amount)
     end
 end
 
--- Zieht die Company-Abgabe (Steuer) vom Reward ab und bucht sie in die Kasse/Historie.
--- Gibt den Netto-Reward und den abgezogenen Betrag zurück.
+-- Returns (net reward, tax deducted)
 function Company.ApplyTax(source, reward)
     local pData = Player.GetData(source)
     if not pData then return reward, 0 end

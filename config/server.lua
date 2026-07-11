@@ -1,8 +1,7 @@
--- Importieren mit: local config = require("config.server")
 return {
-    AdminPermission = "admin", -- qbx_core/qb-core Permission-/Group-Name für Framework.IsAdmin
-    AdminGroups = { "admin", "superadmin" }, -- esx: erlaubte ESX-Gruppen für Framework.IsAdmin
-    AdminAceSuffix = "trucker_admin", -- Fallback-ACE falls Framework-Export fehlt: command.trucker_admin
+    AdminPermission = "admin", -- qbx_core/qb-core permission/group name for Framework.IsAdmin
+    AdminGroups = { "admin", "superadmin" }, -- esx: allowed groups for Framework.IsAdmin
+    AdminAceSuffix = "trucker_admin", -- fallback ACE if the framework export is missing: command.trucker_admin
 
     VehicleShop = {
         { slot = "volvo-fh16",    name = "Jobuilt Hauler",          model = "hauler",   cls = "Heavy Duty", speed = 125, cap_kg = 30000, fuel_l = 700, price = 680000,  level_required = 1  },

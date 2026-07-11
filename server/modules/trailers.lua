@@ -80,8 +80,8 @@ function Trailers.GetEquippedMaxPallets(source)
     return nil
 end
 
--- Wie GetEquippedMaxPallets, berücksichtigt zusätzlich die feste Rental-Trailer-Kapazität
--- (Rental setzt kein equipped_trailer, siehe Orders.Accept hasOwnGear/Rental.IsActive-Zweig).
+-- Like GetEquippedMaxPallets but also covers the fixed rental capacity
+-- (rental doesn't set equipped_trailer, see Orders.Accept hasOwnGear/Rental.IsActive branch).
 function Trailers.GetActiveMaxPallets(source)
     if Rental.IsActive(source) then
         local trailerConfig = sharedConfig.CompatibleTrailers[sharedConfig.Rental.TrailerModel]

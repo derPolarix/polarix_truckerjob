@@ -1,8 +1,6 @@
--- Set the FX version and game type
 fx_version "cerulean"
 game "gta5"
 
--- Resource metadata
 author "derPolarix"
 description ""
 version "1.0"

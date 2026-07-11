@@ -51,7 +51,6 @@ return {
         end)
     end,
 
-    -- Fahrzeugschlüssel server-seitig vergeben (qbx_vehiclekeys)
     GiveVehicleKeys = function(src, vehicleNetId)
         if GetResourceState("qbx_vehiclekeys") ~= "started" then return end
         local vehicle = NetworkGetEntityFromNetworkId(vehicleNetId)

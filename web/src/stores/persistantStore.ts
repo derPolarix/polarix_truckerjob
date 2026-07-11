@@ -1,10 +1,7 @@
-// Dieser Store ist dafür gedacht übergreifende Werte zu verwalten. Für einzelne Pages sollte man zusätzlich eigene Stores erstellen./
-
-//Imports
+// Global store for cross-page state; create dedicated stores for individual pages.
 import { defineStore } from "pinia";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 
-//Types
 export type HeldAction = {
 	name: string;
 	hint?: string;

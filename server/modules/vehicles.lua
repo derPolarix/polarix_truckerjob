@@ -26,7 +26,7 @@ function Vehicles.Buy(source, vehicleSlot)
         if v.vehicle_slot == vehicleSlot then return false, Locale("error.already_owned") end
     end
 
-    -- Bulk Deals Skill: 25% Rabatt
+    -- Bulk Deals skill: 25% discount
     local price = shopEntry.price
     if Player.HasSkill(source, "e3") then
         price = math.floor(price * 0.75)

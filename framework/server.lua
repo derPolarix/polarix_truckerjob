@@ -1,4 +1,3 @@
--- Framework adapter - server side
 -- Loads the active framework's server provider (config/shared.lua -> Framework)
 local config = require("config.shared")
 

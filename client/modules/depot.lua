@@ -64,7 +64,7 @@ local function setupTarget(ped)
         return
     end
 
-    -- Fallback: 3D-Marker + TextUI + E-Taste
+    -- Fallback when ox_target isn't available: 3D marker + TextUI + E key
     local coords = clientConfig.TruckDepotCoords
     local npcPos = vector3(coords.x, coords.y, coords.z)
     local promptVisible = false

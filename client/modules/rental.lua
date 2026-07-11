@@ -48,10 +48,8 @@ local function spawnModelAt(model, coords)
     return entity
 end
 
--- Öffnet den Rental-Bestätigungsdialog in der NUI (siehe App.vue "showRentalPrompt" + RentalPromptModal.vue).
--- Bestätigung/Ablehnung läuft vollständig über NUI-Callbacks (nui_callbacks.lua "rentBundle").
--- mode ("solo"/"party") wird durchgereicht, damit rentBundle nach dem Mieten den richtigen
--- Folge-Callback (acceptOrder/startPartyMission) auslöst statt Party-Starts immer solo zu machen.
+-- mode is passed through so rentBundle triggers the right follow-up callback
+-- (acceptOrder/startPartyMission) instead of always treating it as solo.
 function Rental.OfferInline(orderId, mode)
     SendMessage("showRentalPrompt", {
         orderId = orderId,
@@ -94,8 +92,8 @@ RegisterNetEvent("polarix_trucker:rentalStarted", function(vehicleModel, trailer
         LocalRental.trailerEntity = trailerEntity
     end
 
-    -- Reihenfolge wichtig: erst einsteigen, dann Keys vergeben (wie in Vehicle.Spawn) —
-    -- manche Key-Systeme (qbx_vehiclekeys) binden Keys an den gerade sitzenden Fahrer.
+    -- Order matters: enter before giving keys (like Vehicle.Spawn) — some key systems
+    -- (qbx_vehiclekeys) bind keys to the currently seated driver.
     if clientConfig.TeleportIntoVehicle then
         TaskWarpPedIntoVehicle(PlayerPedId(), vehEntity, -1)
     end
@@ -115,8 +113,8 @@ RegisterNetEvent("polarix_trucker:rentalEnded", function(reason)
         Framework.Notify(Locale("notify.rental_returned"), "info")
     else
         Framework.Notify(Locale("notify.rental_vehicle_repossessed"):format(reason), "error")
-        -- Server hat bei aktiver Delivery bereits Orders.Fail ausgelöst — hier nur Client-State nachziehen,
-        -- ohne erneut failDelivery zu senden.
+        -- Server already triggered Orders.Fail for an active delivery — just sync client state here,
+        -- don't send failDelivery again.
         if DeliveryState.status ~= "idle" then
             Delivery.HUD.Stop()
             if DeliveryState.pickupBlip then RemoveBlip(DeliveryState.pickupBlip) end

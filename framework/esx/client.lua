@@ -18,7 +18,7 @@ return {
         return 0
     end,
 
-    -- Kein standardisiertes Key-System in ESX — no-op
+    -- no-op: ESX has no standardized key system
     GiveVehicleKeys = function(_vehicle, _plate)
     end,
 }

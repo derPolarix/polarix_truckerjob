@@ -38,7 +38,7 @@ function Player.Load(source)
         level = data.level, xp = data.xp, skill_points = data.skill_points, skills = data.skills
     })
 
-    -- Ausgerüstetes Fahrzeug zum Client synchronisieren (für /getruck ohne UI-Open)
+    -- Sync equipped vehicle so /getruck works without opening the UI
     if data.equipped_vehicle then
         local vehicles = DB.GetPlayerVehicles(identifier)
         for _, v in ipairs(vehicles) do

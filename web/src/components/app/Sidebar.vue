@@ -1,5 +1,3 @@
-<!-- Sidebar.vue - Im Template Bereich muss nichts verändert werden, sondern nur in const navBarClick  -->
-
 <script setup lang="ts">
 import { computed, getCurrentInstance, ref } from "vue";
 import { Icon } from "@iconify/vue";
@@ -9,7 +7,7 @@ const router = proxy.$router;
 
 const isOpen = ref(true);
 
-// Erstelle automatisch eine Liste aller Routen die im Router definiert sind die in der Sidebar angezeigt werden können
+// Derives the sidebar nav list from the router's registered routes
 const navRoutes = computed(() =>
 	router
 		.getRoutes()
@@ -22,10 +20,6 @@ const navRoutes = computed(() =>
 );
 
 const navBarClick = (url: string) => {
-	// Füge hier neue Routen hinzu, die über die Sidebar erreichbar sein sollen
-	// Standardmäßig wird nur die Defaultpage unterstützt
-	// Du kannst hier aber beliebig viele Routen hinzufügen und vorher eigenen Code ausführen
-	// Kopiere einfach den case Block von der Defaultpage und füge vor das router.push deinen eigenen Code ein
 	router.push(url);
 };
 </script>

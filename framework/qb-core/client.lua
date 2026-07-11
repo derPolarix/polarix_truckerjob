@@ -14,7 +14,6 @@ return {
         return getQBCore().Functions.GetPlayerData().money.bank
     end,
 
-    -- Fahrzeugschlüssel vergeben (qb-vehiclekeys Key-System)
     GiveVehicleKeys = function(_vehicle, plate)
         if GetResourceState("qb-vehiclekeys") == "started" then
             TriggerEvent("vehiclekeys:client:SetOwner", plate)

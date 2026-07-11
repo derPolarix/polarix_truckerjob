@@ -32,8 +32,8 @@ function Party.BuildState(partyId)
     return { partyId = partyId, leaderIdentifier = party.leader, members = members, maxSize = config.PartyMaxSize }
 end
 
--- Zentrale Austritts-Logik: von Leave, Kick UND Disconnect genutzt, damit Leader-Transfer/
--- Party-Auflösung/Mission-Fail nicht dreifach implementiert werden.
+-- Shared by Leave, Kick, and Disconnect so leader transfer/disband/mission-fail
+-- aren't implemented three times.
 local function removeMember(partyId, identifier, keepEntryOffline)
     local party = Parties[partyId]
     if not party then return end
@@ -58,7 +58,7 @@ local function removeMember(partyId, identifier, keepEntryOffline)
     end
 
     if party.leader == identifier or not party.members[party.leader] then
-        party.leader = onlineCandidates[math.random(#onlineCandidates)] -- zufällige Übergabe
+        party.leader = onlineCandidates[math.random(#onlineCandidates)]
     end
 
     broadcastPartyState(partyId)
@@ -173,7 +173,7 @@ function Party.Leave(source)
     local partyId = pData and PlayerParty[pData.identifier]
     if not partyId then return false end
     if PartyMissions and PartyMissions[partyId] and PartyMission then
-        PartyMission.HandleMemberDropout(source) -- gibt offenen Claim zurück in den Pool
+        PartyMission.HandleMemberDropout(source) -- releases their claim back to the pool
     end
     removeMember(partyId, pData.identifier, false)
     return true
@@ -203,7 +203,7 @@ Framework.OnPlayerUnload(function(source)
     local partyId = PlayerParty[pData.identifier]
     if not partyId then return end
     if PartyMissions and PartyMissions[partyId] and PartyMission then PartyMission.HandleMemberDropout(source) end
-    removeMember(partyId, pData.identifier, true) -- Eintrag bleibt (offline) für möglichen Reconnect
+    removeMember(partyId, pData.identifier, true) -- keeps entry offline for possible reconnect
 end)
 
 lib.callback.register("polarix_trucker:getPartyState", function(source)

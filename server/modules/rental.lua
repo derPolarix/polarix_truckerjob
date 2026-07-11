@@ -41,7 +41,7 @@ function Rental.Repossess(source, reason)
     TriggerClientEvent("polarix_trucker:rentalEnded", source, reason)
 end
 
--- Billing-Thread: prüft alle aktiven Rentals, zieht Intervall-Kosten ein
+-- Billing thread: charges each active rental at its interval
 CreateThread(function()
     while true do
         Wait(15000)
@@ -68,7 +68,7 @@ RegisterNetEvent("polarix_trucker:returnRental", function()
     Rental.Return(source)
 end)
 
--- Aufräumen bei Logout, damit kein verwaister State übrig bleibt
+-- Avoid orphaned state after logout
 Framework.OnPlayerUnload(function(source)
     RentalState[source] = nil
 end)

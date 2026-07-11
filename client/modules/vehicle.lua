@@ -9,11 +9,9 @@ LocalVehicle = {
 
 Vehicle = {}
 
--- Wählt zufällig einen freien Spawn-Punkt (kein Fahrzeug innerhalb von 6 Einheiten).
--- Fallback: erster Punkt der gemischten Liste wenn alle belegt.
 local function findFreeSpawnPoint()
     local points = clientConfig.VehicleSpawnPoints
-    -- Fisher-Yates shuffle auf Kopie
+    -- Fisher-Yates shuffle on a copy
     local candidates = {}
     for i = 1, #points do candidates[i] = points[i] end
     for i = #candidates, 2, -1 do
@@ -86,7 +84,7 @@ CreateThread(function()
     SendMessage("vehicleSpawnState", { slot = nil, spawned = false })
 end)
 
--- Ausgerüstetes Fahrzeug wechseln (nach Equip-Aktion in der UI — Player ist am Depot → direkt spawnen)
+-- Fired after an equip action in the UI — player is at the depot, so spawn directly
 RegisterNetEvent("polarix_trucker:vehicleEquipped", function(vehicleSlot, vehicleModel)
     LocalVehicle.slot  = vehicleSlot
     LocalVehicle.model = vehicleModel
@@ -97,13 +95,12 @@ RegisterNetEvent("polarix_trucker:vehicleEquipped", function(vehicleSlot, vehicl
     end
 end)
 
--- Fahrzeug-Sync beim Login (wenn equipped_vehicle bereits in DB gesetzt war)
+-- Sync on login when equipped_vehicle was already set in DB
 RegisterNetEvent("polarix_trucker:vehicleSync", function(vehicleSlot, vehicleModel)
     LocalVehicle.slot  = vehicleSlot
     LocalVehicle.model = vehicleModel
 end)
 
--- Fahrzeug am Depot abholen
 RegisterCommand("getruck", function()
     if not LocalVehicle.slot then
         Framework.Notify(Locale("notify.no_vehicle_selected"), "error")

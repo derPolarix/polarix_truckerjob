@@ -292,7 +292,7 @@ function TryLoadPalletOnTrailer()
     end
 end
 
--- Test-Command: lädt alle verbleibenden Paletten sofort auf den Trailer (überspringt Gabelstapler-Handling)
+-- Test command: force-loads all remaining pallets, skipping forklift handling
 function AutoLoadAllPallets()
     if MissionCargo.requiredCount == 0 then
         Framework.Notify(Locale("notify.no_active_order"), "error")

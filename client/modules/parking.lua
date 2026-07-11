@@ -19,8 +19,7 @@ function IsTrailerParkedCorrectly(order)
     return dist <= shared.ParkingTolerance.distance and headingDiff <= shared.ParkingTolerance.heading
 end
 
--- Extrahierte Kernlogik, wiederverwendet vom Admin-Mission-Editor (client/modules/admin_editor.lua)
--- für die Dropoff-Preview — daher global statt local.
+-- Global (not local): reused by the admin mission editor for dropoff preview.
 function DrawOutlineRectangle(center, heading, length, width, correct)
     local rad = math.rad(heading or 0.0)
     local lengthDir = vector3(-math.sin(rad), math.cos(rad), 0.0)

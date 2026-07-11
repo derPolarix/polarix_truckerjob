@@ -1,6 +1,5 @@
--- Locale-Loader (SSOT: locales/*.json) - Importieren mit: local Locale = require("shared.locale")
--- Konvention: der Key ist der Original-Text (Deutsch), wie er im Code stand.
--- locales/de.json bildet Key -> gleicher Text ab, locales/en.json Key -> Übersetzung.
+-- Locale loader (SSOT: locales/*.json); usage: local Locale = require("shared.locale")
+-- Convention: key = original German text as it appeared in code; de.json maps key->same text, en.json maps key->translation.
 
 local SharedConfig = require("config.shared")
 

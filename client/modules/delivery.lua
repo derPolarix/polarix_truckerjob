@@ -30,8 +30,8 @@ local function CreateBlip(x, y, z, sprite, color, name)
     return blip
 end
 
--- Öffentlicher Wrapper: ClearBlips/DeliveryState sind hier lokal/modulintern, aber
--- client/modules/party_mission.lua (eigener Chunk) braucht den kompletten Cleanup ebenfalls.
+-- Public wrapper: ClearBlips/DeliveryState are module-local, but party_mission.lua
+-- (separate chunk) also needs this full cleanup.
 function Delivery.Reset()
     ClearBlips()
     if ResetMissionCargo then ResetMissionCargo(nil) end
@@ -57,8 +57,7 @@ function Delivery.Start(orderData, mode)
     Framework.Notify(Locale("notify.drive_pickup_point_pallets_total"):format(orderData.pickup_label, cargo.CalcPalletCount(orderData.weight_kg)), "info")
 end
 
--- Fragt am Pickup ab, wie viele Paletten für den nächsten Trip beansprucht werden dürfen
--- (gedeckelt durch die eigene Trailer-Kapazität). Solo: eigener Order-Pool, Party: geteilter Pool.
+-- Solo uses its own order pool, party shares one.
 function Delivery.RequestTripClaim()
     local eventName = DeliveryState.mode == "party" and "polarix_trucker:claimPartyPallets" or "polarix_trucker:claimTripPallets"
     return lib.callback.await(eventName, false)
@@ -129,7 +128,7 @@ function Delivery.StartUnloading()
     end
 end
 
--- Cargo-Schaden-System: überwacht Fahrzeug-Gesundheit + Geschwindigkeit für fragile/live Cargo
+-- Monitors vehicle health + speed for fragile/live cargo damage
 function Delivery.StartDamageMonitor(veh)
     local o = DeliveryState.orderData
     local isSensitive = o.cargo_type == "fragile" or o.cargo_type == "live"
@@ -192,7 +191,7 @@ function Delivery.StartDamageMonitor(veh)
 end
 
 function Delivery.StopDamageMonitor()
-    -- Thread endet selbständig, sobald DeliveryState.status nicht mehr "delivering" ist
+    -- no-op: the monitor thread exits on its own once status leaves "delivering"
 end
 
 function Delivery.ForceFailure(reason)
@@ -221,7 +220,7 @@ RegisterNetEvent("polarix_trucker:deliveryCompleted", function(reward, xp, damag
     SendMessage("deliveryComplete", { reward = reward, xp = xp })
 end)
 
--- Trip geliefert, aber Order-Pool noch nicht leer → zurück zum Pickup für den nächsten Trip
+-- Trip delivered but order pool not empty yet — head back to pickup for the next trip
 RegisterNetEvent("polarix_trucker:tripSettled", function(remainingPallets)
     DeliveryState.status = "awaiting_pickup"
     SetBlipRoute(DeliveryState.dropoffBlip, false)
@@ -234,7 +233,7 @@ RegisterNetEvent("polarix_trucker:staleFailed", function()
     Framework.Notify(Locale("notify.last_delivery_marked_as_cancelled"), "info")
 end)
 
--- Disconnect/Resource-Stop während aktiver Delivery → beim nächsten Join auto-fail (server-seitig via CleanupStaleDelivery)
+-- Disconnect/resource stop during an active delivery auto-fails it on next join (server-side CleanupStaleDelivery)
 AddEventHandler("onResourceStop", function(resourceName)
     if resourceName ~= GetCurrentResourceName() then return end
     if DeliveryState.status ~= "idle" then

@@ -3,8 +3,6 @@ local client = require("config.client")
 local shared = require("shared.debug")
 local Locale = require("shared.locale")
 
--- Callback um UI wieder zu schließen
-
 RegisterNUICallback('closeNui', function(data, cb)
     SetNuiFocus(false, false)
     print(json.encode(data))
@@ -351,8 +349,7 @@ RegisterNUICallback('refetchDashboard', function(_, cb)
     end)
 end)
 
--- Admin-Mission-Editor: reine Server-Forwarder, jeder Server-Callback prüft Framework.IsAdmin
--- selbst erneut (siehe admin-mission-editor-plan.md, Phase B). Namen sind server-seitig final.
+-- Admin mission editor: pure server forwarders — each server callback re-checks Framework.IsAdmin itself.
 
 RegisterNUICallback('adminListOrders', function(_, cb)
     lib.callback('polarix_trucker:adminListOrders', false, function(orders)
@@ -411,8 +408,7 @@ RegisterNUICallback('adminImportSampleMissions', function(_, cb)
     end)
 end)
 
--- Erfolgreicher Test startet die Lieferung sofort für den Admin (gleicher Pfad wie acceptOrder).
--- Web schließt das Admin-Fenster danach selbst (persistantStore.closeNui()).
+-- A successful test run starts the delivery immediately for the admin (same path as acceptOrder).
 RegisterNUICallback('adminTestRunOrder', function(data, cb)
     lib.callback('polarix_trucker:adminTestRunOrder', false, function(success, result)
         if success then

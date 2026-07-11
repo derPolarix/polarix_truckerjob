@@ -1,13 +1,12 @@
 local shared = require("config.shared")
 local cargo  = require("shared.cargo")
 
-AdminEditorGhosts = {}      -- Ghost-Pallet-Props während Bearbeitung
+AdminEditorGhosts = {}
 AdminEditorPreview = { active = false, dropoffX = nil, dropoffY = nil, dropoffZ = nil, dropoffHeading = 0.0 }
 
 RegisterNetEvent("polarix_trucker:openAdminEditor", function(orders)
     SetFocus(true)
-    -- PalletWeightKg/MaxPalletsPerOrder mitgeliefert, damit web/ Cargo.CalcPalletCount duplizieren
-    -- kann ohne die Werte hart zu codieren (siehe admin-mission-editor-plan.md Phase D).
+    -- ships PalletWeightKg/MaxPalletsPerOrder so web/ can duplicate Cargo.CalcPalletCount without hardcoding them
     SendMessage("openAdminMissions", { orders = orders, palletWeightKg = shared.PalletWeightKg, maxPalletsPerOrder = shared.MaxPalletsPerOrder })
 end)
 
@@ -24,13 +23,13 @@ local function spawnGhostPallet(pos, heading)
         PlaceObjectOnGroundProperly(prop)
         FreezeEntityPosition(prop, true)
         SetEntityCollision(prop, false, false)
-        SetEntityAlpha(prop, 120, false) -- halbtransparent = "Ghost"
+        SetEntityAlpha(prop, 120, false)
     end
     SetModelAsNoLongerNeeded(modelHash)
     return prop
 end
 
--- NUI ruft das pro Pallet-Zeile im Formular auf, solange sie unbestätigt ist
+-- called by the NUI once per unconfirmed pallet row in the form
 RegisterNUICallback('adminPreviewPallet', function(data, cb)
     local idx = data.index
     if AdminEditorGhosts[idx] and DoesEntityExist(AdminEditorGhosts[idx]) then
@@ -40,7 +39,7 @@ RegisterNUICallback('adminPreviewPallet', function(data, cb)
     cb({ ok = true })
 end)
 
--- Wird aufgerufen, sobald der Admin eine Koordinate der Liste hinzufügt/bestätigt → Ghost verschwindet
+-- called once the admin confirms a coordinate, removing the ghost
 RegisterNUICallback('adminConfirmPallet', function(data, cb)
     local idx = data.index
     if AdminEditorGhosts[idx] and DoesEntityExist(AdminEditorGhosts[idx]) then
@@ -64,14 +63,14 @@ RegisterNUICallback('getCurrentPosition', function(_, cb)
     cb({ x = coords.x, y = coords.y, z = coords.z, heading = heading })
 end)
 
--- Auto-Grid: exakt dieselbe Funktion, die zur Laufzeit die echten Pickup-Pallets platziert
+-- uses the exact same function that places the real pickup pallets at runtime
 RegisterNUICallback('adminGenerateGrid', function(data, cb)
     local anchor = vector3(data.x, data.y, data.z)
     local coords = cargo.GenerateGridCoords(anchor, data.heading or 0.0, data.count or 1)
     cb({ ok = true, coords = coords })
 end)
 
--- Dropoff-Preview: rotes Rechteck, exakt das Muster aus parking.lua (DrawParkingRectangle), nur ohne Grün-Zweig
+-- dropoff preview: same pattern as parking.lua's DrawParkingRectangle, minus the green-state branch
 RegisterNUICallback('adminSetDropoffPreview', function(data, cb)
     if data.active then
         AdminEditorPreview.active = true
@@ -83,9 +82,8 @@ RegisterNUICallback('adminSetDropoffPreview', function(data, cb)
     cb({ ok = true })
 end)
 
--- Wiederverwendet DrawOutlineRectangle (extrahiert aus client/modules/parking.lua), immer Rot —
--- im Editor gibt es kein "korrekt geparkt", daher kein correct-Umschalten. Trailer-Footprint-Fallback
--- (11.0 x 2.6, wie parking.lua ohne erkanntes Trailer-Model) reicht hier, da kein echter Trailer beteiligt ist.
+-- reuses DrawOutlineRectangle (from parking.lua), always red since the editor has no "correctly parked" state.
+-- trailer footprint fallback (11.0 x 2.6) is fine here since no real trailer is involved.
 local function DrawAdminDropoffOutline(preview)
     local center = vector3(preview.dropoffX, preview.dropoffY, preview.dropoffZ - 0.8)
     DrawOutlineRectangle(center, preview.dropoffHeading or 0.0, 11.0, 2.6, false)

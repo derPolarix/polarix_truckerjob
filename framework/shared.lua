@@ -1,6 +1,5 @@
--- Framework adapter - shared (client + server)
--- Loaded before all other scripts. Defines framework-agnostic globals.
--- Active framework is set in config/shared.lua -> Framework (e.g. "qbox", "qb-core", "esx")
+-- Loaded before all other scripts, defines framework-agnostic globals.
+-- Active framework is set in config/shared.lua -> Framework
 local config = require("config.shared")
 
 Framework = {}

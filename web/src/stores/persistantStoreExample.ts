@@ -1,10 +1,7 @@
-// Dieser Store ist dafür gedacht übergreifende Werte zu verwalten. Für einzelne Pages sollte man zusätzlich eigene Stores erstellen./
-
-//Imports
+// Example store showing the pattern: state/getters/actions types + defineStore. Copy this file to create a new store.
 import { defineStore } from "pinia";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 
-//Types
 type ExampleStateType = {
 	IsNuiOpen: boolean;
 };

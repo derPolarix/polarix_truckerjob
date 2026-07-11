@@ -1,5 +1,5 @@
--- Erweitertes Debug Modul für formatierte Konsolenausgaben
--- Importieren mit: local debug = require("shared.debug")
+-- Debug module for formatted console output
+-- usage: local debug = require("shared.debug")
 
 local SharedConfig = require("config.shared")
 local prefix = "^2[" .. GetCurrentResourceName() .. "]^7 "

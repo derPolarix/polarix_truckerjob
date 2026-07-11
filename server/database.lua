@@ -369,5 +369,5 @@ function DB.SetCompanyLevel(companyId, level)
 end
 
 function LoadDatabaseToCache()
-    -- Aktuell kein globaler DB-Cache nötig (Spieler werden pro-Source in PlayerCache gehalten).
+    -- No global DB cache needed; players are kept in PlayerCache per source.
 end

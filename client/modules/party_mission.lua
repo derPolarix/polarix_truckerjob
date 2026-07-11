@@ -1,6 +1,5 @@
--- Dünner Glue-Layer: setzt nur DeliveryState.mode = "party" und startet den in Phase B
--- generalisierten Trip-Loop. Party-spezifisches (Reward pro Mitglied, Gesamt-Fortschritt, Fail)
--- wird hier behandelt, nicht in delivery.lua.
+-- Thin glue layer: sets DeliveryState.mode = "party" and starts the shared trip loop.
+-- Party-specific bits (per-member reward, overall progress, fail) are handled here, not in delivery.lua.
 
 local Locale = require("shared.locale")
 
@@ -15,7 +14,7 @@ RegisterNetEvent("polarix_trucker:partyMissionProgress", function(progress)
     PartyProgress.totalPallets = progress.totalPallets
     PartyProgress.claimedTotal = progress.claimedTotal
     PartyProgress.deliveredTotal = progress.deliveredTotal
-    SendMessage("partyMissionProgress", progress) -- Party-Dropdown/HUD zeigt totalPallets/claimedTotal/deliveredTotal
+    SendMessage("partyMissionProgress", progress)
 end)
 
 RegisterNetEvent("polarix_trucker:partyTripSettled", function(reward, xp, penalty, tax)

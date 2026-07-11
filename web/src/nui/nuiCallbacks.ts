@@ -1,8 +1,3 @@
-// Funktionen um Callbacks an den Client zu senden und Antworten zu erhalten
-// Zur Verwendung wie folgt importieren:
-// import { nuiCallback, nuiCallbackAsync } from "@/nui/nuiCallbacks";
-// Anschließend kann z.B. nuiCallbackAsync("callbackName", data) genutzt werden.
-// In dieser Datei muss nichts verändert werden!
 import type { NuiCallback, NuiCallbackAsync } from "@/type";
 
 let hasWarnedMissingRuntime = false;

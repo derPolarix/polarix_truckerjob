@@ -1,14 +1,13 @@
--- Importieren mit: local config = require("config.shared")
 return {
     Framework = "qbox",
     Debug = false,
     PrintDebug = true,
 
-    -- Sprache für locales/<Language>.json (SSOT für alle User-facing Texte, Lua + NUI).
+    -- language for locales/<Language>.json, the SSOT for all user-facing text
     Language = "de",
 
-    -- name/desc sind locales/*.json-Keys, nicht Anzeigetexte — aufgelöst via Locale() in
-    -- server/modules/skills.lua (Skills.GetBranchesForPlayer), damit die NUI bereits übersetzten Text bekommt.
+    -- name/desc are locales/*.json keys, not display text — resolved via Locale()
+    -- in Skills.GetBranchesForPlayer
     Skills = {
         branches = {
             { name = "skill.hauling", icon = "tabler:truck", skills = {
@@ -32,13 +31,13 @@ return {
         }
     },
 
-    -- Index = Level (Level 1 = Index 1, kein Threshold; Level 2 benötigt 200 XP, usw.)
+    -- index = level (index 1 = level 1, no threshold)
     XPThresholds = { 0, 200, 500, 1000, 1800, 2800, 4200, 6000, 8500, 12000, 16000 },
     SkillPointsPerLevel = 2,
 
-    -- Gleiche Konvention wie XPThresholds, aber für Company-Level (Company.AddXP).
+    -- same convention as XPThresholds, but for company level (Company.AddXP)
     CompanyXPThresholds = { 0, 500, 1200, 2200, 3600, 5500, 8000, 11000, 15000, 20000 },
-    -- Einträge sind locales/*.json-Keys (siehe Skills-Kommentar oben), aufgelöst in server/callback.lua.
+    -- locales/*.json keys, resolved in server/callback.lua
     LevelTitles = {
         "skill.rookie", "skill.apprentice", "skill.driver", "skill.pro_driver", "skill.senior_driver",
         "skill.expert", "skill.road_master", "skill.elite", "skill.legend", "skill.grand_champion", "skill.titan"
@@ -52,15 +51,15 @@ return {
         heading  = 12.0,
     },
 
-    -- Radius (m) für "nearby recruits" beim Company-Invite — kein Username-System vorhanden,
-    -- daher Auswahl über online Spieler in Reichweite statt Namenseingabe.
+    -- "nearby recruits" radius (m) for company invite — no username system, so pick
+    -- from online players in range instead of typing a name
     CompanyInviteRadius = 15.0,
 
     PartyMaxSize = 5,
 
     PartyRewardMultiplier = {
-        cash = 1.10, -- +10% Cash bei Party-Missionen
-        xp   = 1.15, -- +15% XP bei Party-Missionen
+        cash = 1.10,
+        xp   = 1.15,
     },
 
     ForkliftModel         = "forklift",
@@ -70,9 +69,8 @@ return {
 
     PalletModel = "sm3d_prop_pallet_1",
 
-    -- Feste Rental-Kombo für Spieler ohne eigenes Fahrzeug/Trailer, mit laufenden Kosten.
-    -- In config/shared.lua statt config/server.lua, da Client (Rental-Dialog, Spawn) und Server
-    -- (Billing) beide Zugriff brauchen — config/server.lua wird nur server-seitig geladen.
+    -- Fixed rental combo for players without their own vehicle/trailer. Lives here
+    -- (not config/server.lua) because both client (dialog, spawn) and server (billing) need it.
     Rental = {
         VehicleModel = "hauler",
         VehicleName  = "Rental Truck",

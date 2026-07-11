@@ -52,8 +52,8 @@ function Orders.Accept(source, orderId)
     return true, order
 end
 
--- Wird beim Betreten der Pickup-Zone aufgerufen: vergibt so viele Paletten wie noch offen
--- sind, gedeckelt durch die aktuell nutzbare Trailer-Kapazität (eigener Trailer oder Rental).
+-- Called on entering the pickup zone: claims as many pallets as still open, capped by
+-- the currently usable trailer capacity (own trailer or rental).
 function Orders.ClaimTripPallets(source)
     local delivery = ActiveDeliveries[source]
     if not delivery or delivery.remainingPallets <= 0 then return 0 end
@@ -65,8 +65,8 @@ function Orders.ClaimTripPallets(source)
     return claim
 end
 
--- Meldet den Abschluss eines Trips. Ist die Order damit komplett geliefert, läuft die volle
--- Reward/XP/Tax-Pipeline (Orders.Finish); sonst kehrt der Spieler zum Pickup zurück.
+-- Reports a trip's completion. If that finishes the order, the full reward/XP/tax
+-- pipeline runs (Orders.Finish); otherwise the player heads back to pickup.
 function Orders.CompleteTrip(source, tripPalletCount, cargoDamage)
     local delivery = ActiveDeliveries[source]
     if not delivery then return false end
@@ -81,7 +81,7 @@ function Orders.CompleteTrip(source, tripPalletCount, cargoDamage)
     return false, delivery.remainingPallets
 end
 
--- Vormals "Orders.Complete" — läuft erst, sobald der letzte Trip einer Order geliefert wurde.
+-- Runs only once the last trip of an order has been delivered.
 function Orders.Finish(source)
     local delivery = ActiveDeliveries[source]
     if not delivery then return false end
@@ -95,7 +95,7 @@ function Orders.Finish(source)
     local reward, xp = Skills.ApplyRewardModifiers(source, order.reward_base, order.cargo_type, order)
     xp = Skills.ApplyXPModifiers(source, xp)
 
-    -- Cargo-Schaden-Abzug (über alle Trips kumuliert), max 30% vom Reward
+    -- cargo damage deduction (accumulated across all trips), capped at 30% of reward
     local damagePercent = math.min(delivery.cargoDamageTotal / order.reward_base, 0.30)
     local penalty = math.floor(reward * damagePercent)
     reward = reward - penalty
@@ -132,8 +132,8 @@ function Orders.Fail(source)
     ActiveDeliveries[source] = nil
 end
 
--- Beim Player-Load: offene Delivery aus vorherigem Disconnect/Server-Restart als abgebrochen markieren
--- (kein echter Fehlschlag, zählt daher nicht als failed_deliveries)
+-- On player load: mark a delivery left open by a previous disconnect/restart as abandoned
+-- (not a real failure, so it doesn't count toward failed_deliveries)
 function Orders.CleanupStaleDelivery(source)
     local pData = Player.GetData(source)
     if not pData then return end
