@@ -339,12 +339,15 @@ const handleMessage = (event: MessageEvent) => {
 	const raw = event.data as NuiMessage;
 	const action = raw.action;
 
+	// every Lua->NUI message carries the current Config.Language - keep vue-i18n in sync
+	// regardless of which message/view triggered it, so admin and dashboard never drift apart
+	const lang = (raw.data as any)?.language;
+	if (lang && (i18n.global.availableLocales as string[]).includes(lang)) {
+		i18n.global.locale.value = lang as "de" | "en";
+	}
+
 	switch (action) {
 		case "openNui": {
-			const lang = (raw.data as any)?.language;
-			if (lang && (i18n.global.availableLocales as string[]).includes(lang)) {
-				i18n.global.locale.value = lang as "de" | "en";
-			}
 			persistantStore.IsNuiOpen = true;
 			router.push("/dashboard");
 			dashboardStore.open(

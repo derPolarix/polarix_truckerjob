@@ -346,7 +346,7 @@ end)
 RegisterNUICallback('refetchDashboard', function(_, cb)
     lib.callback('polarix_trucker:openDashboard', false, function(dashboardData)
         if dashboardData then
-            SendNUIMessage({ action = "openNui", data = dashboardData })
+            SendMessage("openNui", dashboardData)
         end
         cb({ ok = dashboardData ~= nil })
     end)

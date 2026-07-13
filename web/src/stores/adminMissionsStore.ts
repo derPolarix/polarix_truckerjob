@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
+import { i18n } from "@/i18n";
 
 // field names intentionally match DB columns 1:1 (snake_case) - no mapping layer like dashboardStore,
 // since this store is admin-only and staying close to the schema simplifies maintenance.
@@ -49,7 +50,7 @@ export interface AdminOrder {
 }
 
 export interface CargoTypePreset {
-  label: string;
+  labelKey: string;
   cargo: string;
   tag: string;
   tag_color: string;
@@ -59,13 +60,14 @@ export interface CargoTypePreset {
 
 // values mirror server/sample_missions.lua; "valuable" has no sample-mission counterpart there,
 // so its preset values here are plausible guesses, not sourced from an existing sample.
+// labelKey resolves via t() so the dropdown follows Config.Language like the rest of the UI.
 export const CARGO_TYPE_PRESETS: Record<string, CargoTypePreset> = {
-  standard: { label: "Standard", cargo: "Standard", tag: "STD", tag_color: "#3b82f6", tag_bg: "rgba(59,130,246,0.16)", icon: "tabler:package" },
-  fragile: { label: "Fragile", cargo: "Fragile", tag: "FRAGILE", tag_color: "#b58a05", tag_bg: "rgba(232,180,8,0.16)", icon: "tabler:bottle" },
-  hazmat: { label: "Hazmat", cargo: "Hazmat", tag: "HAZMAT", tag_color: "#dc2626", tag_bg: "rgba(220,38,38,0.16)", icon: "tabler:biohazard" },
-  heavy: { label: "Heavy", cargo: "Heavy", tag: "HEAVY", tag_color: "#6b7280", tag_bg: "rgba(107,114,128,0.16)", icon: "tabler:crane" },
-  live: { label: "Live Animals", cargo: "Live Animals", tag: "LIVE", tag_color: "#16a34a", tag_bg: "rgba(22,163,74,0.16)", icon: "tabler:paw" },
-  valuable: { label: "Valuable", cargo: "High Value", tag: "VALUABLE", tag_color: "#8b5cf6", tag_bg: "rgba(139,92,246,0.16)", icon: "tabler:diamond" },
+  standard: { labelKey: "admin.cargo_type_standard", cargo: "Standard", tag: "STD", tag_color: "#3b82f6", tag_bg: "rgba(59,130,246,0.16)", icon: "tabler:package" },
+  fragile: { labelKey: "admin.cargo_type_fragile", cargo: "Fragile", tag: "FRAGILE", tag_color: "#b58a05", tag_bg: "rgba(232,180,8,0.16)", icon: "tabler:bottle" },
+  hazmat: { labelKey: "admin.cargo_type_hazmat", cargo: "Hazmat", tag: "HAZMAT", tag_color: "#dc2626", tag_bg: "rgba(220,38,38,0.16)", icon: "tabler:biohazard" },
+  heavy: { labelKey: "admin.cargo_type_heavy", cargo: "Heavy", tag: "HEAVY", tag_color: "#6b7280", tag_bg: "rgba(107,114,128,0.16)", icon: "tabler:crane" },
+  live: { labelKey: "admin.cargo_type_live", cargo: "Live Animals", tag: "LIVE", tag_color: "#16a34a", tag_bg: "rgba(22,163,74,0.16)", icon: "tabler:paw" },
+  valuable: { labelKey: "admin.cargo_type_valuable", cargo: "High Value", tag: "VALUABLE", tag_color: "#8b5cf6", tag_bg: "rgba(139,92,246,0.16)", icon: "tabler:diamond" },
 };
 
 function emptyOrder(): AdminOrder {
@@ -277,10 +279,10 @@ export const useAdminMissionsStore = defineStore("adminMissions", {
       try {
         if (this.isNew) {
           const res = await nuiCallbackAsync<{ ok: boolean; orderId?: string; err?: string }>("adminCreateOrder", { order: this.form });
-          if (!res.ok) { this.error = res.err ?? "Erstellen fehlgeschlagen."; return false; }
+          if (!res.ok) { this.error = res.err ?? i18n.global.t("admin.error_create_failed"); return false; }
         } else {
           const res = await nuiCallbackAsync<{ ok: boolean; err?: string }>("adminUpdateOrder", { orderId: this.form.id, order: this.form });
-          if (!res.ok) { this.error = res.err ?? "Speichern fehlgeschlagen."; return false; }
+          if (!res.ok) { this.error = res.err ?? i18n.global.t("admin.error_save_failed"); return false; }
         }
         await this.clearGhosts();
         await this.setDropoffPreview(false);
@@ -301,7 +303,7 @@ export const useAdminMissionsStore = defineStore("adminMissions", {
         this.form = null;
         await this.refetch();
       } else {
-        this.error = res.err ?? "Löschen fehlgeschlagen.";
+        this.error = res.err ?? i18n.global.t("admin.error_delete_failed");
       }
     },
     async forceRemove(orderId: string) {
@@ -311,7 +313,7 @@ export const useAdminMissionsStore = defineStore("adminMissions", {
         this.form = null;
         await this.refetch();
       } else {
-        this.error = res.err ?? "Löschen fehlgeschlagen.";
+        this.error = res.err ?? i18n.global.t("admin.error_delete_failed");
       }
     },
     async clone(orderId: string) {

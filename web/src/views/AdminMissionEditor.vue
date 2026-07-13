@@ -54,7 +54,7 @@
             <label class="field-label">{{ t('admin.name_label') }}<input v-model="store.form.name" class="fld" /></label>
             <label class="field-label">{{ t('admin.cargo_type_label') }}
               <select :value="store.form.cargo_type" @change="onCargoTypeChange(($event.target as HTMLSelectElement).value)" class="fld">
-                <option v-for="(preset, key) in CARGO_TYPE_PRESETS" :key="key" :value="key">{{ preset.label }}</option>
+                <option v-for="(preset, key) in CARGO_TYPE_PRESETS" :key="key" :value="key">{{ t(preset.labelKey) }}</option>
               </select>
             </label>
           </div>
