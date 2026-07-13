@@ -6,6 +6,7 @@ description ""
 version "1.0"
 lua54 'yes'
 use_experimental_fxv2_oal 'yes'
+this_is_a_map 'yes'
 
 shared_scripts {
     '@ox_lib/init.lua',
@@ -46,7 +47,9 @@ files {
     "html/*",
     "html/assets/*",
     "html/img/*",
-    "html/index.html"
+    "html/index.html",
+    'stream/sm3d_prop_pallets_def.ytyp',
+	'stream/sm3d_prop_logi_shelf_def.ytyp'
 }
 
 ui_page "html/index.html"
@@ -58,3 +61,6 @@ ox_libs {
     'math',
     'table',
 }
+
+data_file 'DLC_ITYP_REQUEST' 'stream/sm3d_prop_pallets_def.ytyp'
+data_file 'DLC_ITYP_REQUEST' 'stream/sm3d_prop_logi_shelf_def.ytyp'

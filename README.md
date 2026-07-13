@@ -25,6 +25,7 @@ Works with **qbox**, **qb-core**, and **ESX** out of the box.
 - **Admin mission editor** — build and edit delivery routes in-game with a live preview of pickup/drop-off. Changes go live instantly, no resource restart needed.
 - **Multi-language** — dashboard and notifications support multiple languages out of the box, easily expandable.
 - **Polished dashboard** — for orders, skills, fleet, and company management.
+- **Props included** — invincible rescaled native props made by [StraussMoewe](https://sm3d.tebex.io)
 
 ## Requirements
 
