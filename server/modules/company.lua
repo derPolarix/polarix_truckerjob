@@ -17,7 +17,7 @@ function Company.Create(source, name, tag, description)
 
     local companyId = DB.CreateCompany(name, tag, description)
     if not companyId or companyId == 0 then
-        return false, Locale("error.name_already_taken")
+        return false, Locale("error.name_already_taken"), "name_taken"
     end
 
     DB.AddCompanyMember(companyId, pData.identifier, "owner")
@@ -247,10 +247,13 @@ function Company.SaveSettings(source, settings)
     local minLevel = tonumber(settings.minLevel) or 1
     minLevel = math.floor(math.max(1, math.min(maxLevel, minLevel)))
 
-    DB.UpdateCompanySettings(
+    local ok = DB.UpdateCompanySettings(
         membership.company_id,
         settings.name, settings.tag, settings.description, settings.openRecruitment, taxRate, minLevel
     )
+    if not ok then
+        return false, Locale("error.name_already_taken"), "name_taken"
+    end
     return true
 end
 
@@ -362,8 +365,8 @@ end
 -- Callbacks
 
 lib.callback.register("polarix_trucker:createCompany", function(source, name, tag, description)
-    local success, result = Company.Create(source, name, tag, description)
-    if not success then return false, result end
+    local success, result, code = Company.Create(source, name, tag, description)
+    if not success then return false, result, code end
     return true
 end)
 
@@ -392,7 +395,9 @@ lib.callback.register("polarix_trucker:changeRole", function(source, targetIdent
 end)
 
 lib.callback.register("polarix_trucker:saveCompanySettings", function(source, settings)
-    return Company.SaveSettings(source, settings)
+    local success, result, code = Company.SaveSettings(source, settings)
+    if not success then return false, result, code end
+    return true
 end)
 
 lib.callback.register("polarix_trucker:disbandCompany", function(source)

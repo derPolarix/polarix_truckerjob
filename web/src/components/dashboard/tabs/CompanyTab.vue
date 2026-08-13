@@ -63,7 +63,14 @@
             <div style="display:flex;flex-direction:column;gap:14px">
               <div>
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">{{ t('company.company_name_label') }}</div>
-                <input v-model="createName" :placeholder="t('company.company_name_placeholder')" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
+                <input
+                  v-model="createName"
+                  :placeholder="t('company.company_name_placeholder')"
+                  :style="{ borderColor: createError ? '#d24b3a' : '#e4e6e9' }"
+                  style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit"
+                  @input="createError = ''"
+                />
+                <div v-if="createError" style="font-size:11px;color:#d24b3a;margin-top:6px">{{ createError }}</div>
               </div>
               <div>
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">{{ t('company.tag_label') }} <span style="color:#cfd3d8;font-style:normal">{{ t('company.max_8_chars') }}</span></div>
@@ -406,7 +413,14 @@
           <div style="display:flex;flex-direction:column;gap:16px">
             <div>
               <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab;margin-bottom:7px">{{ t('company.company_name_label') }}</div>
-              <input v-model="settingsName" :readonly="!isOwner" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit" />
+              <input
+                v-model="settingsName"
+                :readonly="!isOwner"
+                :style="{ borderColor: settingsError ? '#d24b3a' : '#e4e6e9' }"
+                style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e4e6e9;background:#f6f7f8;font-size:13px;color:#1b1f24;outline:none;font-family:inherit"
+                @input="settingsError = ''"
+              />
+              <div v-if="settingsError" style="font-size:11px;color:#d24b3a;margin-top:6px">{{ settingsError }}</div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div>
@@ -522,11 +536,13 @@ const createName    = ref('');
 const createTag     = ref('');
 const createDesc    = ref('');
 const createOpenRec = ref(false);
+const createError   = ref('');
 const joinedId      = ref<number | null>(null);
 
 async function createCompanyAction() {
   if (!createName.value.trim() || !createTag.value.trim()) return;
-  const res = await nuiCallback<{ ok: boolean }>('createCompany', {
+  createError.value = '';
+  const res = await nuiCallback<{ ok: boolean; error?: string; code?: string }>('createCompany', {
     name:            createName.value.trim(),
     tag:             createTag.value.trim().toUpperCase(),
     description:     createDesc.value.trim(),
@@ -537,6 +553,8 @@ async function createCompanyAction() {
     isRefetching.value = true;
     await nuiCallback('refetchDashboard');
     isRefetching.value = false;
+  } else if (res?.code === 'name_taken') {
+    createError.value = res.error ?? '';
   }
 }
 
@@ -612,6 +630,7 @@ const settingsDesc    = ref(store.config.companyDescription);
 const settingsOpenRec = ref(store.config.companyOpenRecruitment);
 const settingsTaxRate = ref(store.config.companyTaxRate);
 const settingsMinLevel = ref(store.config.companyMinLevelToJoin);
+const settingsError    = ref('');
 
 watch(() => store.config.companyName,            v => { settingsName.value     = v; });
 watch(() => store.config.companyTag,             v => { settingsTag.value      = v; });
@@ -621,7 +640,8 @@ watch(() => store.config.companyTaxRate,         v => { settingsTaxRate.value  =
 watch(() => store.config.companyMinLevelToJoin,  v => { settingsMinLevel.value = v; });
 
 async function saveSettings() {
-  const res = await nuiCallback<{ ok: boolean }>('saveCompanySettings', {
+  settingsError.value = '';
+  const res = await nuiCallback<{ ok: boolean; error?: string; code?: string }>('saveCompanySettings', {
     name:            settingsName.value,
     tag:             settingsTag.value,
     description:     settingsDesc.value,
@@ -633,6 +653,8 @@ async function saveSettings() {
     isRefetching.value = true;
     await nuiCallback('refetchDashboard');
     isRefetching.value = false;
+  } else if (res?.code === 'name_taken') {
+    settingsError.value = res.error ?? '';
   }
 }
 
@@ -643,6 +665,7 @@ function resetSettings() {
   settingsOpenRec.value  = store.config.companyOpenRecruitment;
   settingsTaxRate.value  = store.config.companyTaxRate;
   settingsMinLevel.value = store.config.companyMinLevelToJoin;
+  settingsError.value    = '';
 }
 
 // --- Danger zone ---

@@ -304,10 +304,11 @@ function DB.UpdateCompanyXP(companyId, amount)
 end
 
 function DB.UpdateCompanySettings(companyId, name, tag, description, openRecruitment, taxRate, minLevelToJoin)
-    MySQL.update.await(
+    local result = MySQL.update.await(
         ("UPDATE %s SET name=?, tag=?, description=?, open_recruitment=?, tax_rate=?, min_level_to_join=? WHERE id=?"):format(T.companies),
         { name, tag, description, openRecruitment and 1 or 0, taxRate, minLevelToJoin, companyId }
     )
+    return result ~= nil
 end
 
 function DB.DeleteCompany(companyId)

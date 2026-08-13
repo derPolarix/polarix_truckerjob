@@ -136,13 +136,15 @@ RegisterNUICallback('unlockSkill', function(data, cb)
 end)
 
 RegisterNUICallback('createCompany', function(data, cb)
-    lib.callback('polarix_trucker:createCompany', false, function(success, err)
+    lib.callback('polarix_trucker:createCompany', false, function(success, err, code)
         if not success then
-            Framework.Notify(err or Locale("notify.failed_create"), 'error')
+            if code ~= "name_taken" then
+                Framework.Notify(err or Locale("notify.failed_create"), 'error')
+            end
         else
             Framework.Notify(Locale("notify.company_created"), 'success')
         end
-        cb({ ok = success })
+        cb({ ok = success, error = err, code = code })
     end, data.name, data.tag, data.description)
 end)
 
@@ -204,13 +206,15 @@ RegisterNUICallback('changeRole', function(data, cb)
 end)
 
 RegisterNUICallback('saveCompanySettings', function(data, cb)
-    lib.callback('polarix_trucker:saveCompanySettings', false, function(success, err)
+    lib.callback('polarix_trucker:saveCompanySettings', false, function(success, err, code)
         if not success then
-            Framework.Notify(err or Locale("notify.failed_save"), 'error')
+            if code ~= "name_taken" then
+                Framework.Notify(err or Locale("notify.failed_save"), 'error')
+            end
         else
             Framework.Notify(Locale("notify.settings_saved"), 'success')
         end
-        cb({ ok = success })
+        cb({ ok = success, error = err, code = code })
     end, { name = data.name, tag = data.tag, description = data.description, openRecruitment = data.openRecruitment, taxRate = data.taxRate, minLevel = data.minLevel })
 end)
 
