@@ -12,12 +12,11 @@ return {
     TrailerShop = {
         { slot = "flatbed-box",       name = "Trailer Box Variant",       model = "trailers2",   price = 180000, level_required = 1 },
         { slot = "flatbed-container", name = "Trailer Container Variant", model = "docktrailer", price = 200000, level_required = 3 },
-
     },
 
-    -- Passives Einkommen: Fahrer-Slots. price = einmaliger Kaufpreis, income = Auszahlung
-    -- pro DriverIncomeIntervalMinutes (fix, unabhängig von Aktivität).
-    -- WERTE SIND PLATZHALTER — noch zu balancen.
+    -- Passive income: driver slots. price = one-time purchase cost, income = payout
+    -- per DriverIncomeIntervalMinutes (fixed, independent of activity).
+    -- VALUES ARE PLACEHOLDERS — still needs balancing.
     DriverSlots = {
         { slot = "driver_0", level_required = 1,  price = 5000,   income = 50   },
         { slot = "driver_1", level_required = 2,  price = 15000,  income = 120  },
@@ -29,6 +28,6 @@ return {
         { slot = "driver_7", level_required = 9,  price = 260000, income = 1550 },
         { slot = "driver_8", level_required = 11, price = 350000, income = 2000 },
     },
-    -- Intervall in Minuten, in dem jeder angestellte Fahrer sein `income` auszahlt.
+    -- Interval in minutes at which each hired driver pays out their `income`.
     DriverIncomeIntervalMinutes = 10,
 }
