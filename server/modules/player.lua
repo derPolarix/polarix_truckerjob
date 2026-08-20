@@ -1,5 +1,6 @@
 local config = require("config.shared")
 local Locale = require("shared.locale")
+local debug = require("shared.debug")
 
 PlayerCache = {} -- source -> playerData
 
@@ -23,12 +24,20 @@ end
 
 function Player.Load(source)
     local identifier = Framework.GetPlayerIdentifier(source)
-    if not identifier then return end
+    if not identifier then
+        debug.DebugPrint(("Player.Load: Framework.GetPlayerIdentifier returned nil for source %s (Framework=%s) — framework player object not found/loaded yet"):format(source, config.Framework))
+        return
+    end
 
     local row = DB.GetPlayer(identifier)
     if not row then
         DB.CreatePlayer(identifier, Framework.GetPlayerName(source))
         row = DB.GetPlayer(identifier)
+    end
+
+    if not row then
+        debug.DebugPrint(("Player.Load: DB.GetPlayer still nil after DB.CreatePlayer for identifier %s — check oxmysql connection / players table"):format(identifier))
+        return
     end
 
     local data = buildPlayerData(identifier, row)

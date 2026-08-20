@@ -1,6 +1,7 @@
 local server = require("config.server")
 local sharedConfig = require("config.shared")
 local Locale = require("shared.locale")
+local debug = require("shared.debug")
 
 local function localizeList(keys)
     local out = {}
@@ -8,13 +9,7 @@ local function localizeList(keys)
     return out
 end
 
-lib.callback.register("polarix_trucker:openDashboard", function(source)
-    local pData = Player.GetData(source)
-    if not pData then
-        pData = Player.Load(source)
-    end
-    if not pData then return nil end
-
+local function buildDashboardData(source, pData)
     local ownedVehicles = DB.GetPlayerVehicles(pData.identifier)
     local ownedTrailers = DB.GetPlayerTrailers(pData.identifier)
 
@@ -74,4 +69,23 @@ lib.callback.register("polarix_trucker:openDashboard", function(source)
         party              = Party.BuildState(PlayerParty[pData.identifier]),
         partyRewardMultiplier = sharedConfig.PartyRewardMultiplier,
     }
+end
+
+lib.callback.register("polarix_trucker:openDashboard", function(source)
+    local pData = Player.GetData(source)
+    if not pData then
+        pData = Player.Load(source)
+    end
+    if not pData then
+        debug.DebugPrint(("openDashboard: no player data for source %s — Player.Load failed, see Player.Load log above"):format(source))
+        return nil
+    end
+
+    local ok, result = xpcall(buildDashboardData, tostring, source, pData)
+    if not ok then
+        debug.DebugPrint(("openDashboard: error building dashboard data for %s: %s"):format(pData.identifier, tostring(result)))
+        return nil
+    end
+
+    return result
 end)
