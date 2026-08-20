@@ -88,6 +88,11 @@ RegisterNetEvent("polarix_trucker:rentalStarted", function(vehicleModel, trailer
     trailerCoords = vector4(trailerCoords.x, trailerCoords.y, trailerCoords.z, GetEntityHeading(vehEntity))
     local trailerEntity = spawnModelAt(trailerModel, trailerCoords)
     if trailerEntity then
+        local trailerConfig = sharedConfig.CompatibleTrailers[trailerModel]
+        if trailerConfig and trailerConfig.livery then
+            SetVehicleLivery(trailerEntity, trailerConfig.livery)
+        end
+
         AttachVehicleToTrailer(vehEntity, trailerEntity, 15.0)
         LocalRental.trailerEntity = trailerEntity
     end

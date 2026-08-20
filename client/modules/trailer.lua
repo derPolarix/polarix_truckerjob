@@ -1,4 +1,5 @@
 local Locale = require("shared.locale")
+local sharedConfig = require("config.shared")
 
 LocalTrailer = {
     entity = nil,
@@ -47,6 +48,12 @@ function Trailer.Spawn()
     local trailer = CreateVehicle(modelHash, coords.x, coords.y, coords.z, heading, true, false)
     SetEntityAsMissionEntity(trailer, true, true)
     SetModelAsNoLongerNeeded(modelHash)
+
+    local trailerConfig = sharedConfig.CompatibleTrailers[LocalTrailer.model]
+    if trailerConfig and trailerConfig.livery then
+        SetVehicleLivery(trailer, trailerConfig.livery)
+    end
+
     LocalTrailer.entity = trailer
 
     AttachVehicleToTrailer(LocalVehicle.entity, trailer, 15.0)
