@@ -86,7 +86,7 @@ return {
         ["trailers2"] = {
             maxPallets = 8,
             length = 10.5, width = 2.6,
-            livery = 0, -- plain white, no branding (trailers2 otherwise randomizes across branded liveries)
+            livery = 1, -- plain white, no branding (trailers2 otherwise randomizes across branded liveries)
             attachOffsets = {
                 { x = -0.55, y =  3.6, z = 0.85, rx = 0.0, ry = 0.0, rz = 0.0 },
                 { x =  0.55, y =  3.6, z = 0.85, rx = 0.0, ry = 0.0, rz = 0.0 },
