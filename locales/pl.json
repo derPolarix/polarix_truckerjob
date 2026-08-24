@@ -163,6 +163,7 @@
     "error.not_convoy": "Nie jesteś w konwoju.",
     "error.only_leader_can_start": "Tylko lider może rozpocząć.",
     "error.convoy_mission_already_running": "Misja konwoju już trwa.",
+    "error.convoy_mission_not_active": "Misja konwoju nie jest już aktywna.",
     "error.rental_already_active": "Wynajem już aktywny.",
     "error.not_enough_money_first_installment": "Za mało pieniędzy na pierwszą ratę.",
     "error.player_data_not_found": "Nie znaleziono danych gracza.",

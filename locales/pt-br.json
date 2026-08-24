@@ -163,6 +163,7 @@
     "error.not_convoy": "Você não está em um comboio.",
     "error.only_leader_can_start": "Somente o líder pode iniciar.",
     "error.convoy_mission_already_running": "Uma missão de comboio já está em andamento.",
+    "error.convoy_mission_not_active": "A missão de comboio não está mais ativa.",
     "error.rental_already_active": "Aluguel já ativo.",
     "error.not_enough_money_first_installment": "Dinheiro insuficiente para a primeira parcela.",
     "error.player_data_not_found": "Dados do jogador não encontrados.",

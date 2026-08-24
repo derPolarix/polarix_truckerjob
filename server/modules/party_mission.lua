@@ -8,6 +8,14 @@ PartyMissions = {} -- partyId -> { orderId, order, totalPallets, remainingPallet
 -- oxmysql returns TINYINT(1) as Lua boolean, not integer 1
 local function isTruthy(v) return v == 1 or v == true end
 
+-- Mirrors the hasOwnGear/Rental.IsActive check in PartyMission.Start/Orders.Accept,
+-- but keyed off any member's source (not just the caller's).
+local function memberHasGear(memberSource)
+    local pData = Player.GetData(memberSource)
+    local hasOwnGear = pData and pData.equipped_vehicle and pData.equipped_trailer
+    return hasOwnGear or Rental.IsActive(memberSource)
+end
+
 function PartyMission.Start(source, orderId)
     local pData = Player.GetData(source)
     if not pData then return false, Locale("error.player_data_missing") end
@@ -34,8 +42,18 @@ function PartyMission.Start(source, orderId)
     local total = cargo.CalcPalletCount(order.weight_kg)
     PartyMissions[partyId] = { orderId = orderId, order = order, totalPallets = total, remainingPallets = total, contributions = {} }
 
+    -- Members without their own trailer/vehicle and no active rental don't get
+    -- partyMissionStarted yet - they'd reach the pickup zone with zero claim capacity
+    -- and loop "no pallets in pool" forever. Instead prompt them to rent inline; they
+    -- join (see confirmPartyMemberReady below) once they actually have gear.
     for _, m in pairs(party.members) do
-        if m.source then TriggerClientEvent("polarix_trucker:partyMissionStarted", m.source, order, total) end
+        if m.source then
+            if memberHasGear(m.source) then
+                TriggerClientEvent("polarix_trucker:partyMissionStarted", m.source, order, total)
+            else
+                TriggerClientEvent("polarix_trucker:partyMemberNeedsGear", m.source, orderId)
+            end
+        end
     end
     return true
 end
@@ -58,6 +76,20 @@ function PartyMission.ClaimPallets(source)
 
     PartyMission.BroadcastProgress(partyId)
     return claim
+end
+
+-- Called after a member who lacked gear at mission start finishes renting (or otherwise
+-- equips a trailer). Sends the same partyMissionStarted event the rest of the party got
+-- up front, so they join the already-running mission.
+function PartyMission.ConfirmMemberReady(source)
+    local pData = Player.GetData(source)
+    local partyId = pData and PlayerParty[pData.identifier]
+    local mission = partyId and PartyMissions[partyId]
+    if not mission then return false, Locale("error.convoy_mission_not_active") end
+    if not memberHasGear(source) then return false, "no_vehicle_or_trailer" end
+
+    TriggerClientEvent("polarix_trucker:partyMissionStarted", source, mission.order, mission.totalPallets)
+    return true
 end
 
 function PartyMission.CompleteTrip(source, tripPalletCount, cargoDamage)
@@ -178,6 +210,7 @@ end
 
 lib.callback.register("polarix_trucker:startPartyMission", function(source, orderId) return PartyMission.Start(source, orderId) end)
 lib.callback.register("polarix_trucker:claimPartyPallets", function(source) return PartyMission.ClaimPallets(source) end)
+lib.callback.register("polarix_trucker:confirmPartyMemberReady", function(source) return PartyMission.ConfirmMemberReady(source) end)
 
 RegisterNetEvent("polarix_trucker:completePartyTrip", function(tripPalletCount, cargoDamage)
     local finished, remaining = PartyMission.CompleteTrip(source, tripPalletCount, cargoDamage)

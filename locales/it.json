@@ -163,6 +163,7 @@
     "error.not_convoy": "Non sei in un convoglio.",
     "error.only_leader_can_start": "Solo il capo può avviare.",
     "error.convoy_mission_already_running": "Una missione del convoglio è già in corso.",
+    "error.convoy_mission_not_active": "La missione del convoglio non è più attiva.",
     "error.rental_already_active": "Noleggio già attivo.",
     "error.not_enough_money_first_installment": "Denaro insufficiente per la prima rata.",
     "error.player_data_not_found": "Dati giocatore non trovati.",

@@ -163,6 +163,7 @@
     "error.not_convoy": "Bir konvoyda değilsin.",
     "error.only_leader_can_start": "Sadece lider başlatabilir.",
     "error.convoy_mission_already_running": "Zaten devam eden bir konvoy görevi var.",
+    "error.convoy_mission_not_active": "Konvoy görevi artık aktif değil.",
     "error.rental_already_active": "Kiralama zaten aktif.",
     "error.not_enough_money_first_installment": "İlk taksit için yeterli para yok.",
     "error.player_data_not_found": "Oyuncu verisi bulunamadı.",

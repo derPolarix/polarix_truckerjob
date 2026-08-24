@@ -163,6 +163,7 @@
     "error.not_convoy": "Je zit niet in een konvooi.",
     "error.only_leader_can_start": "Alleen de leider kan starten.",
     "error.convoy_mission_already_running": "Er loopt al een konvooimissie.",
+    "error.convoy_mission_not_active": "Konvooimissie is niet meer actief.",
     "error.rental_already_active": "Verhuur al actief.",
     "error.not_enough_money_first_installment": "Niet genoeg geld voor de eerste termijn.",
     "error.player_data_not_found": "Spelersgegevens niet gevonden.",

@@ -163,6 +163,7 @@
     "error.not_convoy": "Vous n'êtes pas dans un convoi.",
     "error.only_leader_can_start": "Seul le chef peut démarrer.",
     "error.convoy_mission_already_running": "Une mission de convoi est déjà en cours.",
+    "error.convoy_mission_not_active": "La mission de convoi n'est plus active.",
     "error.rental_already_active": "Location déjà active.",
     "error.not_enough_money_first_installment": "Pas assez d'argent pour le premier versement.",
     "error.player_data_not_found": "Données joueur introuvables.",

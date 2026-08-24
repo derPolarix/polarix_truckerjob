@@ -163,6 +163,7 @@
     "error.not_convoy": "You are not in a convoy.",
     "error.only_leader_can_start": "Only the leader can start.",
     "error.convoy_mission_already_running": "A convoy mission is already running.",
+    "error.convoy_mission_not_active": "Convoy mission is no longer active.",
     "error.rental_already_active": "Rental already active.",
     "error.not_enough_money_first_installment": "Not enough money for the first installment.",
     "error.player_data_not_found": "Player data not found.",
