@@ -501,12 +501,14 @@ const handleMessage = (event: MessageEvent) => {
 };
 
 const handleEscape = async (event: KeyboardEvent) => {
-	if (event.key === "Escape" && persistantStore.IsNuiOpen) {
-		try {
-			await persistantStore.closeNui();
-		} catch (error) {
-			console.error("closeNUI failed:", error);
-		}
+	if (event.key !== "Escape") return;
+	if (!persistantStore.IsNuiOpen && !dashboardStore.rentalPrompt) return;
+
+	dashboardStore.closeRentalPrompt();
+	try {
+		await persistantStore.closeNui();
+	} catch (error) {
+		console.error("closeNUI failed:", error);
 	}
 };
 

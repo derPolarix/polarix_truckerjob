@@ -2,7 +2,7 @@
   <div
     v-if="store.rentalPrompt"
     style="position:fixed;inset:0;background:rgba(15,17,21,0.55);display:flex;align-items:center;justify-content:center;z-index:9999;font-family:'Archivo',system-ui,sans-serif"
-    @click.self="store.closeRentalPrompt()"
+    @click.self="closeModal"
   >
     <div style="background:#fff;border-radius:16px;padding:26px 28px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.25)">
       <div style="width:52px;height:52px;border-radius:14px;background:rgba(232,180,8,0.14);display:flex;align-items:center;justify-content:center;margin-bottom:16px">
@@ -25,7 +25,7 @@
         <button
           :disabled="isRenting"
           style="flex:1;background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:11px;padding:12px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer"
-          @click="store.closeRentalPrompt()"
+          @click="closeModal"
         >
           {{ t('app.cancel') }}
         </button>
@@ -38,17 +38,30 @@
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
+import { usePersistantStore } from "@/stores/persistantStore";
 import { nuiCallback } from "@/nui/nuiCallbacks";
 
 const store = useDashboardStore();
+const persistantStore = usePersistantStore();
 const isRenting = ref(false);
 const { t } = useI18n();
+
+// This modal can be force-opened with no dashboard behind it (see partyMemberNeedsGear) -
+// release NUI focus on close unless the dashboard is still open and needs it.
+async function closeModal() {
+  store.closeRentalPrompt();
+  if (!persistantStore.IsNuiOpen) {
+    try {
+      await persistantStore.closeNui();
+    } catch { /* dev mode */ }
+  }
+}
 
 async function confirmRent() {
   if (!store.rentalPrompt) return;
   isRenting.value = true;
   await nuiCallback("rentBundle", { orderId: store.rentalPrompt.orderId, mode: store.rentalPrompt.mode ?? 'solo' });
   isRenting.value = false;
-  store.closeRentalPrompt();
+  await closeModal();
 }
 </script>
