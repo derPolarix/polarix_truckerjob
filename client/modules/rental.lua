@@ -48,9 +48,14 @@ local function spawnModelAt(model, coords)
     return entity
 end
 
--- mode is passed through so rentBundle triggers the right follow-up callback
--- (acceptOrder/startPartyMission) instead of always treating it as solo.
-function Rental.OfferInline(orderId, mode)
+-- mode is passed through so rentBundle triggers the right follow-up callback instead of
+-- always treating it as solo. forceFocus grabs NUI focus directly, for prompts fired from
+-- a server event rather than from inside an already-focused dashboard.
+function Rental.OfferInline(orderId, mode, forceFocus)
+    if forceFocus then
+        SetNuiFocus(true, true)
+    end
+
     SendMessage("showRentalPrompt", {
         orderId = orderId,
         mode = mode or "solo",

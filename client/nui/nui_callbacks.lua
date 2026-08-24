@@ -38,6 +38,15 @@ RegisterNUICallback('rentBundle', function(data, cb)
                 end
                 cb({ ok = ok })
             end, data.orderId)
+        elseif data.mode == 'party_member' then
+            lib.callback('polarix_trucker:confirmPartyMemberReady', false, function(ok, joinErr)
+                if ok then
+                    CloseNui()
+                else
+                    Framework.Notify(joinErr or Locale("notify.failed_start"), 'error')
+                end
+                cb({ ok = ok })
+            end, data.orderId)
         else
             lib.callback('polarix_trucker:acceptOrder', false, function(ok, orderData, acceptErr)
                 if ok then

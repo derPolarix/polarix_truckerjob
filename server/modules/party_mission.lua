@@ -8,8 +8,6 @@ PartyMissions = {} -- partyId -> { orderId, order, totalPallets, remainingPallet
 -- oxmysql returns TINYINT(1) as Lua boolean, not integer 1
 local function isTruthy(v) return v == 1 or v == true end
 
--- Mirrors the hasOwnGear/Rental.IsActive check in PartyMission.Start/Orders.Accept,
--- but keyed off any member's source (not just the caller's).
 local function memberHasGear(memberSource)
     local pData = Player.GetData(memberSource)
     local hasOwnGear = pData and pData.equipped_vehicle and pData.equipped_trailer
@@ -42,10 +40,8 @@ function PartyMission.Start(source, orderId)
     local total = cargo.CalcPalletCount(order.weight_kg)
     PartyMissions[partyId] = { orderId = orderId, order = order, totalPallets = total, remainingPallets = total, contributions = {} }
 
-    -- Members without their own trailer/vehicle and no active rental don't get
-    -- partyMissionStarted yet - they'd reach the pickup zone with zero claim capacity
-    -- and loop "no pallets in pool" forever. Instead prompt them to rent inline; they
-    -- join (see confirmPartyMemberReady below) once they actually have gear.
+    -- Ungeared members would reach pickup with zero claim capacity and loop "no pallets
+    -- in pool" forever - withhold partyMissionStarted and prompt them to rent instead.
     for _, m in pairs(party.members) do
         if m.source then
             if memberHasGear(m.source) then
@@ -78,9 +74,8 @@ function PartyMission.ClaimPallets(source)
     return claim
 end
 
--- Called after a member who lacked gear at mission start finishes renting (or otherwise
--- equips a trailer). Sends the same partyMissionStarted event the rest of the party got
--- up front, so they join the already-running mission.
+-- Called after an ungeared member rents/equips a trailer; joins them onto the mission
+-- the rest of the party already started.
 function PartyMission.ConfirmMemberReady(source)
     local pData = Player.GetData(source)
     local partyId = pData and PlayerParty[pData.identifier]

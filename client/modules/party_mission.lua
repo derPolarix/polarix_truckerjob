@@ -10,6 +10,11 @@ RegisterNetEvent("polarix_trucker:partyMissionStarted", function(order, totalPal
     Delivery.Start(order, "party")
 end)
 
+-- No gear at mission start - force the rental modal open (no dashboard behind it).
+RegisterNetEvent("polarix_trucker:partyMemberNeedsGear", function(orderId)
+    Rental.OfferInline(orderId, "party_member", true)
+end)
+
 RegisterNetEvent("polarix_trucker:partyMissionProgress", function(progress)
     PartyProgress.totalPallets = progress.totalPallets
     PartyProgress.claimedTotal = progress.claimedTotal
