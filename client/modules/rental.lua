@@ -93,13 +93,15 @@ RegisterNetEvent("polarix_trucker:rentalStarted", function(vehicleModel, trailer
     trailerCoords = vector4(trailerCoords.x, trailerCoords.y, trailerCoords.z, GetEntityHeading(vehEntity))
     local trailerEntity = spawnModelAt(trailerModel, trailerCoords)
     if trailerEntity then
+        AttachVehicleToTrailer(vehEntity, trailerEntity, 15.0)
+        LocalRental.trailerEntity = trailerEntity
+
+        -- Must run after attach — the game re-rolls trailer livery at hitch time,
+        -- so setting it before attach gets silently overwritten.
         local trailerConfig = sharedConfig.CompatibleTrailers[trailerModel]
         if trailerConfig and trailerConfig.livery then
             SetVehicleLivery(trailerEntity, trailerConfig.livery)
         end
-
-        AttachVehicleToTrailer(vehEntity, trailerEntity, 15.0)
-        LocalRental.trailerEntity = trailerEntity
     end
 
     -- Order matters: enter before giving keys (like Vehicle.Spawn) — some key systems

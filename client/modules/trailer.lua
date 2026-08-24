@@ -49,14 +49,16 @@ function Trailer.Spawn()
     SetEntityAsMissionEntity(trailer, true, true)
     SetModelAsNoLongerNeeded(modelHash)
 
+    LocalTrailer.entity = trailer
+
+    AttachVehicleToTrailer(LocalVehicle.entity, trailer, 15.0)
+
+    -- Must run after attach — the game re-rolls trailer livery at hitch time,
+    -- so setting it before attach gets silently overwritten.
     local trailerConfig = sharedConfig.CompatibleTrailers[LocalTrailer.model]
     if trailerConfig and trailerConfig.livery then
         SetVehicleLivery(trailer, trailerConfig.livery)
     end
-
-    LocalTrailer.entity = trailer
-
-    AttachVehicleToTrailer(LocalVehicle.entity, trailer, 15.0)
 
     SendMessage("trailerSpawnState", { slot = LocalTrailer.slot, spawned = true })
 end
