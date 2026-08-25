@@ -102,6 +102,18 @@ RegisterNetEvent("polarix_trucker:rentalStarted", function(vehicleModel, trailer
         if trailerConfig and trailerConfig.livery then
             SetVehicleLivery(trailerEntity, trailerConfig.livery)
         end
+
+        -- extras is an enable-list: ids in it are forced on, everything else forced off.
+        -- SetVehicleExtra no-ops for extra ids the model doesn't have, so 0-20 safely covers any trailer.
+        if trailerConfig and trailerConfig.extras then
+            local enabledExtras = {}
+            for _, extraId in ipairs(trailerConfig.extras) do
+                enabledExtras[extraId] = true
+            end
+            for extraId = 0, 20 do
+                SetVehicleExtra(trailerEntity, extraId, not enabledExtras[extraId])
+            end
+        end
     end
 
     -- Order matters: enter before giving keys (like Vehicle.Spawn) — some key systems

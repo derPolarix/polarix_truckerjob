@@ -87,6 +87,7 @@ return {
             maxPallets = 8,
             length = 10.5, width = 2.6,
             livery = 1, -- plain white, no branding (trailers2 otherwise randomizes across branded liveries)
+            extras = {}, -- none enabled; list extra ids here to force specific ones on
             attachOffsets = {
                 { x = -0.55, y =  3.6, z = 0.85, rx = 0.0, ry = 0.0, rz = 0.0 },
                 { x =  0.55, y =  3.6, z = 0.85, rx = 0.0, ry = 0.0, rz = 0.0 },

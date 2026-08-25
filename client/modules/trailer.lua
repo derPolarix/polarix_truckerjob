@@ -60,6 +60,18 @@ function Trailer.Spawn()
         SetVehicleLivery(trailer, trailerConfig.livery)
     end
 
+    -- extras is an enable-list: ids in it are forced on, everything else forced off.
+    -- SetVehicleExtra no-ops for extra ids the model doesn't have, so 0-20 safely covers any trailer.
+    if trailerConfig and trailerConfig.extras then
+        local enabledExtras = {}
+        for _, extraId in ipairs(trailerConfig.extras) do
+            enabledExtras[extraId] = true
+        end
+        for extraId = 0, 20 do
+            SetVehicleExtra(trailer, extraId, not enabledExtras[extraId])
+        end
+    end
+
     SendMessage("trailerSpawnState", { slot = LocalTrailer.slot, spawned = true })
 end
 
