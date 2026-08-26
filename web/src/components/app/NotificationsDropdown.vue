@@ -2,7 +2,7 @@
   <div ref="rootEl" style="position:relative">
     <button
       style="width:36px;height:36px;border-radius:10px;border:1px solid #e4e6e9;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280;position:relative"
-      @click="store.toggle()"
+      @click.stop="store.toggle()"
     >
       <iconify-icon icon="tabler:bell" width="18"></iconify-icon>
       <span
