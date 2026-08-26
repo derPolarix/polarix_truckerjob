@@ -348,6 +348,13 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		trailersShop,
 		driverSlotDefs,
 		driverSlots,
+		rentalActive: data.rental?.active ?? false,
+		rentalVehicleName: data.rental?.vehicleName ?? '',
+		rentalVehicleModel: data.rental?.vehicleModel ?? '',
+		rentalTrailerName: data.rental?.trailerName ?? '',
+		rentalTrailerModel: data.rental?.trailerModel ?? '',
+		rentalIntervalCost: data.rental?.intervalCost ?? 0,
+		rentalIntervalMinutes: data.rental?.intervalMinutes ?? 0,
 		driverIncomeIntervalMinutes: data.driverIncomeIntervalMinutes ?? 10,
 		branches,
 		recentRuns,
@@ -483,6 +490,27 @@ const handleMessage = (event: MessageEvent) => {
 		case "showRentalPrompt":
 			dashboardStore.openRentalPrompt(raw.data as RentalPrompt);
 			break;
+		case "rentalStateUpdate": {
+			const d = raw.data as Partial<{
+				active: boolean;
+				vehicleName: string;
+				vehicleModel: string;
+				trailerName: string;
+				trailerModel: string;
+				intervalCost: number;
+				intervalMinutes: number;
+			}>;
+			dashboardStore.config.rentalActive = d.active ?? false;
+			if (d.active) {
+				dashboardStore.config.rentalVehicleName = d.vehicleName ?? '';
+				dashboardStore.config.rentalVehicleModel = d.vehicleModel ?? '';
+				dashboardStore.config.rentalTrailerName = d.trailerName ?? '';
+				dashboardStore.config.rentalTrailerModel = d.trailerModel ?? '';
+				dashboardStore.config.rentalIntervalCost = d.intervalCost ?? 0;
+				dashboardStore.config.rentalIntervalMinutes = d.intervalMinutes ?? 0;
+			}
+			break;
+		}
 		case "setHeldAction":
 			persistantStore.setHeldAction((raw.data as any) ?? null);
 			break;

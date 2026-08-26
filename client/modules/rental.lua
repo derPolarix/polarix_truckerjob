@@ -79,6 +79,15 @@ end
 
 RegisterNetEvent("polarix_trucker:rentalStarted", function(vehicleModel, trailerModel)
     Rental.Despawn()
+    SendMessage("rentalStateUpdate", {
+        active          = true,
+        vehicleModel    = vehicleModel,
+        vehicleName     = sharedConfig.Rental.VehicleName,
+        trailerModel    = trailerModel,
+        trailerName     = sharedConfig.Rental.TrailerName,
+        intervalCost    = sharedConfig.Rental.IntervalCost,
+        intervalMinutes = sharedConfig.Rental.IntervalMinutes,
+    })
 
     local vehCoords = findFreeSpawnPoint(clientConfig.VehicleSpawnPoints)
     local vehEntity = spawnModelAt(vehicleModel, vehCoords)
@@ -132,33 +141,27 @@ end)
 
 RegisterNetEvent("polarix_trucker:rentalEnded", function(reason)
     Rental.Despawn()
+    SendMessage("rentalStateUpdate", { active = false })
 
     if reason == "returned" then
         Framework.Notify(Locale("notify.rental_returned"), "info")
     else
         Framework.Notify(Locale("notify.rental_vehicle_repossessed"):format(reason), "error")
-        -- Server already triggered Orders.Fail for an active delivery — just sync client state here,
-        -- don't send failDelivery again.
-        if DeliveryState.status ~= "idle" then
-            Delivery.HUD.Stop()
-            if DeliveryState.pickupBlip then RemoveBlip(DeliveryState.pickupBlip) end
-            if DeliveryState.dropoffBlip then RemoveBlip(DeliveryState.dropoffBlip) end
-            DeliveryState.pickupBlip = nil
-            DeliveryState.dropoffBlip = nil
-            DeliveryState.status = "idle"
-            DeliveryState.orderData = nil
-            DeliveryState.cargoDamage = nil
-        end
+    end
+
+    -- Server already triggered Orders.Fail for an active delivery (repossession or a voluntary
+    -- return while mid-delivery) — just sync client state here, don't send failDelivery again.
+    if DeliveryState.status ~= "idle" then
+        Delivery.HUD.Stop()
+        if DeliveryState.pickupBlip then RemoveBlip(DeliveryState.pickupBlip) end
+        if DeliveryState.dropoffBlip then RemoveBlip(DeliveryState.dropoffBlip) end
+        DeliveryState.pickupBlip = nil
+        DeliveryState.dropoffBlip = nil
+        DeliveryState.status = "idle"
+        DeliveryState.orderData = nil
+        DeliveryState.cargoDamage = nil
     end
 end)
-
-RegisterCommand("returnrental", function()
-    if not LocalRental.vehicleEntity then
-        Framework.Notify(Locale("notify.no_active_rental"), "error")
-        return
-    end
-    TriggerServerEvent("polarix_trucker:returnRental")
-end, false)
 
 AddEventHandler("onResourceStop", function(resourceName)
     if GetCurrentResourceName() ~= resourceName then return end

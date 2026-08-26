@@ -68,6 +68,15 @@ local function buildDashboardData(source, pData)
         notifications      = Notifications.GetForPlayer(pData.identifier),
         party              = Party.BuildState(PlayerParty[pData.identifier]),
         partyRewardMultiplier = sharedConfig.PartyRewardMultiplier,
+        rental = {
+            active          = Rental.IsActive(source),
+            vehicleModel    = sharedConfig.Rental.VehicleModel,
+            vehicleName     = sharedConfig.Rental.VehicleName,
+            trailerModel    = sharedConfig.Rental.TrailerModel,
+            trailerName     = sharedConfig.Rental.TrailerName,
+            intervalCost    = sharedConfig.Rental.IntervalCost,
+            intervalMinutes = sharedConfig.Rental.IntervalMinutes,
+        },
     }
 end
 

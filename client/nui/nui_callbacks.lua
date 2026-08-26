@@ -135,6 +135,18 @@ RegisterNUICallback('parkTrailer', function(_, cb)
     cb({ ok = Trailer.Park() })
 end)
 
+-- Mid-delivery, returning fails the active order server-side. Ask the NUI to confirm first
+-- unless it already did (data.confirmed), so the player isn't surprised by a silent failure.
+RegisterNUICallback('returnRental', function(data, cb)
+    if DeliveryState.status ~= "idle" and not data.confirmed then
+        cb({ ok = false, needsConfirm = true })
+        return
+    end
+
+    TriggerServerEvent("polarix_trucker:returnRental")
+    cb({ ok = true })
+end)
+
 RegisterNUICallback('unlockSkill', function(data, cb)
     lib.callback('polarix_trucker:unlockSkill', false, function(success, err)
         if not success then

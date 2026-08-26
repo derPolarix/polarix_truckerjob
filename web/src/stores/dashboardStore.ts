@@ -204,6 +204,13 @@ export interface DashboardConfig {
   trailersShop: TrailerShop[];
   spawnedVehicleSlot: string | null;
   spawnedTrailerSlot: string | null;
+  rentalActive: boolean;
+  rentalVehicleName: string;
+  rentalVehicleModel: string;
+  rentalTrailerName: string;
+  rentalTrailerModel: string;
+  rentalIntervalCost: number;
+  rentalIntervalMinutes: number;
   driverSlotDefs: DriverSlotDef[];
   driverSlots: DriverSlot[];
   driverIncomeIntervalMinutes: number;
@@ -277,6 +284,13 @@ const defaultConfig: DashboardConfig = {
   ],
   spawnedVehicleSlot: "veh-owned-1",
   spawnedTrailerSlot: "trl-owned-1",
+  rentalActive: true,
+  rentalVehicleName: "Rental Truck",
+  rentalVehicleModel: "hauler",
+  rentalTrailerName: "Rental Trailer",
+  rentalTrailerModel: "trailers2",
+  rentalIntervalCost: 500,
+  rentalIntervalMinutes: 5,
   driverSlotDefs: [
     { slot: "driver_0", levelRequired: 1,  price: 5000,   income: 50   },
     { slot: "driver_1", levelRequired: 2,  price: 15000,  income: 120  },

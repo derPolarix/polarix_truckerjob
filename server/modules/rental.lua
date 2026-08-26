@@ -26,6 +26,12 @@ end
 function Rental.Return(source)
     if not RentalState[source] then return false end
     RentalState[source] = nil
+
+    -- Voluntary return mid-delivery fails the order, same as a repossession would.
+    if ActiveDeliveries[source] then
+        Orders.Fail(source)
+    end
+
     TriggerClientEvent("polarix_trucker:rentalEnded", source, "returned")
     return true
 end

@@ -1,5 +1,40 @@
 <template>
   <div style="display:flex;flex-direction:column;gap:20px">
+    <!-- Active rental -->
+    <div v-if="store.config.rentalActive" style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:16px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:220px">
+        <div style="width:44px;height:44px;border-radius:11px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+          <img v-if="rentalVehicleImage" :src="rentalVehicleImage" :alt="store.config.rentalVehicleName" style="width:100%;height:100%;object-fit:contain" />
+          <iconify-icon v-else icon="tabler:truck" width="22" style="color:#aab0b8"></iconify-icon>
+        </div>
+        <div style="width:44px;height:44px;border-radius:11px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+          <img v-if="rentalTrailerImage" :src="rentalTrailerImage" :alt="store.config.rentalTrailerName" style="width:100%;height:100%;object-fit:contain" />
+          <iconify-icon v-else icon="tabler:container" width="22" style="color:#aab0b8"></iconify-icon>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#1b1f24">{{ t('vehicles.active_rental') }} · {{ store.config.rentalVehicleName }} + {{ store.config.rentalTrailerName }}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:3px">{{ t('vehicles.rental_interval_cost', { cost: store.config.rentalIntervalCost.toLocaleString(), minutes: store.config.rentalIntervalMinutes }) }}</div>
+        </div>
+      </div>
+      <button class="park-btn" style="padding:10px 18px;border-radius:10px;border:1px solid #dfe2e6;background:#fff;color:#dc2626;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="returnRental()">{{ t('vehicles.return_rental') }}</button>
+    </div>
+
+    <!-- Return-rental confirm (mid-delivery) -->
+    <div
+      v-if="showReturnConfirm"
+      style="position:fixed;inset:0;background:rgba(15,17,21,0.55);display:flex;align-items:center;justify-content:center;z-index:9999;font-family:'Archivo',system-ui,sans-serif"
+      @click.self="showReturnConfirm = false"
+    >
+      <div style="background:#fff;border-radius:16px;padding:26px 28px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.25)">
+        <div style="font-size:17px;font-weight:800;color:#1b1f24">{{ t('vehicles.rental_return_confirm_title') }}</div>
+        <div style="font-size:13px;color:#6b7280;margin-top:8px;line-height:1.6">{{ t('vehicles.rental_return_confirm_body') }}</div>
+        <div style="display:flex;gap:10px;margin-top:20px">
+          <button style="flex:1;background:#dc2626;color:#fff;border:none;border-radius:11px;padding:12px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer" @click="returnRental(true)">{{ t('vehicles.rental_return_confirm_action') }}</button>
+          <button style="flex:1;background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:11px;padding:12px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="showReturnConfirm = false">{{ t('app.cancel') }}</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Garage -->
     <div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
@@ -148,6 +183,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallback } from "@/nui/nuiCallbacks";
@@ -160,6 +196,20 @@ const vehicleImages: Record<string, string> = {};
 for (const path in vehicleImageFiles) {
   const model = path.split("/").pop()!.replace(".png", "");
   vehicleImages[model] = vehicleImageFiles[path].default;
+}
+
+const rentalVehicleImage = computed(() => vehicleImages[store.config.rentalVehicleModel]);
+const rentalTrailerImage = computed(() => vehicleImages[store.config.rentalTrailerModel]);
+
+const showReturnConfirm = ref(false);
+
+async function returnRental(confirmed = false) {
+  const res = await nuiCallback<{ ok: boolean; needsConfirm?: boolean }>("returnRental", { confirmed });
+  if (res?.needsConfirm) {
+    showReturnConfirm.value = true;
+    return;
+  }
+  showReturnConfirm.value = false;
 }
 
 async function equipVehicle(slot: string) {
