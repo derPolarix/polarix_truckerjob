@@ -3,6 +3,7 @@ return {
     Target = "ox_target", -- "ox_target", "qb-target", "sleepless_interact", "none"
     Debug = false,
     PrintDebug = true,
+    CheckForUpdates = true, -- warn in server console when a newer GitHub release exists
 
     -- language for locales/<Language>.json, the SSOT for all user-facing text
     -- valid: "en", "de", "fr", "es", "pt-br", "pl", "nl", "it", "tr"
