@@ -89,6 +89,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		id: String(o.id),
 		name: o.name ?? '',
 		cargo: o.cargo ?? '',
+		cargoType: o.cargo_type ?? 'standard',
 		weight: `${((o.weight_kg ?? 0) / 1000).toFixed(1)} t`,
 		distance: `${(o.distance_km ?? 0).toFixed(1)} km`,
 		reward: fmtMoney(o.reward_base),

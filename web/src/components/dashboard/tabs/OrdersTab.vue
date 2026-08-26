@@ -6,15 +6,23 @@
         <div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24">{{ t('orders.available_orders') }}</div>
         <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">{{ t('ui.dashboard.orders_open') }} · {{ t('orders.contracts_count', { count: store.config.orders.length }) }}</div>
       </div>
-      <div style="display:flex;gap:8px">
-        <span style="font-size:12px;font-weight:600;padding:8px 14px;border-radius:9px;background:#22262d;color:#fff">{{ t('orders.filter_all') }}</span>
-        <span style="font-size:12px;font-weight:500;padding:8px 14px;border-radius:9px;background:#fff;border:1px solid #dfe2e6;color:#6b7280">{{ t('orders.filter_light') }}</span>
-        <span style="font-size:12px;font-weight:500;padding:8px 14px;border-radius:9px;background:#fff;border:1px solid #dfe2e6;color:#6b7280">{{ t('orders.filter_heavy') }}</span>
-        <span style="font-size:12px;font-weight:500;padding:8px 14px;border-radius:9px;background:#fff;border:1px solid #dfe2e6;color:#6b7280">{{ t('orders.filter_hazmat') }}</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button
+          v-for="f in cargoFilters"
+          :key="f.type"
+          class="filter-chip"
+          :style="{
+            background: activeFilter === f.type ? '#22262d' : '#fff',
+            color: activeFilter === f.type ? '#fff' : '#6b7280',
+            border: activeFilter === f.type ? '1px solid #22262d' : '1px solid #dfe2e6',
+            fontWeight: activeFilter === f.type ? 600 : 500,
+          }"
+          @click="activeFilter = f.type"
+        >{{ f.label }}</button>
       </div>
     </div>
     <button
-      v-for="o in store.config.orders"
+      v-for="o in filteredOrders"
       :key="o.id"
       class="order-row"
       style="display:flex;align-items:center;gap:18px;width:100%;text-align:left;background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:16px 18px;cursor:pointer;font-family:inherit"
@@ -189,6 +197,27 @@ const order = computed(() => store.config.orders.find(o => o.id === store.orderI
 const inParty = computed(() => !!partyStore.party);
 const isLeader = computed(() => !!partyStore.party?.members.some(m => m.isLeader && m.name === store.config.driverName));
 
+const CARGO_TYPE_LABEL_KEYS: Record<string, string> = {
+  standard: 'orders.filter_standard',
+  fragile: 'orders.filter_fragile',
+  hazmat: 'orders.filter_hazmat',
+  heavy: 'orders.filter_heavy',
+  live: 'orders.filter_live',
+  valuable: 'orders.filter_valuable',
+};
+
+const activeFilter = ref<string>('all');
+const cargoFilters = computed(() => {
+  const present = new Set(store.config.orders.map(o => o.cargoType));
+  return [
+    { type: 'all', label: t('orders.filter_all') },
+    ...Object.keys(CARGO_TYPE_LABEL_KEYS).filter(type => present.has(type)).map(type => ({ type, label: t(CARGO_TYPE_LABEL_KEYS[type]) })),
+  ];
+});
+const filteredOrders = computed(() => activeFilter.value === 'all'
+  ? store.config.orders
+  : store.config.orders.filter(o => o.cargoType === activeFilter.value));
+
 // Cooldown countdown ticks purely client-side from the snapshot taken when the dashboard
 // last opened (Order.cooldownAvailableAt) - no server polling needed while the tab is open.
 const now = ref(Date.now());
@@ -232,6 +261,18 @@ async function acceptOrder() {
 
 <style scoped>
 .order-row:hover {
+  border-color: var(--accent) !important;
+}
+
+.filter-chip {
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+.filter-chip:hover {
   border-color: var(--accent) !important;
 }
 </style>
