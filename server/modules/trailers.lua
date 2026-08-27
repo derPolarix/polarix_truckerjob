@@ -4,6 +4,11 @@ local Locale = require("shared.locale")
 
 Trailers = {}
 
+-- identifier -> network id of that player's currently spawned trailer (owned or rental).
+-- Lets one convoy member's client resolve another member's trailer entity to load pallets
+-- onto it / render synced cargo, without a full networked-object rewrite.
+local PlayerTrailerNetId = {}
+
 function Trailers.GetOwned(identifier)
     return DB.GetPlayerTrailers(identifier)
 end
@@ -89,6 +94,26 @@ function Trailers.GetActiveMaxPallets(source)
     end
     return Trailers.GetEquippedMaxPallets(source)
 end
+
+RegisterNetEvent("polarix_trucker:syncTrailerNetId", function(netId)
+    local pData = Player.GetData(source)
+    if not pData then return end
+    PlayerTrailerNetId[pData.identifier] = netId
+end)
+
+lib.callback.register("polarix_trucker:getPartyTrailerNetIds", function(source)
+    local pData = Player.GetData(source)
+    local party = pData and Party.GetMembership(pData.identifier)
+    if not party then return {} end
+
+    local result = {}
+    for identifier, m in pairs(party.members) do
+        if m.source and identifier ~= pData.identifier and PlayerTrailerNetId[identifier] then
+            result[identifier] = PlayerTrailerNetId[identifier]
+        end
+    end
+    return result
+end)
 
 lib.callback.register("polarix_trucker:buyTrailer", function(source, trailerSlot)
     local success, result = Trailers.Buy(source, trailerSlot)
