@@ -141,6 +141,7 @@ function Forklift.Deploy()
 
     ForkliftDockState[netId] = { deployed = true, entity = forklift }
     Framework.Notify(Locale("notify.forklift_unloaded"), "success")
+    TriggerServerEvent("polarix_trucker:syncForkliftNetId", NetworkGetNetworkIdFromEntity(forklift))
 end
 
 function Forklift.Stow()
@@ -195,6 +196,7 @@ function Forklift.Stow()
     DeleteEntity(dock.entity)
     ForkliftDockState[netId] = nil
     Framework.Notify(Locale("notify.forklift_stowed"), "success")
+    TriggerServerEvent("polarix_trucker:syncForkliftNetId", nil)
 
     -- Party mode has no per-trip claim, so a small order (fewer pallets than one trailer's
     -- capacity) would never "fill" the trailer - poolRemaining<=0 covers that case too.
