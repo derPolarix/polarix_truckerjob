@@ -1,11 +1,13 @@
 local shared = require("config.shared")
 local cargo  = require("shared.cargo")
 local Locale = require("shared.locale")
+local debug  = require("shared.debug")
 
 MissionCargo = { requiredCount = 0, loadedCount = 0, pickupSpawned = false }
-MissionPallets = {}
-ForkliftPallet = { entity = nil }
-LoadedPallets = {}
+MissionPallets = {}       -- slotIndex -> ground entity (both solo and party, same indexing)
+ForkliftPallet = { entity = nil, slotIndex = nil }
+LoadedPallets = {}        -- solo mode only: 1..maxPallets -> entity on own trailer
+TrailerLoadedProps = {}   -- party mode only: trailerEntity -> { [trailerSlot] = entity }, own or teammate's
 
 function ResetMissionCargo(orderData)
     DespawnMissionPallets()
@@ -23,14 +25,32 @@ function SpawnMissionPallets(order)
     if MissionCargo.pickupSpawned then return end
     MissionCargo.pickupSpawned = true
 
+    local isParty = DeliveryState.mode == "party"
+    local count = isParty and cargo.CalcPalletCount(order.weight_kg) or MissionCargo.requiredCount
+
+    -- Party mode has no per-trip claim anymore; requiredCount is repurposed as "my own
+    -- trailer's capacity" so the HUD and the auto-transit check in forklift.lua still work.
+    if isParty then
+        local ownTrailerModel = GetTrailerModelName()
+        local ownConfig = ownTrailerModel and shared.CompatibleTrailers[ownTrailerModel]
+        MissionCargo.requiredCount = ownConfig and ownConfig.maxPallets or 0
+    end
+
     local heading = order.pickup_heading or 0.0
-    local count   = MissionCargo.requiredCount
 
     local coordsList = order.pickup_pallet_coords
     if type(coordsList) ~= "table" or #coordsList == 0 then
         local anchor = vector3(order.pickup_x, order.pickup_y, order.pickup_z)
         coordsList = cargo.GenerateGridCoords(anchor, heading, count)
     end
+
+    -- Everyone in the convoy spawns the full deterministic layout, minus whatever the
+    -- rest of the party has already taken off the ground - no more per-player claim gate.
+    local takenSlots = {}
+    if isParty then
+        takenSlots = lib.callback.await("polarix_trucker:getPartyGroundState", false) or {}
+    end
+    debug.DebugPrint(("SpawnMissionPallets: mode=%s count=%s taken="):format(DeliveryState.mode, count), takenSlots)
 
     local modelHash = GetHashKey(shared.PalletModel)
     RequestModel(modelHash)
@@ -41,16 +61,18 @@ function SpawnMissionPallets(order)
     end
     if not HasModelLoaded(modelHash) then return end
 
-    for _, pos in ipairs(coordsList) do
-        local pallet = CreateObject(modelHash, pos.x, pos.y, pos.z, false, false, false)
-        if pallet and pallet ~= 0 then
-            SetEntityHeading(pallet, heading)
-            PlaceObjectOnGroundProperly(pallet)
-            FreezeEntityPosition(pallet, true)
-            SetEntityCollision(pallet, true, true)
-            SetEntityInvincible(pallet, true)
-            SetEntityProofs(pallet, true, true, true, true, true, true, true, true)
-            MissionPallets[#MissionPallets + 1] = pallet
+    for i, pos in ipairs(coordsList) do
+        if not takenSlots[i] then
+            local pallet = CreateObject(modelHash, pos.x, pos.y, pos.z, false, false, false)
+            if pallet and pallet ~= 0 then
+                SetEntityHeading(pallet, heading)
+                PlaceObjectOnGroundProperly(pallet)
+                FreezeEntityPosition(pallet, true)
+                SetEntityCollision(pallet, true, true)
+                SetEntityInvincible(pallet, true)
+                SetEntityProofs(pallet, true, true, true, true, true, true, true, true)
+                MissionPallets[i] = pallet
+            end
         end
     end
 
@@ -58,7 +80,7 @@ function SpawnMissionPallets(order)
 end
 
 function DespawnMissionPallets()
-    for _, entity in ipairs(MissionPallets) do
+    for _, entity in pairs(MissionPallets) do
         if entity and DoesEntityExist(entity) then
             DeleteEntity(entity)
         end
@@ -75,11 +97,13 @@ local function GetForkliftBoneCoords(forklift)
     return GetWorldPositionOfEntityBone(forklift, boneIndex)
 end
 
+-- Returns entity, slotIndex of the nearest pickable ground pallet (slotIndex is nil in
+-- practice only if MissionPallets somehow held a non-numeric key, which never happens).
 local function GetPickupCandidatePallet(forklift)
     local forkCoords = GetForkliftBoneCoords(forklift)
-    local best, bestDist = nil, nil
+    local bestEntity, bestSlot, bestDist = nil, nil, nil
 
-    for _, entity in ipairs(MissionPallets) do
+    for slotIndex, entity in pairs(MissionPallets) do
         if entity and DoesEntityExist(entity) then
             local palletCoords = GetEntityCoords(entity)
             local horizontal = #(vector2(forkCoords.x, forkCoords.y) - vector2(palletCoords.x, palletCoords.y))
@@ -88,13 +112,13 @@ local function GetPickupCandidatePallet(forklift)
             if horizontal <= 0.7 and vertical >= -0.08 and vertical <= 0.18 then
                 local dist = #(forkCoords - palletCoords)
                 if not bestDist or dist < bestDist then
-                    best, bestDist = entity, dist
+                    bestEntity, bestSlot, bestDist = entity, slotIndex, dist
                 end
             end
         end
     end
 
-    return best
+    return bestEntity, bestSlot
 end
 
 function AttachPalletToForklift()
@@ -135,13 +159,14 @@ function DetachPalletFromForklift()
         DeleteEntity(ForkliftPallet.entity)
     end
     ForkliftPallet.entity = nil
+    ForkliftPallet.slotIndex = nil
 end
 
 function GetForkliftPalletPayload()
     return ForkliftPallet.entity
 end
 
-function PickupPalletWithForklift(sourcePallet)
+function PickupPalletWithForklift(sourcePallet, slotIndex)
     if not IsPlayerInForklift() then
         Framework.Notify(Locale("notify.must_sitting_forklift"), "error")
         return
@@ -150,21 +175,29 @@ function PickupPalletWithForklift(sourcePallet)
         Framework.Notify(Locale("notify.already_pallet_forks"), "error")
         return
     end
-    if not sourcePallet or not DoesEntityExist(sourcePallet) then return end
+    if not sourcePallet or not DoesEntityExist(sourcePallet) or not slotIndex then return end
 
-    for i, entity in ipairs(MissionPallets) do
-        if entity == sourcePallet then
-            table.remove(MissionPallets, i)
-            break
+    if DeliveryState.mode == "party" then
+        local ok = lib.callback.await("polarix_trucker:claimGroundPallet", false, slotIndex)
+        debug.DebugPrint(("PickupPalletWithForklift: party slot=%s claim ok=%s"):format(slotIndex, tostring(ok)))
+        if not ok then
+            Framework.Notify(Locale("notify.pallet_already_taken"), "error")
+            MissionPallets[slotIndex] = nil
+            if DoesEntityExist(sourcePallet) then DeleteEntity(sourcePallet) end
+            return
         end
     end
+
+    MissionPallets[slotIndex] = nil
     DeleteEntity(sourcePallet)
 
+    ForkliftPallet.slotIndex = slotIndex
     AttachPalletToForklift()
     Framework.Notify(Locale("notify.pallet_picked_up"), "success")
 end
 
 local currentPickupCandidate = nil
+local currentPickupCandidateSlot = nil
 local currentPrompt = nil
 
 local function SetForkliftPickupPrompt(visible)
@@ -188,14 +221,18 @@ CreateThread(function()
     while true do
         Wait(300)
         if ForkliftPallet.entity and DoesEntityExist(ForkliftPallet.entity) then
-            currentPickupCandidate = nil
+            currentPickupCandidate, currentPickupCandidateSlot = nil, nil
             SetForkliftPickupPrompt(false)
         elseif IsPlayerInForklift and IsPlayerInForklift() then
             local forklift = GetPlayerForklift()
-            currentPickupCandidate = forklift and GetPickupCandidatePallet(forklift) or nil
+            if forklift then
+                currentPickupCandidate, currentPickupCandidateSlot = GetPickupCandidatePallet(forklift)
+            else
+                currentPickupCandidate, currentPickupCandidateSlot = nil, nil
+            end
             SetForkliftPickupPrompt(currentPickupCandidate ~= nil)
         else
-            currentPickupCandidate = nil
+            currentPickupCandidate, currentPickupCandidateSlot = nil, nil
             SetForkliftPickupPrompt(false)
         end
     end
@@ -207,19 +244,22 @@ lib.addKeybind({
     defaultKey = "G",
     onPressed = function()
         if currentPickupCandidate then
-            PickupPalletWithForklift(currentPickupCandidate)
+            PickupPalletWithForklift(currentPickupCandidate, currentPickupCandidateSlot)
         end
     end,
 })
 
-function GetTrailerModelName()
-    local trailer = GetActiveTrailer()
+local function GetTrailerModelNameFor(trailer)
     if not trailer then return nil end
     local modelHash = GetEntityModel(trailer)
     for name, _ in pairs(shared.CompatibleTrailers) do
         if GetHashKey(name) == modelHash then return name end
     end
     return nil
+end
+
+function GetTrailerModelName()
+    return GetTrailerModelNameFor(GetActiveTrailer())
 end
 
 local function GetFreeTrailerSlot(maxPallets)
@@ -231,8 +271,7 @@ end
 
 local palletLoadBusy = false
 
-function TryLoadPalletOnTrailer()
-    if palletLoadBusy then return end
+local function TryLoadPalletOnTrailerSolo()
     if not ForkliftPallet.entity or not DoesEntityExist(ForkliftPallet.entity) then return end
     local trailer = GetActiveTrailer()
     if not trailer then return end
@@ -299,6 +338,7 @@ function TryLoadPalletOnTrailer()
 
     LoadedPallets[slot] = prop
     ForkliftPallet.entity = nil
+    ForkliftPallet.slotIndex = nil
 
     MissionCargo.loadedCount = MissionCargo.loadedCount + 1
 
@@ -311,6 +351,132 @@ function TryLoadPalletOnTrailer()
     palletLoadBusy = false
 end
 
+-- Attaches a decorative (unnetworked, local-only) prop for a pallet another party member
+-- physically loaded - every client that can see the target trailer renders its own copy at
+-- the same deterministic offset, so no entity networking is needed to keep cargo in sync.
+local function AttachDecorativePalletToTrailer(trailer, trailerSlot, trailerConfig)
+    local offset = trailerConfig.attachOffsets[trailerSlot]
+    if not offset then return nil end
+
+    local modelHash = GetHashKey(shared.PalletModel)
+    RequestModel(modelHash)
+    local timeout = 0
+    while not HasModelLoaded(modelHash) and timeout < 50 do
+        Wait(50)
+        timeout = timeout + 1
+    end
+    if not HasModelLoaded(modelHash) then return nil end
+
+    local prop = CreateObject(modelHash, 0.0, 0.0, 0.0, false, false, false)
+    SetModelAsNoLongerNeeded(modelHash)
+    if not prop or prop == 0 then return nil end
+
+    AttachEntityToEntity(prop, trailer, 0,
+        offset.x, offset.y, offset.z,
+        offset.rx, offset.ry, offset.rz,
+        false, false, false, false, 2, true)
+    SetEntityInvincible(prop, true)
+    SetEntityCollision(prop, true, true)
+    SetEntityNoCollisionEntity(prop, trailer, true)
+    SetEntityProofs(prop, true, true, true, true, true, true, true, true)
+    return prop
+end
+
+local function RegisterTrailerLoadedProp(trailer, trailerSlot, prop)
+    local owned = TrailerLoadedProps[trailer]
+    if not owned then
+        owned = {}
+        TrailerLoadedProps[trailer] = owned
+    end
+    for _, otherEntity in pairs(owned) do
+        if otherEntity and DoesEntityExist(otherEntity) then
+            SetEntityNoCollisionEntity(prop, otherEntity, true)
+            SetEntityNoCollisionEntity(otherEntity, prop, true)
+        end
+    end
+    owned[trailerSlot] = prop
+end
+
+-- targetIdentifier is nil for "my own trailer" - the server fills in the caller's own
+-- identity in that case, so the client never needs to know its own identifier.
+local function TryLoadPalletOnTrailerParty(targetTrailer, targetIdentifier)
+    if not ForkliftPallet.entity or not DoesEntityExist(ForkliftPallet.entity) or not ForkliftPallet.slotIndex then return end
+    if not targetTrailer or not DoesEntityExist(targetTrailer) then return end
+
+    local trailerModel = GetTrailerModelNameFor(targetTrailer)
+    local trailerConfig = trailerModel and shared.CompatibleTrailers[trailerModel]
+    if not trailerConfig then
+        Framework.Notify(Locale("notify.trailer_does_not_support_pallets"), "error")
+        return
+    end
+
+    palletLoadBusy = true
+
+    local ok = lib.progressCircle({
+        duration = 4000,
+        position = "bottom",
+        label = Locale("ui.loading_pallet"),
+        canCancel = true,
+        disable = { car = true, move = true, combat = true },
+    })
+
+    if not ok then
+        palletLoadBusy = false
+        return
+    end
+    if not ForkliftPallet.entity or not DoesEntityExist(ForkliftPallet.entity) or not ForkliftPallet.slotIndex then
+        palletLoadBusy = false
+        return
+    end
+
+    local slotIndex = ForkliftPallet.slotIndex
+    local success, trailerSlot, maxPallets = lib.callback.await("polarix_trucker:loadPalletOnTrailer", false, slotIndex, targetIdentifier)
+    debug.DebugPrint(("TryLoadPalletOnTrailerParty: slot=%s target=%s -> success=%s trailerSlot=%s max=%s"):format(
+        slotIndex, tostring(targetIdentifier), tostring(success), tostring(trailerSlot), tostring(maxPallets)))
+
+    if not success then
+        Framework.Notify(Locale("notify.trailer_full"), "error")
+        palletLoadBusy = false
+        return
+    end
+
+    local offset = trailerConfig.attachOffsets[trailerSlot]
+    if offset then
+        local prop = ForkliftPallet.entity
+        DetachEntity(prop, true, true)
+        AttachEntityToEntity(prop, targetTrailer, 0,
+            offset.x, offset.y, offset.z,
+            offset.rx, offset.ry, offset.rz,
+            false, false, false, false, 2, true)
+        SetEntityCollision(prop, true, true)
+        SetEntityNoCollisionEntity(prop, targetTrailer, true)
+        RegisterTrailerLoadedProp(targetTrailer, trailerSlot, prop)
+    end
+
+    ForkliftPallet.entity = nil
+    ForkliftPallet.slotIndex = nil
+
+    if targetIdentifier then
+        Framework.Notify(Locale("notify.pallet_loaded_for"):format(trailerSlot, maxPallets or 0), "success")
+    else
+        Framework.Notify(Locale("notify.pallet_loaded"):format(trailerSlot, maxPallets or 0), "success")
+    end
+
+    palletLoadBusy = false
+end
+
+-- targetTrailer/targetIdentifier let forklift.lua point this at a teammate's trailer;
+-- omit both to load onto the player's own active trailer (own-trailer party loads also
+-- go through the party path so the server tracks who delivers what).
+function TryLoadPalletOnTrailer(targetTrailer, targetIdentifier)
+    if palletLoadBusy then return end
+    if DeliveryState.mode == "party" then
+        TryLoadPalletOnTrailerParty(targetTrailer or GetActiveTrailer(), targetIdentifier)
+    else
+        TryLoadPalletOnTrailerSolo()
+    end
+end
+
 function CleanupMissionPalletsOnTrailer()
     for slot, entity in pairs(LoadedPallets) do
         if entity and DoesEntityExist(entity) then
@@ -319,7 +485,92 @@ function CleanupMissionPalletsOnTrailer()
         end
     end
     LoadedPallets = {}
+
+    for _, slots in pairs(TrailerLoadedProps) do
+        for _, entity in pairs(slots) do
+            if entity and DoesEntityExist(entity) then
+                DetachEntity(entity, true, true)
+                DeleteEntity(entity)
+            end
+        end
+    end
+    TrailerLoadedProps = {}
 end
+
+-- Someone (possibly us) picked a ground pallet up - remove our local copy of that slot too
+-- so nobody else can grab "the same" one.
+RegisterNetEvent("polarix_trucker:partyGroundPalletTaken", function(slotIndex)
+    local entity = MissionPallets[slotIndex]
+    if entity and DoesEntityExist(entity) then
+        DeleteEntity(entity)
+    end
+    MissionPallets[slotIndex] = nil
+end)
+
+-- A carried pallet reopened (dropout) - respawn it on the ground if we're still spawned in.
+RegisterNetEvent("polarix_trucker:partyGroundPalletFreed", function(slotIndex)
+    if not MissionCargo.pickupSpawned or MissionPallets[slotIndex] then return end
+    if not (DeliveryState and DeliveryState.orderData) then return end
+
+    local o = DeliveryState.orderData
+    local heading = o.pickup_heading or 0.0
+    local coordsList = o.pickup_pallet_coords
+    if type(coordsList) ~= "table" or #coordsList == 0 then
+        local anchor = vector3(o.pickup_x, o.pickup_y, o.pickup_z)
+        coordsList = cargo.GenerateGridCoords(anchor, heading, cargo.CalcPalletCount(o.weight_kg))
+    end
+    local pos = coordsList[slotIndex]
+    if not pos then return end
+
+    local modelHash = GetHashKey(shared.PalletModel)
+    RequestModel(modelHash)
+    local timeout = 0
+    while not HasModelLoaded(modelHash) and timeout < 100 do
+        Wait(100)
+        timeout = timeout + 1
+    end
+    if not HasModelLoaded(modelHash) then return end
+
+    local pallet = CreateObject(modelHash, pos.x, pos.y, pos.z, false, false, false)
+    SetModelAsNoLongerNeeded(modelHash)
+    if pallet and pallet ~= 0 then
+        SetEntityHeading(pallet, heading)
+        PlaceObjectOnGroundProperly(pallet)
+        FreezeEntityPosition(pallet, true)
+        SetEntityCollision(pallet, true, true)
+        SetEntityInvincible(pallet, true)
+        SetEntityProofs(pallet, true, true, true, true, true, true, true, true)
+        MissionPallets[slotIndex] = pallet
+    end
+end)
+
+-- A pallet was loaded onto ownerIdentifier's trailer. isLoader is true only on the client
+-- that physically performed the load (they already attached the real prop themselves).
+RegisterNetEvent("polarix_trucker:partyPalletLoaded", function(slotIndex, ownerIdentifier, trailerSlot, isLoader, isOwner)
+    local ground = MissionPallets[slotIndex]
+    if ground and DoesEntityExist(ground) then
+        DeleteEntity(ground)
+    end
+    MissionPallets[slotIndex] = nil
+
+    if isOwner then
+        MissionCargo.loadedCount = MissionCargo.loadedCount + 1
+    end
+
+    if isLoader then return end
+
+    local trailer = isOwner and GetActiveTrailer() or GetPartyTrailerEntity(ownerIdentifier)
+    if not trailer or not DoesEntityExist(trailer) then return end
+
+    local trailerModel = GetTrailerModelNameFor(trailer)
+    local trailerConfig = trailerModel and shared.CompatibleTrailers[trailerModel]
+    if not trailerConfig then return end
+
+    local prop = AttachDecorativePalletToTrailer(trailer, trailerSlot, trailerConfig)
+    if prop then
+        RegisterTrailerLoadedProp(trailer, trailerSlot, prop)
+    end
+end)
 
 CreateThread(function()
     while true do
@@ -328,13 +579,19 @@ CreateThread(function()
             local o = DeliveryState.orderData
             local dist = #(GetEntityCoords(PlayerPedId()) - vector3(o.pickup_x, o.pickup_y, o.pickup_z))
             if dist < 40.0 and not MissionCargo.pickupSpawned then
-                local claim = Delivery.RequestTripClaim()
-                if claim > 0 then
-                    MissionCargo.requiredCount = claim
-                    MissionCargo.loadedCount = 0
+                if DeliveryState.mode == "party" then
+                    -- Shared pool: every member just sees what's left, no per-player claim.
                     SpawnMissionPallets(o)
                 else
-                    Framework.Notify(Locale("notify.no_pallets_left_pool"), "info")
+                    local claim = Delivery.RequestTripClaim()
+                    debug.DebugPrint(("SpawnMissionPallets poll: mode=solo dist=%.1f claim=%s"):format(dist, tostring(claim)))
+                    if claim > 0 then
+                        MissionCargo.requiredCount = claim
+                        MissionCargo.loadedCount = 0
+                        SpawnMissionPallets(o)
+                    else
+                        Framework.Notify(Locale("notify.no_pallets_left_pool"), "info")
+                    end
                 end
             end
         elseif MissionCargo.pickupSpawned then

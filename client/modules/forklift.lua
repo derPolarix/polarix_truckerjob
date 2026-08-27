@@ -39,8 +39,8 @@ CreateThread(function()
     end
 end)
 
-local function GetForkliftInteractionCoords()
-    local trailer = GetActiveTrailer()
+local function GetForkliftInteractionCoords(trailer)
+    trailer = trailer or GetActiveTrailer()
     if not trailer then return nil end
     local offset = clientConfig.ForkliftDeployOffset
     return GetOffsetFromEntityInWorldCoords(trailer, offset.x, offset.y, offset.z)
@@ -53,10 +53,34 @@ local function GetForkliftInteractionRadius()
     return clientConfig.ForkliftInteractionRadiusFoot
 end
 
-local function IsInForkliftInteractionRange()
-    local coords = GetForkliftInteractionCoords()
+local function IsInForkliftInteractionRangeOf(trailer)
+    local coords = GetForkliftInteractionCoords(trailer)
     if not coords then return false end
     return #(GetEntityCoords(PlayerPedId()) - coords) < GetForkliftInteractionRadius()
+end
+
+local function IsInForkliftInteractionRange()
+    return IsInForkliftInteractionRangeOf(GetActiveTrailer())
+end
+
+-- Own trailer first (deploy/stow stay own-trailer-only, but so does loading if you're in
+-- range of it); otherwise, in a convoy, any teammate's trailer you can walk/drive up to.
+local function FindNearbyLoadTarget()
+    local ownTrailer = GetActiveTrailer()
+    if ownTrailer and IsInForkliftInteractionRangeOf(ownTrailer) then
+        return ownTrailer, nil
+    end
+
+    if DeliveryState and DeliveryState.mode == "party" and PartyTrailerNetIds then
+        for identifier in pairs(PartyTrailerNetIds) do
+            local trailer = GetPartyTrailerEntity(identifier)
+            if trailer and IsInForkliftInteractionRangeOf(trailer) then
+                return trailer, identifier
+            end
+        end
+    end
+
+    return nil, nil
 end
 
 function Forklift.Deploy()
@@ -172,7 +196,13 @@ function Forklift.Stow()
     ForkliftDockState[netId] = nil
     Framework.Notify(Locale("notify.forklift_stowed"), "success")
 
-    if MissionCargo and MissionCargo.requiredCount and MissionCargo.loadedCount >= MissionCargo.requiredCount then
+    -- Party mode has no per-trip claim, so a small order (fewer pallets than one trailer's
+    -- capacity) would never "fill" the trailer - poolRemaining<=0 covers that case too.
+    local ownTrailerFull = MissionCargo and MissionCargo.requiredCount and MissionCargo.requiredCount > 0
+        and MissionCargo.loadedCount >= MissionCargo.requiredCount
+    local poolExhausted = DeliveryState and DeliveryState.mode == "party" and PartyProgress and PartyProgress.poolRemaining <= 0
+
+    if MissionCargo and MissionCargo.loadedCount > 0 and (ownTrailerFull or poolExhausted) then
         if Delivery and Delivery.EnterTransitPhase then
             Delivery.EnterTransitPhase()
         end
@@ -196,12 +226,37 @@ end
 
 local function RunForkliftDockInteraction()
     if GetForkliftPalletPayload and GetForkliftPalletPayload() then
-        TryLoadPalletOnTrailer()
+        local trailer, identifier = FindNearbyLoadTarget()
+        if trailer then
+            TryLoadPalletOnTrailer(trailer, identifier)
+        end
     elseif IsForkliftDeployed(GetTrailerNetId()) then
         Forklift.Stow()
     else
         Forklift.Deploy()
     end
+end
+
+local loadTargetRegisteredFor = {}
+
+-- Teammate trailers only get the "load pallet" option - deploy/stow/unload stay
+-- own-trailer-only since the forklift is docked to your own rig.
+local function EnsurePartyLoadTargetRegistered(trailer, identifier)
+    if loadTargetRegisteredFor[trailer] then return end
+    loadTargetRegisteredFor[trailer] = true
+
+    Target.AddLocalEntity(trailer, {
+        {
+            name = "trailer_forklift_load_pallet_party",
+            icon = "fa-solid fa-pallet",
+            label = Locale("ui.load_pallet"),
+            distance = clientConfig.ForkliftInteractionRadiusVehicle,
+            canInteract = function()
+                return IsInForkliftInteractionRangeOf(trailer) and GetForkliftPalletPayload and GetForkliftPalletPayload() ~= nil
+            end,
+            onSelect = function() TryLoadPalletOnTrailer(trailer, identifier) end,
+        },
+    })
 end
 
 local function EnsureTargetRegistered(trailer)
@@ -217,7 +272,10 @@ local function EnsureTargetRegistered(trailer)
             canInteract = function()
                 return IsInForkliftInteractionRange() and GetForkliftPalletPayload and GetForkliftPalletPayload() ~= nil
             end,
-            onSelect = TryLoadPalletOnTrailer,
+            -- Wrapped, not passed bare: target backends call onSelect with their own arg
+            -- (e.g. ox_target passes a data table), which would otherwise land in
+            -- TryLoadPalletOnTrailer's targetTrailer param and break DoesEntityExist on it.
+            onSelect = function() TryLoadPalletOnTrailer() end,
         },
         {
             name = "trailer_forklift_stow",
@@ -255,8 +313,22 @@ CreateThread(function()
             if trailer then
                 EnsureTargetRegistered(trailer)
             end
+            if DeliveryState and DeliveryState.mode == "party" and PartyTrailerNetIds then
+                for identifier in pairs(PartyTrailerNetIds) do
+                    local teammateTrailer = GetPartyTrailerEntity(identifier)
+                    if teammateTrailer then
+                        EnsurePartyLoadTargetRegistered(teammateTrailer, identifier)
+                    end
+                end
+            end
         else
-            local inRange = IsInForkliftInteractionRange()
+            local carrying = GetForkliftPalletPayload and GetForkliftPalletPayload() ~= nil
+            local inRange
+            if carrying then
+                inRange = FindNearbyLoadTarget() ~= nil
+            else
+                inRange = IsInForkliftInteractionRange()
+            end
 
             if inRange then
                 local label = GetForkliftDockLabel()

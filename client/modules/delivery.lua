@@ -57,10 +57,10 @@ function Delivery.Start(orderData, mode)
     Framework.Notify(Locale("notify.drive_pickup_point_pallets_total"):format(orderData.pickup_label, cargo.CalcPalletCount(orderData.weight_kg)), "info")
 end
 
--- Solo uses its own order pool, party shares one.
+-- Solo-only: party mode has no per-trip claim, every member just sees what's left of the
+-- shared ground pool directly (see cargo.lua's SpawnMissionPallets).
 function Delivery.RequestTripClaim()
-    local eventName = DeliveryState.mode == "party" and "polarix_trucker:claimPartyPallets" or "polarix_trucker:claimTripPallets"
-    return lib.callback.await(eventName, false)
+    return lib.callback.await("polarix_trucker:claimTripPallets", false)
 end
 
 function Delivery.Cancel()

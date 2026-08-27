@@ -73,6 +73,7 @@ function Trailer.Spawn()
     end
 
     SendMessage("trailerSpawnState", { slot = LocalTrailer.slot, spawned = true })
+    TriggerServerEvent("polarix_trucker:syncTrailerNetId", NetworkGetNetworkIdFromEntity(trailer))
 end
 
 function Trailer.Despawn()
@@ -96,6 +97,7 @@ function Trailer.Despawn()
     end
     LocalTrailer.entity = nil
     SendMessage("trailerSpawnState", { slot = LocalTrailer.slot, spawned = false })
+    TriggerServerEvent("polarix_trucker:syncTrailerNetId", nil)
 end
 
 -- UI-triggered "Park trailer" action — same mid-delivery guard as Vehicle.Park().
@@ -128,4 +130,25 @@ end)
 CreateThread(function()
     Wait(500)
     SendMessage("trailerSpawnState", { slot = nil, spawned = false })
+end)
+
+-- identifier -> network id, refreshed while a party mission is active so this client can
+-- resolve a teammate's trailer entity (to load pallets onto it / render them there).
+PartyTrailerNetIds = {}
+
+function GetPartyTrailerEntity(identifier)
+    local netId = PartyTrailerNetIds[identifier]
+    if not netId then return nil end
+    local entity = NetworkGetEntityFromNetworkId(netId)
+    if entity == 0 or not DoesEntityExist(entity) then return nil end
+    return entity
+end
+
+CreateThread(function()
+    while true do
+        Wait(3000)
+        if DeliveryState and DeliveryState.mode == "party" and DeliveryState.status ~= "idle" then
+            PartyTrailerNetIds = lib.callback.await("polarix_trucker:getPartyTrailerNetIds", false) or {}
+        end
+    end
 end)

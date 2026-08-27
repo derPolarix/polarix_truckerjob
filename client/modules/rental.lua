@@ -75,6 +75,7 @@ function Rental.Despawn()
     end
     LocalRental.vehicleEntity = nil
     LocalRental.trailerEntity = nil
+    TriggerServerEvent("polarix_trucker:syncTrailerNetId", nil)
 end
 
 RegisterNetEvent("polarix_trucker:rentalStarted", function(vehicleModel, trailerModel)
@@ -104,6 +105,9 @@ RegisterNetEvent("polarix_trucker:rentalStarted", function(vehicleModel, trailer
     if trailerEntity then
         AttachVehicleToTrailer(vehEntity, trailerEntity, 15.0)
         LocalRental.trailerEntity = trailerEntity
+        if NetworkGetEntityIsNetworked(trailerEntity) then
+            TriggerServerEvent("polarix_trucker:syncTrailerNetId", NetworkGetNetworkIdFromEntity(trailerEntity))
+        end
 
         -- Must run after attach — the game re-rolls trailer livery at hitch time,
         -- so setting it before attach gets silently overwritten.

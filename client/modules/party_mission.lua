@@ -3,10 +3,10 @@
 
 local Locale = require("shared.locale")
 
-PartyProgress = { totalPallets = 0, claimedTotal = 0, deliveredTotal = 0 }
+PartyProgress = { totalPallets = 0, claimedTotal = 0, deliveredTotal = 0, poolRemaining = 0 }
 
 RegisterNetEvent("polarix_trucker:partyMissionStarted", function(order, totalPallets)
-    PartyProgress = { totalPallets = totalPallets, claimedTotal = 0, deliveredTotal = 0 }
+    PartyProgress = { totalPallets = totalPallets, claimedTotal = 0, deliveredTotal = 0, poolRemaining = totalPallets }
     Delivery.Start(order, "party")
 end)
 
@@ -19,6 +19,7 @@ RegisterNetEvent("polarix_trucker:partyMissionProgress", function(progress)
     PartyProgress.totalPallets = progress.totalPallets
     PartyProgress.claimedTotal = progress.claimedTotal
     PartyProgress.deliveredTotal = progress.deliveredTotal
+    PartyProgress.poolRemaining = progress.poolRemaining
     SendMessage("partyMissionProgress", progress)
 end)
 
@@ -36,6 +37,6 @@ end)
 
 RegisterNetEvent("polarix_trucker:partyMissionFinished", function()
     Delivery.Reset()
-    PartyProgress = { totalPallets = 0, claimedTotal = 0, deliveredTotal = 0 }
+    PartyProgress = { totalPallets = 0, claimedTotal = 0, deliveredTotal = 0, poolRemaining = 0 }
     SendMessage("partyMissionFinished", {})
 end)
