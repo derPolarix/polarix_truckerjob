@@ -9,6 +9,10 @@ PartyMission = {}
 --   contributions = { [identifier] = { damage } } }
 PartyMissions = {}
 
+-- identifier -> network id of that player's currently deployed forklift, so a teammate's
+-- client can render the pallet they're carrying (mirrors trailers.lua's net-id cache).
+local PlayerForkliftNetId = {}
+
 -- oxmysql returns TINYINT(1) as Lua boolean, not integer 1
 local function isTruthy(v) return v == 1 or v == true end
 
@@ -105,6 +109,44 @@ function PartyMission.ClaimGroundPallet(source, slotIndex)
         end
     end
     return true
+end
+
+-- Snapshot for the client's periodic visual reconcile loop: what's currently loaded on
+-- trailers (mine vs teammates', kept separate since the client never knows its own
+-- identifier) and who's currently carrying a pallet on their forklift. Self-healing by
+-- design - a client that missed an event (e.g. wasn't streamed in) catches up here, and a
+-- pallet that's since been delivered simply stops appearing in the snapshot.
+function PartyMission.GetCargoState(source)
+    local pData = Player.GetData(source)
+    local partyId = pData and PlayerParty[pData.identifier]
+    local mission = partyId and PartyMissions[partyId]
+    local party = partyId and Parties[partyId]
+    if not mission or not party then return { ownLoaded = {}, teammateLoaded = {}, teammateCarried = {}, forkliftNetIds = {} } end
+
+    local ownLoaded, teammateLoaded, teammateCarried = {}, {}, {}
+    for _, s in pairs(mission.slots) do
+        if s then
+            if s.state == "loaded" then
+                if s.ownerIdentifier == pData.identifier then
+                    ownLoaded[s.trailerSlot] = true
+                else
+                    teammateLoaded[s.ownerIdentifier] = teammateLoaded[s.ownerIdentifier] or {}
+                    teammateLoaded[s.ownerIdentifier][s.trailerSlot] = true
+                end
+            elseif s.state == "carried" and s.identifier ~= pData.identifier then
+                teammateCarried[s.identifier] = true
+            end
+        end
+    end
+
+    local forkliftNetIds = {}
+    for identifier, m in pairs(party.members) do
+        if m.source and identifier ~= pData.identifier and PlayerForkliftNetId[identifier] then
+            forkliftNetIds[identifier] = PlayerForkliftNetId[identifier]
+        end
+    end
+
+    return { ownLoaded = ownLoaded, teammateLoaded = teammateLoaded, teammateCarried = teammateCarried, forkliftNetIds = forkliftNetIds }
 end
 
 -- carried -> loaded. This is the actual reward claim, and the target trailer can belong to
@@ -344,8 +386,15 @@ function PartyMission.Fail(partyId)
     PartyMissions[partyId] = nil
 end
 
+RegisterNetEvent("polarix_trucker:syncForkliftNetId", function(netId)
+    local pData = Player.GetData(source)
+    if not pData then return end
+    PlayerForkliftNetId[pData.identifier] = netId
+end)
+
 lib.callback.register("polarix_trucker:startPartyMission", function(source, orderId) return PartyMission.Start(source, orderId) end)
 lib.callback.register("polarix_trucker:getPartyGroundState", function(source) return PartyMission.GetGroundState(source) end)
+lib.callback.register("polarix_trucker:getPartyCargoState", function(source) return PartyMission.GetCargoState(source) end)
 lib.callback.register("polarix_trucker:claimGroundPallet", function(source, slotIndex) return PartyMission.ClaimGroundPallet(source, slotIndex) end)
 lib.callback.register("polarix_trucker:loadPalletOnTrailer", function(source, slotIndex, targetIdentifier) return PartyMission.LoadPalletOnTrailer(source, slotIndex, targetIdentifier) end)
 lib.callback.register("polarix_trucker:confirmPartyMemberReady", function(source) return PartyMission.ConfirmMemberReady(source) end)
