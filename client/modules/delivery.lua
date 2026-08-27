@@ -228,9 +228,13 @@ RegisterNetEvent("polarix_trucker:deliveryCompleted", function(reward, xp, damag
     SendMessage("deliveryComplete", { reward = reward, xp = xp })
 end)
 
--- Trip delivered but order pool not empty yet — head back to pickup for the next trip
+-- Trip delivered but order pool not empty yet — head back to pickup for the next trip.
+-- The trailer is physically empty again at the dropoff, so clear whatever cargo props are
+-- still attached to it (solo LoadedPallets, or this player's own bucket of TrailerLoadedProps
+-- in party mode) and reset loadedCount for the next load.
 RegisterNetEvent("polarix_trucker:tripSettled", function(remainingPallets)
     DeliveryState.status = "awaiting_pickup"
+    if ClearOwnTrailerPallets then ClearOwnTrailerPallets() end
     SetBlipRoute(DeliveryState.dropoffBlip, false)
     SetBlipRoute(DeliveryState.pickupBlip, true)
     SetBlipRouteColour(DeliveryState.pickupBlip, 5)

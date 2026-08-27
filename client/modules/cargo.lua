@@ -8,6 +8,7 @@ MissionPallets = {}       -- slotIndex -> ground entity (both solo and party, sa
 ForkliftPallet = { entity = nil, slotIndex = nil }
 LoadedPallets = {}        -- solo mode only: 1..maxPallets -> entity on own trailer
 TrailerLoadedProps = {}   -- party mode only: trailerEntity -> { [trailerSlot] = entity }, own or teammate's
+ForkliftCarriedProps = {} -- party mode only: teammate identifier -> decorative prop on their forklift
 
 function ResetMissionCargo(orderData)
     DespawnMissionPallets()
@@ -151,6 +152,35 @@ function AttachPalletToForklift()
 
     SetModelAsNoLongerNeeded(modelHash)
     ForkliftPallet.entity = prop
+end
+
+-- Decorative (unnetworked, local-only) copy of a pallet a teammate is carrying on their
+-- forklift - same pattern as AttachDecorativePalletToTrailer below, just for forks.
+local function AttachDecorativePalletToForklift(forklift)
+    local offset = shared.ForkliftAttachOffset
+    local boneIndex = GetEntityBoneIndexByName(forklift, shared.ForkliftAttachBone)
+    if boneIndex == -1 then boneIndex = 0 end
+
+    local modelHash = GetHashKey(shared.PalletModel)
+    RequestModel(modelHash)
+    local timeout = 0
+    while not HasModelLoaded(modelHash) and timeout < 50 do
+        Wait(50)
+        timeout = timeout + 1
+    end
+    if not HasModelLoaded(modelHash) then return nil end
+
+    local prop = CreateObject(modelHash, 0.0, 0.0, 0.0, false, false, false)
+    SetModelAsNoLongerNeeded(modelHash)
+    if not prop or prop == 0 then return nil end
+
+    AttachEntityToEntity(prop, forklift, boneIndex,
+        offset.x, offset.y, offset.z,
+        offset.rx, offset.ry, offset.rz,
+        false, false, false, false, 2, true)
+    SetEntityInvincible(prop, true)
+    SetEntityProofs(prop, true, true, true, true, true, true, true, true)
+    return prop
 end
 
 function DetachPalletFromForklift()
@@ -495,6 +525,41 @@ function CleanupMissionPalletsOnTrailer()
         end
     end
     TrailerLoadedProps = {}
+
+    for _, entity in pairs(ForkliftCarriedProps) do
+        if entity and DoesEntityExist(entity) then
+            DetachEntity(entity, true, true)
+            DeleteEntity(entity)
+        end
+    end
+    ForkliftCarriedProps = {}
+end
+
+-- Called when a trip delivers but the mission isn't fully done yet (order needs more than
+-- one trailer-load) - the trailer is physically empty again at the dropoff, so whatever was
+-- visually still attached (mine, or what reconcile rendered for others watching me) has to
+-- go, and loadedCount resets for the next trip.
+function ClearOwnTrailerPallets()
+    for slot, entity in pairs(LoadedPallets) do
+        if entity and DoesEntityExist(entity) then
+            DetachEntity(entity, true, true)
+            DeleteEntity(entity)
+        end
+    end
+    LoadedPallets = {}
+
+    local ownTrailer = GetActiveTrailer()
+    if ownTrailer and TrailerLoadedProps[ownTrailer] then
+        for _, entity in pairs(TrailerLoadedProps[ownTrailer]) do
+            if entity and DoesEntityExist(entity) then
+                DetachEntity(entity, true, true)
+                DeleteEntity(entity)
+            end
+        end
+        TrailerLoadedProps[ownTrailer] = nil
+    end
+
+    MissionCargo.loadedCount = 0
 end
 
 -- Someone (possibly us) picked a ground pallet up - remove our local copy of that slot too
@@ -544,8 +609,10 @@ RegisterNetEvent("polarix_trucker:partyGroundPalletFreed", function(slotIndex)
     end
 end)
 
--- A pallet was loaded onto ownerIdentifier's trailer. isLoader is true only on the client
--- that physically performed the load (they already attached the real prop themselves).
+-- A pallet was loaded onto ownerIdentifier's trailer. Only the instant, correctness-critical
+-- bits happen here (own loadedCount, ground cleanup) - decorative rendering for teammates is
+-- the periodic reconcile loop's job below, so a client that missed this event (trailer not
+-- streamed in yet) still catches up, and delivered pallets get cleaned up the same way.
 RegisterNetEvent("polarix_trucker:partyPalletLoaded", function(slotIndex, ownerIdentifier, trailerSlot, isLoader, isOwner)
     local ground = MissionPallets[slotIndex]
     if ground and DoesEntityExist(ground) then
@@ -556,19 +623,97 @@ RegisterNetEvent("polarix_trucker:partyPalletLoaded", function(slotIndex, ownerI
     if isOwner then
         MissionCargo.loadedCount = MissionCargo.loadedCount + 1
     end
+end)
 
-    if isLoader then return end
+-- Adds any trailer prop that should exist locally but doesn't yet, removes any that
+-- exists locally but shouldn't anymore (delivered, or the mission ended). wanted maps
+-- trailer entity -> set of trailerSlot indices that should currently be visible there.
+local function ReconcileTrailerProps(wanted)
+    for trailer, slots in pairs(wanted) do
+        local trailerModel = GetTrailerModelNameFor(trailer)
+        local trailerConfig = trailerModel and shared.CompatibleTrailers[trailerModel]
+        if trailerConfig then
+            local owned = TrailerLoadedProps[trailer]
+            for trailerSlot in pairs(slots) do
+                local existing = owned and owned[trailerSlot]
+                if not (existing and DoesEntityExist(existing)) then
+                    local prop = AttachDecorativePalletToTrailer(trailer, trailerSlot, trailerConfig)
+                    if prop then
+                        RegisterTrailerLoadedProp(trailer, trailerSlot, prop)
+                    end
+                end
+            end
+        end
+    end
 
-    local trailer = isOwner and GetActiveTrailer() or GetPartyTrailerEntity(ownerIdentifier)
-    if not trailer or not DoesEntityExist(trailer) then return end
+    for trailer, slots in pairs(TrailerLoadedProps) do
+        local wantedSlots = wanted[trailer]
+        for trailerSlot, entity in pairs(slots) do
+            if not (wantedSlots and wantedSlots[trailerSlot]) then
+                if entity and DoesEntityExist(entity) then
+                    DetachEntity(entity, true, true)
+                    DeleteEntity(entity)
+                end
+                slots[trailerSlot] = nil
+            end
+        end
+    end
+end
 
-    local trailerModel = GetTrailerModelNameFor(trailer)
-    local trailerConfig = trailerModel and shared.CompatibleTrailers[trailerModel]
-    if not trailerConfig then return end
+local function ReconcileForkliftProps(teammateCarried, forkliftNetIds)
+    for identifier in pairs(teammateCarried) do
+        local existing = ForkliftCarriedProps[identifier]
+        if not (existing and DoesEntityExist(existing)) then
+            local netId = forkliftNetIds[identifier]
+            local forklift = netId and NetworkGetEntityFromNetworkId(netId)
+            if forklift and forklift ~= 0 and DoesEntityExist(forklift) then
+                local prop = AttachDecorativePalletToForklift(forklift)
+                if prop then
+                    ForkliftCarriedProps[identifier] = prop
+                end
+            end
+        end
+    end
 
-    local prop = AttachDecorativePalletToTrailer(trailer, trailerSlot, trailerConfig)
-    if prop then
-        RegisterTrailerLoadedProp(trailer, trailerSlot, prop)
+    for identifier, entity in pairs(ForkliftCarriedProps) do
+        if not teammateCarried[identifier] then
+            if entity and DoesEntityExist(entity) then
+                DetachEntity(entity, true, true)
+                DeleteEntity(entity)
+            end
+            ForkliftCarriedProps[identifier] = nil
+        end
+    end
+end
+
+-- Self-healing sync for everything a teammate might be doing with cargo (see the
+-- getPartyCargoState doc comment server-side for why this replaced pure event-push):
+-- catches clients that missed a load event (trailer not streamed in yet), and cleans up
+-- decorative props for pallets that have since been delivered.
+CreateThread(function()
+    while true do
+        Wait(3000)
+        if DeliveryState and DeliveryState.mode == "party" and DeliveryState.status ~= "idle" then
+            local state = lib.callback.await("polarix_trucker:getPartyCargoState", false)
+            if state then
+                local wanted = {}
+                local ownTrailer = GetActiveTrailer()
+                if ownTrailer and next(state.ownLoaded) then
+                    wanted[ownTrailer] = state.ownLoaded
+                end
+                for identifier, slots in pairs(state.teammateLoaded or {}) do
+                    local trailer = GetPartyTrailerEntity(identifier)
+                    if trailer then wanted[trailer] = slots end
+                end
+                ReconcileTrailerProps(wanted)
+                ReconcileForkliftProps(state.teammateCarried or {}, state.forkliftNetIds or {})
+            end
+        elseif next(TrailerLoadedProps) or next(ForkliftCarriedProps) then
+            -- mission ended/left while props existed - CleanupMissionPalletsOnTrailer
+            -- normally handles this, but a stale table here would leak entities forever.
+            ReconcileTrailerProps({})
+            ReconcileForkliftProps({}, {})
+        end
     end
 end)
 
