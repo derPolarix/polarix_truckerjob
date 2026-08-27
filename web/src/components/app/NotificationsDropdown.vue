@@ -62,7 +62,7 @@ const { t } = useI18n();
 
 function relativeTime(value: string): string {
   if (!value) return "";
-  const d = new Date(value.replace(" ", "T"));
+  const d = new Date(String(value).replace(" ", "T"));
   if (isNaN(d.getTime())) return "";
   const diffMs = Date.now() - d.getTime();
   const mins = Math.floor(diffMs / 60000);
