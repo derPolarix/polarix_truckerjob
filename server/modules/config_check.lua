@@ -2,6 +2,7 @@
 -- resource actually ships adapters for, and prints a clear server console
 -- error if either is misconfigured.
 local config = require("config.shared")
+local debug = require("shared.debug")
 
 local ALLOWED_FRAMEWORKS = { qbox = true, ["qb-core"] = true, esx = true }
 local ALLOWED_TARGETS    = { ox_target = true, ["qb-target"] = true, sleepless_interact = true, none = true }
@@ -14,11 +15,11 @@ local function listKeys(t)
 end
 
 if not ALLOWED_FRAMEWORKS[config.Framework] then
-    print(("^1[polarix_trucker] Invalid Framework \"%s\" in config/shared.lua — allowed values: %s^7")
+    debug.Error(("Invalid Framework \"%s\" in config/shared.lua — allowed values: %s")
         :format(tostring(config.Framework), listKeys(ALLOWED_FRAMEWORKS)))
 end
 
 if not ALLOWED_TARGETS[config.Target] then
-    print(("^1[polarix_trucker] Invalid Target \"%s\" in config/shared.lua — allowed values: %s^7")
+    debug.Error(("Invalid Target \"%s\" in config/shared.lua — allowed values: %s")
         :format(tostring(config.Target), listKeys(ALLOWED_TARGETS)))
 end

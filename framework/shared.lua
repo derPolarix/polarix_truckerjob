@@ -6,7 +6,7 @@ Framework = {}
 
 local ok, provider = pcall(require, "framework." .. config.Framework .. ".shared")
 if not ok then
-    error(("[polarix_trucker] Unbekanntes Framework in config/shared.lua: %s"):format(tostring(config.Framework)))
+    error(("^1[ERROR]^7 Unbekanntes Framework in config/shared.lua: %s"):format(tostring(config.Framework)))
 end
 
 for fnName, fn in pairs(provider) do

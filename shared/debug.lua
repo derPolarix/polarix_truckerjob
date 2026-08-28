@@ -1,11 +1,22 @@
--- Debug module for formatted console output
+-- Logging module for formatted console output.
 -- usage: local debug = require("shared.debug")
+--   debug.DebugPrint(...)  -- [DEBUG], gated on Config.PrintDebug
+--   debug.Info(...)        -- [INFO]
+--   debug.Warn(...)        -- [WARNING]
+--   debug.Error(...)       -- [ERROR]
 
 local SharedConfig = require("config.shared")
-local prefix = "^2[" .. GetCurrentResourceName() .. "]^7 "
 local suffix = "^7"
 
-local function printPrefixed(message)
+-- Console prefixes per log level. Color codes: ^2 green, ^7 white, ^3 yellow, ^1 red.
+local LEVEL_PREFIX = {
+    DEBUG   = "^2[DEBUG]^7 ",
+    INFO    = "^7[INFO]^7 ",
+    WARNING = "^3[WARNING]^7 ",
+    ERROR   = "^1[ERROR]^7 ",
+}
+
+local function printPrefixed(prefix, message)
     message = tostring(message)
 
     -- Print each line with a prefix so multi-line table dumps stay readable.
@@ -87,23 +98,35 @@ local function stringify(value, visited, depth)
     return "{" .. table.concat(parts, ", ") .. "}"
 end
 
-return {
-    DebugPrint = function(...)
-        
-        if not SharedConfig.PrintDebug then return end
+local function joinArgs(...)
+    local argCount = select("#", ...)
+    if argCount == 0 then return "" end
 
-        local argCount = select("#", ...)
-        if argCount == 0 then
-            printPrefixed("")
-            return
-        end
-
-        local out = {}
-        for i = 1, argCount do
-            out[#out + 1] = stringify(select(i, ...), nil, 4)
-        end
-
-        printPrefixed(table.concat(out, " "))
+    local out = {}
+    for i = 1, argCount do
+        out[#out + 1] = stringify(select(i, ...), nil, 4)
     end
 
+    return table.concat(out, " ")
+end
+
+return {
+    -- Gated on SharedConfig.PrintDebug — verbose developer tracing.
+    DebugPrint = function(...)
+        if not SharedConfig.PrintDebug then return end
+        printPrefixed(LEVEL_PREFIX.DEBUG, joinArgs(...))
+    end,
+
+    -- Always printed — operational messages worth seeing in a normal console.
+    Info = function(...)
+        printPrefixed(LEVEL_PREFIX.INFO, joinArgs(...))
+    end,
+
+    Warn = function(...)
+        printPrefixed(LEVEL_PREFIX.WARNING, joinArgs(...))
+    end,
+
+    Error = function(...)
+        printPrefixed(LEVEL_PREFIX.ERROR, joinArgs(...))
+    end,
 }

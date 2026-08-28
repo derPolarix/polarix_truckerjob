@@ -1,4 +1,5 @@
 local T = require("server.constants")
+local debug = require("shared.debug")
 
 AddEventHandler('onResourceStart', function(resourceName)
     if GetCurrentResourceName() ~= resourceName then return end
@@ -153,7 +154,7 @@ AddEventHandler('onResourceStart', function(resourceName)
         UNIQUE KEY uq_player_driver_slot (identifier, slot)
     )]]):format(T.driver_slots))
 
-    print("[polarix_trucker] Schema initialisiert.")
+    debug.Info("Schema initialisiert.")
 
     LoadDatabaseToCache()
 end)

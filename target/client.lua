@@ -5,7 +5,7 @@ Target = {}
 
 local ok, provider = pcall(require, "target." .. config.Target .. ".client")
 if not ok then
-    error(("[polarix_trucker] Unbekanntes Target-System in config/shared.lua: %s"):format(tostring(config.Target)))
+    error(("^1[ERROR]^7 Unbekanntes Target-System in config/shared.lua: %s"):format(tostring(config.Target)))
 end
 
 for fnName, fn in pairs(provider) do

@@ -1,6 +1,7 @@
 -- Checks GitHub Releases for a newer polarix_truckerjob version on resource
 -- start and warns in the server console if the running copy is outdated.
 local config = require("config.shared")
+local debug = require("shared.debug")
 
 local REPO_OWNER = "derPolarix"
 local REPO_NAME = "polarix_truckerjob"
@@ -43,6 +44,6 @@ PerformHttpRequest(RELEASES_API, function(statusCode, body)
         return
     end
 
-    print(("^3[%s] Update available: v%s -> %s^7"):format(resourceName, currentVersion, remoteVersion))
-    print(("^3[%s] Please update, download the latest release here: %s^7"):format(resourceName, RELEASES_PAGE))
+    debug.Warn(("Update available: v%s -> %s"):format(currentVersion, remoteVersion))
+    debug.Warn(("Please update, download the latest release here: %s"):format(RELEASES_PAGE))
 end, "GET", "", { ["User-Agent"] = REPO_NAME })
