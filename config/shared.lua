@@ -83,32 +83,36 @@ return {
         IntervalCost    = 500,
     },
 
+    -- These examples do not use the rendered pallets, as the trailers are fully closed. On open trailers
+    -- you should fine tune offsets, so that the pallets are visible during transport
     CompatibleTrailers = {
         ["trailers2"] = {
             maxPallets = 8,
             length = 10.5, width = 2.6,
             livery = 1, -- plain white, no branding (trailers2 otherwise randomizes across branded liveries)
             extras = {}, -- none enabled; list extra ids here to force specific ones on
-            attachOffsets = {
-                { x = -0.55, y =  3.6, z = -0.90, rx = 0.0, ry = 0.0, rz = 0.0 },
-                { x =  0.55, y =  3.6, z = -0.90, rx = 0.0, ry = 0.0, rz = 0.0 },
-                { x = -0.55, y =  1.2, z = -0.90, rx = 0.0, ry = 0.0, rz = 0.0 },
-                { x =  0.55, y =  1.2, z = -0.90, rx = 0.0, ry = 0.0, rz = 0.0 },
-                { x = -0.55, y = -1.2, z = -0.90, rx = 0.0, ry = 0.0, rz = 0.0 },
-                { x =  0.55, y = -1.2, z = -0.90, rx = 0.0, ry = 0.0, rz = 0.0 },
-                { x = -0.55, y = -3.6, z = -0.90, rx = 0.0, ry = 0.0, rz = 0.0 },
-                { x =  0.55, y = -3.6, z = -0.90, rx = 0.0, ry = 0.0, rz = 0.0 },
-            },
+            renderLoadedPallets = false, -- wether to acutally render pallets inside trailer, needs attachOffsets if true
+            -- attachOffsets = {
+            --     { x = -0.55, y =  3.6, z = -0.90, rx = 0.0, ry = 0.0, rz = 0.0 },
+            --     { x =  0.55, y =  3.6, z = -0.90, rx = 0.0, ry = 0.0, rz = 0.0 },
+            --     { x = -0.55, y =  1.2, z = -0.90, rx = 0.0, ry = 0.0, rz = 0.0 },
+            --     { x =  0.55, y =  1.2, z = -0.90, rx = 0.0, ry = 0.0, rz = 0.0 },
+            --     { x = -0.55, y = -1.2, z = -0.90, rx = 0.0, ry = 0.0, rz = 0.0 },
+            --     { x =  0.55, y = -1.2, z = -0.90, rx = 0.0, ry = 0.0, rz = 0.0 },
+            --     { x = -0.55, y = -3.6, z = -0.90, rx = 0.0, ry = 0.0, rz = 0.0 },
+            --     { x =  0.55, y = -3.6, z = -0.90, rx = 0.0, ry = 0.0, rz = 0.0 },
+            -- },
         },
         ["docktrailer"] = {
             maxPallets = 4,
             length = 11.0, width = 2.6,
-            attachOffsets = {
-                { x = 0.0, y =  3.0, z = 1.2, rx = 0.0, ry = 0.0, rz = 0.0 },
-                { x = 0.0, y =  1.0, z = 1.2, rx = 0.0, ry = 0.0, rz = 0.0 },
-                { x = 0.0, y = -1.0, z = 1.2, rx = 0.0, ry = 0.0, rz = 0.0 },
-                { x = 0.0, y = -3.0, z = 1.2, rx = 0.0, ry = 0.0, rz = 0.0 },
-            },
+            renderLoadedPallets = false,
+            -- attachOffsets = {
+            --     { x = 0.0, y =  3.0, z = 1.2, rx = 0.0, ry = 0.0, rz = 0.0 },
+            --     { x = 0.0, y =  1.0, z = 1.2, rx = 0.0, ry = 0.0, rz = 0.0 },
+            --     { x = 0.0, y = -1.0, z = 1.2, rx = 0.0, ry = 0.0, rz = 0.0 },
+            --     { x = 0.0, y = -3.0, z = 1.2, rx = 0.0, ry = 0.0, rz = 0.0 },
+            -- },
         },
     },
 }

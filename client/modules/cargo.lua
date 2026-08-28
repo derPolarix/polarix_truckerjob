@@ -343,32 +343,50 @@ local function TryLoadPalletOnTrailerSolo()
         return
     end
 
-    local offset = trailerConfig.attachOffsets[slot]
-    if not offset then
-        Framework.Notify(Locale("notify.slot_offset_missing_not_calibrated"), "error")
+    local renderPallets = trailerConfig.renderLoadedPallets ~= false
+
+    local prop = ForkliftPallet.entity
+    if not prop then
         palletLoadBusy = false
         return
     end
 
-    local prop = ForkliftPallet.entity
-    DetachEntity(prop, true, true)
-    AttachEntityToEntity(prop, trailer, 0,
-        offset.x, offset.y, offset.z,
-        offset.rx, offset.ry, offset.rz,
-        false, false, false, false, 2, true)
-
-    SetEntityCollision(prop, true, true)
-    SetEntityNoCollisionEntity(prop, trailer, true)
-    for otherSlot, otherEntity in pairs(LoadedPallets) do
-        if otherSlot ~= slot and otherEntity and DoesEntityExist(otherEntity) then
-            SetEntityNoCollisionEntity(prop, otherEntity, true)
-            SetEntityNoCollisionEntity(otherEntity, prop, true)
+    if not renderPallets then
+        -- Trailer opted out of visible cargo (e.g. attach offsets clip through the
+        -- model on some frameworks). Slot is still consumed so "trailer full" works,
+        -- but the pallet is just deleted instead of parented to the trailer.
+        DetachEntity(prop, true, true)
+        DeleteEntity(prop)
+        LoadedPallets[slot] = true
+        ForkliftPallet.entity = nil
+        ForkliftPallet.slotIndex = nil
+    else
+        local offset = trailerConfig.attachOffsets and trailerConfig.attachOffsets[slot]
+        if not offset then
+            Framework.Notify(Locale("notify.slot_offset_missing_not_calibrated"), "error")
+            palletLoadBusy = false
+            return
         end
-    end
 
-    LoadedPallets[slot] = prop
-    ForkliftPallet.entity = nil
-    ForkliftPallet.slotIndex = nil
+        DetachEntity(prop, true, true)
+        AttachEntityToEntity(prop, trailer, 0,
+            offset.x, offset.y, offset.z,
+            offset.rx, offset.ry, offset.rz,
+            false, false, false, false, 2, true)
+
+        SetEntityCollision(prop, true, true)
+        SetEntityNoCollisionEntity(prop, trailer, true)
+        for otherSlot, otherEntity in pairs(LoadedPallets) do
+            if otherSlot ~= slot and type(otherEntity) == "number" and DoesEntityExist(otherEntity) then
+                SetEntityNoCollisionEntity(prop, otherEntity, true)
+                SetEntityNoCollisionEntity(otherEntity, prop, true)
+            end
+        end
+
+        LoadedPallets[slot] = prop
+        ForkliftPallet.entity = nil
+        ForkliftPallet.slotIndex = nil
+    end
 
     MissionCargo.loadedCount = MissionCargo.loadedCount + 1
 
@@ -385,7 +403,7 @@ end
 -- physically loaded - every client that can see the target trailer renders its own copy at
 -- the same deterministic offset, so no entity networking is needed to keep cargo in sync.
 local function AttachDecorativePalletToTrailer(trailer, trailerSlot, trailerConfig)
-    local offset = trailerConfig.attachOffsets[trailerSlot]
+    local offset = trailerConfig.attachOffsets and trailerConfig.attachOffsets[trailerSlot]
     if not offset then return nil end
 
     local modelHash = GetHashKey(shared.PalletModel)
@@ -470,9 +488,11 @@ local function TryLoadPalletOnTrailerParty(targetTrailer, targetIdentifier)
         return
     end
 
-    local offset = trailerConfig.attachOffsets[trailerSlot]
-    if offset then
-        local prop = ForkliftPallet.entity
+    local renderPallets = trailerConfig.renderLoadedPallets ~= false
+    local offset = renderPallets and trailerConfig.attachOffsets and trailerConfig.attachOffsets[trailerSlot]
+    local prop = ForkliftPallet.entity
+
+    if offset and prop then
         DetachEntity(prop, true, true)
         AttachEntityToEntity(prop, targetTrailer, 0,
             offset.x, offset.y, offset.z,
@@ -481,6 +501,11 @@ local function TryLoadPalletOnTrailerParty(targetTrailer, targetIdentifier)
         SetEntityCollision(prop, true, true)
         SetEntityNoCollisionEntity(prop, targetTrailer, true)
         RegisterTrailerLoadedProp(targetTrailer, trailerSlot, prop)
+    elseif prop and DoesEntityExist(prop) then
+        -- Not rendered (trailer opted out, or no calibrated offset) - drop the carried
+        -- pallet instead of leaving it orphaned. Server already tracked the load.
+        DetachEntity(prop, true, true)
+        DeleteEntity(prop)
     end
 
     ForkliftPallet.entity = nil
@@ -509,7 +534,8 @@ end
 
 function CleanupMissionPalletsOnTrailer()
     for slot, entity in pairs(LoadedPallets) do
-        if entity and DoesEntityExist(entity) then
+        -- entity is `true` for slots loaded onto a non-rendering trailer - nothing to delete.
+        if type(entity) == "number" and DoesEntityExist(entity) then
             DetachEntity(entity, true, true)
             DeleteEntity(entity)
         end
@@ -541,7 +567,7 @@ end
 -- go, and loadedCount resets for the next trip.
 function ClearOwnTrailerPallets()
     for slot, entity in pairs(LoadedPallets) do
-        if entity and DoesEntityExist(entity) then
+        if type(entity) == "number" and DoesEntityExist(entity) then
             DetachEntity(entity, true, true)
             DeleteEntity(entity)
         end
@@ -632,7 +658,7 @@ local function ReconcileTrailerProps(wanted)
     for trailer, slots in pairs(wanted) do
         local trailerModel = GetTrailerModelNameFor(trailer)
         local trailerConfig = trailerModel and shared.CompatibleTrailers[trailerModel]
-        if trailerConfig then
+        if trailerConfig and trailerConfig.renderLoadedPallets ~= false then
             local owned = TrailerLoadedProps[trailer]
             for trailerSlot in pairs(slots) do
                 local existing = owned and owned[trailerSlot]
