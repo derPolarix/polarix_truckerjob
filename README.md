@@ -37,7 +37,7 @@ Works with **qbox**, **qb-core**, and **ESX** out of the box.
 
 ## Installation
 
-1. IMPORTANT: Download the current version via the the [release section](https://github.com/derPolarix/polarix_truckerjob/releases).
+1. IMPORTANT: Download the current version called `polarix_truckerjob_vX.X.X.zip` via the the [release section](https://github.com/derPolarix/polarix_truckerjob/releases).
 2. Drop the resource into your server's `resources/` folder as `polarix_truckerjob`.
 3. Add to your `server.cfg`:
    ```
