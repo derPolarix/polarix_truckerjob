@@ -2,6 +2,7 @@ local debug = require("shared.debug")
 local client = require("config.client")
 local shared = require("shared.debug")
 local Locale = require("shared.locale")
+local Money = require("shared.currency")
 
 RegisterNUICallback('closeNui', function(_, cb)
     SetNuiFocus(false, false)
@@ -64,7 +65,7 @@ end)
 RegisterNUICallback('buyVehicle', function(data, cb)
     lib.callback('polarix_trucker:buyVehicle', false, function(success, price, err, ownedVehicles)
         if success then
-            Framework.Notify(Locale("notify.vehicle_bought"):format(lib.math.groupdigits(price, ',')), 'success')
+            Framework.Notify(Locale("notify.vehicle_bought"):format(Money(price)), 'success')
             SendMessage('updateOwnedVehicles', {
                 ownedVehicles = ownedVehicles,
                 equippedSlot  = LocalVehicle.slot,
@@ -79,7 +80,7 @@ end)
 RegisterNUICallback('hireDriver', function(data, cb)
     lib.callback('polarix_trucker:hireDriver', false, function(success, price, err, ownedDriverSlots)
         if success then
-            Framework.Notify(Locale("notify.driver_hired"):format(lib.math.groupdigits(price, ',')), 'success')
+            Framework.Notify(Locale("notify.driver_hired"):format(Money(price)), 'success')
             SendMessage('updateDriverSlots', { ownedDriverSlots = ownedDriverSlots })
         else
             Framework.Notify(err or Locale("notify.purchase_failed"), 'error')
@@ -107,7 +108,7 @@ end)
 RegisterNUICallback('buyTrailer', function(data, cb)
     lib.callback('polarix_trucker:buyTrailer', false, function(success, price, err, ownedTrailers)
         if success then
-            Framework.Notify(Locale("notify.trailer_bought"):format(lib.math.groupdigits(price, ',')), 'success')
+            Framework.Notify(Locale("notify.trailer_bought"):format(Money(price)), 'success')
             SendMessage('updateOwnedTrailers', {
                 ownedTrailers = ownedTrailers,
                 equippedSlot  = LocalTrailer.slot,
@@ -266,7 +267,7 @@ RegisterNUICallback('depositBank', function(data, cb)
         if not success then
             Framework.Notify(err or Locale("notify.deposit_failed"), 'error')
         else
-            Framework.Notify(Locale("notify.deposited"):format(lib.math.groupdigits(data.amount, ',')), 'success')
+            Framework.Notify(Locale("notify.deposited"):format(Money(data.amount)), 'success')
         end
         cb({ ok = success })
     end, data.amount)
@@ -277,7 +278,7 @@ RegisterNUICallback('withdrawBank', function(data, cb)
         if not success then
             Framework.Notify(err or Locale("notify.withdrawal_failed"), 'error')
         else
-            Framework.Notify(Locale("notify.withdrawn"):format(lib.math.groupdigits(data.amount, ',')), 'success')
+            Framework.Notify(Locale("notify.withdrawn"):format(Money(data.amount)), 'success')
         end
         cb({ ok = success })
     end, data.amount)

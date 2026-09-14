@@ -1,6 +1,7 @@
 local clientConfig = require("config.client")
 local sharedConfig = require("config.shared")
 local Locale = require("shared.locale")
+local Money = require("shared.currency")
 
 LocalRental = {
     vehicleEntity = nil,
@@ -140,7 +141,7 @@ RegisterNetEvent("polarix_trucker:rentalStarted", function(vehicleModel, trailer
 end)
 
 RegisterNetEvent("polarix_trucker:rentalCharged", function(amount)
-    Framework.Notify(Locale("notify.rent_charged"):format(amount), "info")
+    Framework.Notify(Locale("notify.rent_charged"):format(Money(amount)), "info")
 end)
 
 RegisterNetEvent("polarix_trucker:rentalEnded", function(reason)

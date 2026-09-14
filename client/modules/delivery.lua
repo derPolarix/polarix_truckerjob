@@ -1,5 +1,6 @@
 local cargo = require("shared.cargo")
 local Locale = require("shared.locale")
+local Money = require("shared.currency")
 
 DeliveryState = {
     status = "idle", -- idle | awaiting_pickup | delivering
@@ -217,12 +218,12 @@ end
 RegisterNetEvent("polarix_trucker:deliveryCompleted", function(reward, xp, damagePenalty, companyTax)
     Delivery.Reset()
 
-    local msg = Locale("notify.delivery_completed_xp"):format(reward, xp)
+    local msg = Locale("notify.delivery_completed_xp"):format(Money(reward), xp)
     if damagePenalty and damagePenalty > 0 then
-        msg = msg .. Locale("notify.damage_deduction"):format(damagePenalty)
+        msg = msg .. Locale("notify.damage_deduction"):format(Money(damagePenalty))
     end
     if companyTax and companyTax > 0 then
-        msg = msg .. Locale("notify.company_tax"):format(companyTax)
+        msg = msg .. Locale("notify.company_tax"):format(Money(companyTax))
     end
     Framework.Notify(msg, "success")
     SendMessage("deliveryComplete", { reward = reward, xp = xp })
