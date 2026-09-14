@@ -73,6 +73,15 @@ AddEventHandler('onResourceStart', function(resourceName)
     MySQL.query.await(([[ALTER TABLE %s ADD COLUMN IF NOT EXISTS updated_by VARCHAR(60) DEFAULT NULL]]):format(T.orders))
     MySQL.query.await(([[ALTER TABLE %s ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NULL DEFAULT NULL]]):format(T.orders))
     MySQL.query.await(([[ALTER TABLE %s ADD COLUMN IF NOT EXISTS cooldown_seconds INT UNSIGNED DEFAULT 0]]):format(T.orders))
+    MySQL.query.await(([[ALTER TABLE %s ADD COLUMN IF NOT EXISTS reward_per_km   INT        DEFAULT 0]]):format(T.orders))
+    MySQL.query.await(([[ALTER TABLE %s ADD COLUMN IF NOT EXISTS xp_per_km       FLOAT      DEFAULT 0]]):format(T.orders))
+    MySQL.query.await(([[ALTER TABLE %s ADD COLUMN IF NOT EXISTS distance_manual TINYINT(1) DEFAULT 0]]):format(T.orders))
+
+    -- Backfill the per-km values from the totals that were hand-entered before the per-km editor existed,
+    -- so every pre-existing mission keeps paying exactly what it paid. reward_base/xp_base are deliberately
+    -- left untouched here; they are recomputed from the per-km values the next time an admin saves the order.
+    MySQL.query.await(([[UPDATE %s SET reward_per_km = ROUND(reward_base / distance_km) WHERE reward_per_km = 0 AND distance_km > 0]]):format(T.orders))
+    MySQL.query.await(([[UPDATE %s SET xp_per_km = xp_base / distance_km WHERE xp_per_km = 0 AND distance_km > 0]]):format(T.orders))
 
     MySQL.query.await(([[CREATE TABLE IF NOT EXISTS %s (
         id           INT AUTO_INCREMENT PRIMARY KEY,

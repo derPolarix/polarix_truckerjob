@@ -75,10 +75,11 @@ end
 
 function DB.UpdateOrder(orderId, order, adminIdentifier)
     MySQL.update.await(
-        ("UPDATE %s SET name=?,cargo=?,cargo_type=?,weight_kg=?,distance_km=?,reward_base=?,xp_base=?,time_minutes=?,pickup_label=?,pickup_city=?,pickup_x=?,pickup_y=?,pickup_z=?,pickup_heading=?,pickup_pallet_coords=?,dropoff_label=?,dropoff_city=?,dropoff_x=?,dropoff_y=?,dropoff_z=?,dropoff_heading=?,comment=?,tag=?,tag_color=?,tag_bg=?,icon=?,level_required=?,requires_hazmat=?,requires_long_hauler=?,cooldown_seconds=?,updated_by=?,updated_at=NOW() WHERE id=?"):format(T.orders),
+        ("UPDATE %s SET name=?,cargo=?,cargo_type=?,weight_kg=?,distance_km=?,distance_manual=?,reward_per_km=?,reward_base=?,xp_per_km=?,xp_base=?,time_minutes=?,pickup_label=?,pickup_city=?,pickup_x=?,pickup_y=?,pickup_z=?,pickup_heading=?,pickup_pallet_coords=?,dropoff_label=?,dropoff_city=?,dropoff_x=?,dropoff_y=?,dropoff_z=?,dropoff_heading=?,comment=?,tag=?,tag_color=?,tag_bg=?,icon=?,level_required=?,requires_hazmat=?,requires_long_hauler=?,cooldown_seconds=?,updated_by=?,updated_at=NOW() WHERE id=?"):format(T.orders),
         {
             order.name, order.cargo, order.cargo_type, order.weight_kg, order.distance_km,
-            order.reward_base, order.xp_base, order.time_minutes, order.pickup_label, order.pickup_city,
+            order.distance_manual and 1 or 0, order.reward_per_km or 0, order.reward_base,
+            order.xp_per_km or 0, order.xp_base, order.time_minutes, order.pickup_label, order.pickup_city,
             order.pickup_x, order.pickup_y, order.pickup_z, order.pickup_heading or 0.0,
             json.encode(order.pickup_pallet_coords or {}),
             order.dropoff_label, order.dropoff_city, order.dropoff_x, order.dropoff_y, order.dropoff_z, order.dropoff_heading or 0.0,
@@ -118,10 +119,11 @@ end
 
 function DB.InsertOrder(order)
     MySQL.insert.await(
-        ("INSERT INTO %s (id,name,cargo,cargo_type,weight_kg,distance_km,reward_base,xp_base,time_minutes,pickup_label,pickup_city,pickup_x,pickup_y,pickup_z,pickup_heading,pickup_pallet_coords,dropoff_label,dropoff_city,dropoff_x,dropoff_y,dropoff_z,dropoff_heading,comment,tag,tag_color,tag_bg,icon,level_required,requires_hazmat,requires_long_hauler,cooldown_seconds,is_active) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"):format(T.orders),
+        ("INSERT INTO %s (id,name,cargo,cargo_type,weight_kg,distance_km,distance_manual,reward_per_km,reward_base,xp_per_km,xp_base,time_minutes,pickup_label,pickup_city,pickup_x,pickup_y,pickup_z,pickup_heading,pickup_pallet_coords,dropoff_label,dropoff_city,dropoff_x,dropoff_y,dropoff_z,dropoff_heading,comment,tag,tag_color,tag_bg,icon,level_required,requires_hazmat,requires_long_hauler,cooldown_seconds,is_active) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"):format(T.orders),
         {
             order.id, order.name, order.cargo, order.cargo_type, order.weight_kg, order.distance_km,
-            order.reward_base, order.xp_base, order.time_minutes, order.pickup_label, order.pickup_city,
+            order.distance_manual and 1 or 0, order.reward_per_km or 0, order.reward_base,
+            order.xp_per_km or 0, order.xp_base, order.time_minutes, order.pickup_label, order.pickup_city,
             order.pickup_x, order.pickup_y, order.pickup_z, order.pickup_heading or 0.0,
             json.encode(order.pickup_pallet_coords or {}),
             order.dropoff_label, order.dropoff_city,
