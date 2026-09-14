@@ -18,6 +18,10 @@ export interface AdminOrder {
   cargo_type: string;
   weight_kg: number;
   distance_km: number;
+  distance_manual: boolean;
+  reward_per_km: number;
+  xp_per_km: number;
+  // derived server-side from distance_km * the per-km rates - read-only here, shown as a preview
   reward_base: number;
   xp_base: number;
   time_minutes: number;
@@ -78,8 +82,11 @@ function emptyOrder(): AdminOrder {
     cargo_type: "standard",
     weight_kg: 1000,
     distance_km: 0,
+    distance_manual: false,
+    reward_per_km: 0,
+    xp_per_km: 0,
     reward_base: 0,
-    xp_base: 1,
+    xp_base: 0,
     time_minutes: 60,
     pickup_label: "",
     pickup_city: "",
@@ -123,6 +130,9 @@ function mapRawOrder(raw: any): AdminOrder {
     cargo_type: raw.cargo_type ?? "standard",
     weight_kg: raw.weight_kg ?? 0,
     distance_km: raw.distance_km ?? 0,
+    distance_manual: !!raw.distance_manual,
+    reward_per_km: raw.reward_per_km ?? 0,
+    xp_per_km: raw.xp_per_km ?? 0,
     reward_base: raw.reward_base ?? 0,
     xp_base: raw.xp_base ?? 0,
     time_minutes: raw.time_minutes ?? 0,
@@ -172,6 +182,20 @@ export const useAdminMissionsStore = defineStore("adminMissions", {
       if (!state.form) return 0;
       return calcPalletCount(state.form.weight_kg, state.palletWeightKg, state.maxPalletsPerOrder);
     },
+    // mirrors deriveTotals() in server/modules/admin_missions.lua - the server recomputes both on save,
+    // these only preview what it will write.
+    rewardTotal(state): number {
+      if (!state.form) return 0;
+      return Math.round((state.form.distance_km || 0) * (state.form.reward_per_km || 0));
+    },
+    xpTotal(state): number {
+      if (!state.form) return 0;
+      return Math.max(1, Math.round((state.form.distance_km || 0) * (state.form.xp_per_km || 0)));
+    },
+    canSave(state): boolean {
+      if (!state.form) return false;
+      return state.form.distance_km > 0 && state.form.reward_per_km > 0 && state.form.xp_per_km > 0;
+    },
   },
   actions: {
     setOrders(rawOrders: any[], palletWeightKg?: number, maxPalletsPerOrder?: number) {
@@ -207,6 +231,8 @@ export const useAdminMissionsStore = defineStore("adminMissions", {
     recalcDistance() {
       if (!this.form) return;
       const f = this.form;
+      // distance drives the payout now, so a manually set one must never be silently recomputed
+      if (f.distance_manual) return;
       if (f.pickup_x == null || f.dropoff_x == null) return;
       const dx = (f.dropoff_x ?? 0) - (f.pickup_x ?? 0);
       const dy = (f.dropoff_y ?? 0) - (f.pickup_y ?? 0);
