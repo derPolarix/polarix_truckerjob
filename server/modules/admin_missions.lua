@@ -21,9 +21,32 @@ local function slugify(name)
     return candidate
 end
 
+-- reward_base/xp_base are never entered by hand any more: the editor collects a per-km rate and the
+-- totals fall out of the route distance. Runtime (payout, damage cap, party split, HUD) keeps reading
+-- the totals, so this is the only place the formula lives.
+local function deriveTotals(order)
+    local distance    = tonumber(order.distance_km) or 0
+    local rewardPerKm = tonumber(order.reward_per_km) or 0
+    local xpPerKm     = tonumber(order.xp_per_km) or 0
+
+    if distance <= 0 then return false, Locale("error.distance_required") end
+    if rewardPerKm <= 0 then return false, Locale("error.reward_per_km_required") end
+    if xpPerKm <= 0 then return false, Locale("error.xp_per_km_required") end
+
+    order.distance_km   = distance
+    order.reward_per_km = rewardPerKm
+    order.xp_per_km     = xpPerKm
+    order.reward_base   = math.floor(distance * rewardPerKm + 0.5)
+    order.xp_base       = math.max(1, math.floor(distance * xpPerKm + 0.5))
+    return true
+end
+
 function AdminMissions.Create(source, order)
     local ok, err = requireAdmin(source)
     if not ok then return false, err end
+
+    local derived, derr = deriveTotals(order)
+    if not derived then return false, derr end
 
     local pData = Player.GetData(source)
     order.id = slugify(order.name)
@@ -38,6 +61,9 @@ function AdminMissions.Update(source, orderId, order)
     local ok, err = requireAdmin(source)
     if not ok then return false, err end
     if not DB.OrderIdExists(orderId) then return false, Locale("error.mission_does_not_exist") end
+
+    local derived, derr = deriveTotals(order)
+    if not derived then return false, derr end
 
     local pData = Player.GetData(source)
     DB.UpdateOrder(orderId, order, pData and pData.identifier)
