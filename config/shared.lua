@@ -9,6 +9,14 @@ return {
     -- valid: "en", "de", "fr", "es", "pt-br", "pl", "nl", "it", "tr"
     Language = "en",
 
+    -- currency symbol used by every money value (notifies + NUI)
+    -- position "prefix" -> $680,000 | "suffix" -> 680,000 € (space added automatically)
+    -- digits are always grouped with ","
+    Currency = {
+        symbol   = "$",
+        position = "prefix", -- "prefix", "suffix"
+    },
+
     -- name/desc are locales/*.json keys, not display text — resolved via Locale()
     -- in Skills.GetBranchesForPlayer
     Skills = {
