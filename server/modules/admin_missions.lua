@@ -136,6 +136,7 @@ function AdminMissions.ImportSampleMissions(source)
     for _, sample in ipairs(sampleMissions) do
         local order = shallowCopy(sample)
         order.id = freshSampleId(order.id)
+        deriveTotals(order) -- samples carry per-km rates only; totals come from the same formula as the editor
         local anchor = vector3(order.pickup_x, order.pickup_y, order.pickup_z)
         local count = cargo.CalcPalletCount(order.weight_kg)
         order.pickup_pallet_coords = cargo.GenerateGridCoords(anchor, order.pickup_heading, count)

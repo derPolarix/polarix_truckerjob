@@ -1,9 +1,14 @@
 -- Data for the "Import Sample Missions" button in the admin mission editor
 -- (see server/modules/admin_missions.lua AdminMissions.ImportSampleMissions).
+--
+-- Rewards are expressed per km and scale with cargo value (standard 6000 -> hazmat 10000);
+-- reward_base/xp_base are derived on import by the same helper the editor uses.
+-- distance_manual is set because these distances are hand-authored round numbers that do not
+-- match the straight-line distance between the coordinates below.
 return {
     {
         id = "order-al", name = "Alcohols", cargo = "Fragile", cargo_type = "fragile",
-        weight_kg = 4300, distance_km = 6.0, reward_base = 43500, xp_base = 4, time_minutes = 165,
+        weight_kg = 4300, distance_km = 6.0, distance_manual = true, reward_per_km = 7500, xp_per_km = 0.7, time_minutes = 165,
         pickup_label = "Paleto Bay Main Street", pickup_city = "Paleto Bay",
         pickup_x = -105.0, pickup_y = 6474.0, pickup_z = 31.0,
         dropoff_label = "Mirror Park Boulevard", dropoff_city = "Los Santos",
@@ -15,7 +20,7 @@ return {
     },
     {
         id = "order-st", name = "Steel Beams", cargo = "Heavy", cargo_type = "heavy",
-        weight_kg = 18000, distance_km = 12.0, reward_base = 95000, xp_base = 9, time_minutes = 240,
+        weight_kg = 18000, distance_km = 12.0, distance_manual = true, reward_per_km = 8500, xp_per_km = 0.8, time_minutes = 240,
         pickup_label = "LSIA Freight Yard", pickup_city = "Los Santos",
         pickup_x = -1055.0, pickup_y = -2663.0, pickup_z = 13.0,
         dropoff_label = "Grand Senora Desert Site", dropoff_city = "Grand Senora",
@@ -27,7 +32,7 @@ return {
     },
     {
         id = "order-ch", name = "Chemical Drums", cargo = "Hazmat", cargo_type = "hazmat",
-        weight_kg = 6200, distance_km = 8.5, reward_base = 72000, xp_base = 7, time_minutes = 195,
+        weight_kg = 6200, distance_km = 8.5, distance_manual = true, reward_per_km = 10000, xp_per_km = 0.9, time_minutes = 195,
         pickup_label = "Elysian Island Port", pickup_city = "Los Santos",
         pickup_x = 476.0, pickup_y = -3000.0, pickup_z = 6.0,
         dropoff_label = "Route 68 Processing Plant", dropoff_city = "Blaine County",
@@ -39,7 +44,7 @@ return {
     },
     {
         id = "order-lv", name = "Livestock", cargo = "Live Animals", cargo_type = "live",
-        weight_kg = 3800, distance_km = 15.0, reward_base = 58000, xp_base = 6, time_minutes = 210,
+        weight_kg = 3800, distance_km = 15.0, distance_manual = true, reward_per_km = 8000, xp_per_km = 0.75, time_minutes = 210,
         pickup_label = "Grapeseed Farm", pickup_city = "Blaine County",
         pickup_x = 1705.0, pickup_y = 4870.0, pickup_z = 42.0,
         dropoff_label = "Maze Bank Arena Stockyard", dropoff_city = "Los Santos",
@@ -51,7 +56,7 @@ return {
     },
     {
         id = "order-cr", name = "Crates (Standard)", cargo = "Standard", cargo_type = "standard",
-        weight_kg = 2100, distance_km = 3.5, reward_base = 18000, xp_base = 2, time_minutes = 90,
+        weight_kg = 2100, distance_km = 3.5, distance_manual = true, reward_per_km = 6000, xp_per_km = 0.6, time_minutes = 90,
         pickup_label = "Pillbox Hill Depot", pickup_city = "Los Santos",
         pickup_x = 205.0, pickup_y = -810.0, pickup_z = 31.0,
         dropoff_label = "La Mesa Industrial", dropoff_city = "Los Santos",
