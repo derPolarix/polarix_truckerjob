@@ -59,10 +59,8 @@
             </label>
           </div>
 
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px">
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px">
             <label class="field-label">{{ t('admin.weight_kg_label') }}<input type="number" v-model.number="store.form.weight_kg" class="fld" /></label>
-            <label class="field-label">{{ t('admin.reward_label', { currency: currencySymbol() }) }}<input type="number" v-model.number="store.form.reward_base" class="fld" /></label>
-            <label class="field-label">{{ t('admin.xp_label') }}<input type="number" v-model.number="store.form.xp_base" class="fld" /></label>
             <label class="field-label">{{ t('admin.time_min_label') }}<input type="number" v-model.number="store.form.time_minutes" class="fld" /></label>
           </div>
           <div style="font-size:11px;color:#9aa1ab;margin-top:4px">{{ t('admin.pallets_preview', { count: store.palletPreview, max: store.maxPalletsPerOrder }) }}</div>
@@ -123,10 +121,26 @@
           </div>
           <div style="font-size:10px;color:#9aa1ab;margin-top:4px" v-if="store.form.dropoff_x != null">{{ t('admin.red_outline_hint') }}</div>
 
-          <div style="display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:10px;align-items:end">
-            <label class="field-label">{{ t('admin.distance_km_label') }}<input type="number" step="0.1" v-model.number="store.form.distance_km" :disabled="!distanceOverride" class="fld" /></label>
-            <label class="chk" style="margin-bottom:8px"><input type="checkbox" v-model="distanceOverride" /><span class="chk-box"></span> {{ t('admin.override_manually') }}</label>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#9aa1ab;margin:18px 0 8px">{{ t('admin.payout_heading') }}</div>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+            <label class="field-label">{{ t('admin.distance_km_label') }}<input type="number" step="0.1" v-model.number="store.form.distance_km" :disabled="!store.form.distance_manual" class="fld" /></label>
+            <label class="chk" style="margin-bottom:8px"><input type="checkbox" v-model="store.form.distance_manual" /><span class="chk-box"></span> {{ t('admin.override_manually') }}</label>
           </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+            <label class="field-label">{{ t('admin.reward_per_km_label', { currency: currencySymbol() }) }}<input type="number" min="0" v-model.number="store.form.reward_per_km" class="fld" /></label>
+            <label class="field-label">{{ t('admin.xp_per_km_label') }}<input type="number" min="0" step="0.05" v-model.number="store.form.xp_per_km" class="fld" /></label>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;padding:10px 12px;border-radius:9px;background:#f6f7f8;border:1px solid #eef0f2">
+            <div>
+              <div style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:#9aa1ab">{{ t('admin.total_reward_label') }}</div>
+              <div style="font-size:17px;font-weight:800;color:#1b1f24;margin-top:2px">{{ money(store.rewardTotal) }}</div>
+            </div>
+            <div>
+              <div style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:#9aa1ab">{{ t('admin.total_xp_label') }}</div>
+              <div style="font-size:17px;font-weight:800;color:#1b1f24;margin-top:2px">+{{ store.xpTotal }}</div>
+            </div>
+          </div>
+          <div v-if="!store.canSave" style="font-size:11px;color:#b58a05;margin-top:6px">{{ t('admin.payout_incomplete_hint') }}</div>
 
           <label class="field-label" style="margin-top:10px">{{ t('admin.comment_label') }}<textarea v-model="store.form.comment" rows="2" class="fld" style="resize:vertical" /></label>
 
@@ -137,7 +151,7 @@
         </div>
 
         <footer v-if="store.form" style="flex-shrink:0;padding:12px 16px;border-top:1px solid #dfe2e6;display:flex;gap:8px;flex-wrap:wrap">
-          <button @click="onSave" class="accent-btn" style="padding:10px 16px;font-size:12.5px" :disabled="store.saving">{{ store.saving ? t('admin.saving') : t('admin.save_button') }}</button>
+          <button @click="onSave" class="accent-btn" style="padding:10px 16px;font-size:12.5px" :disabled="store.saving || !store.canSave">{{ store.saving ? t('admin.saving') : t('admin.save_button') }}</button>
           <button v-if="!store.isNew" @click="store.clone(store.form.id!)" class="mini-btn">{{ t('admin.duplicate_button') }}</button>
           <button v-if="!store.isNew" @click="store.setActive(store.form.id!, !store.form.is_active)" class="mini-btn">{{ store.form.is_active ? t('admin.deactivate_button') : t('admin.activate_button') }}</button>
           <button
@@ -188,7 +202,7 @@ import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAdminMissionsStore, CARGO_TYPE_PRESETS } from "@/stores/adminMissionsStore";
 import { usePersistantStore } from "@/stores/persistantStore";
-import { currencySymbol } from "@/currency";
+import { currencySymbol, money } from "@/currency";
 
 const store = useAdminMissionsStore();
 const persistantStore = usePersistantStore();
@@ -196,7 +210,6 @@ const { t } = useI18n();
 
 const search = ref("");
 const onlyActive = ref(false);
-const distanceOverride = ref(false);
 const importing = ref(false);
 const showDeleteConfirm = ref(false);
 const deleting = ref(false);
@@ -213,7 +226,6 @@ const filteredOrders = computed(() => {
 
 function select(id: string) {
   store.selectOrder(id);
-  distanceOverride.value = false;
 }
 
 function onCargoTypeChange(type: string) {
@@ -241,10 +253,12 @@ function onDropoffCoordsChange() {
   if (store.form?.dropoff_x != null) store.setDropoffPreview(true);
 }
 
-// Auto-recalculate distance unless the admin has manually overridden it.
+// Auto-recalculate distance unless the admin has manually overridden it. The override now lives on the
+// order itself (distance_manual), so recalcDistance bails out on its own - including when this fires
+// because selectOrder swapped the form, which used to overwrite a stored manual distance.
 watch(
   () => [store.form?.pickup_x, store.form?.pickup_y, store.form?.pickup_z, store.form?.dropoff_x, store.form?.dropoff_y, store.form?.dropoff_z],
-  () => { if (!distanceOverride.value) store.recalcDistance(); },
+  () => store.recalcDistance(),
 );
 
 async function onSave() {
