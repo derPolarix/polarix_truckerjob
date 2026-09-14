@@ -4,10 +4,11 @@ local cargo  = require("shared.cargo")
 AdminEditorGhosts = {}
 AdminEditorPreview = { active = false, dropoffX = nil, dropoffY = nil, dropoffZ = nil, dropoffHeading = 0.0 }
 
-RegisterNetEvent("polarix_trucker:openAdminEditor", function(orders)
+RegisterNetEvent("polarix_trucker:openAdminEditor", function(orders, testRunOrderId)
     SetFocus(true)
-    -- ships PalletWeightKg/MaxPalletsPerOrder so web/ can duplicate Cargo.CalcPalletCount without hardcoding them
-    SendMessage("openAdminMissions", { orders = orders, palletWeightKg = shared.PalletWeightKg, maxPalletsPerOrder = shared.MaxPalletsPerOrder })
+    -- ships PalletWeightKg/MaxPalletsPerOrder so web/ can duplicate Cargo.CalcPalletCount without hardcoding them.
+    -- testRunOrderId flips the editor's test button to "end test mission" when a QA run is already going.
+    SendMessage("openAdminMissions", { orders = orders, testRunOrderId = testRunOrderId, palletWeightKg = shared.PalletWeightKg, maxPalletsPerOrder = shared.MaxPalletsPerOrder })
 end)
 
 local function spawnGhostPallet(pos, heading)

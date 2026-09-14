@@ -408,8 +408,9 @@ const handleMessage = (event: MessageEvent) => {
 			case "openAdminMissions": {
 				persistantStore.IsNuiOpen = true;
 				router.push("/admin-missions");
-				const d = raw.data as { orders?: any[]; palletWeightKg?: number; maxPalletsPerOrder?: number };
+				const d = raw.data as { orders?: any[]; testRunOrderId?: string; palletWeightKg?: number; maxPalletsPerOrder?: number };
 				adminMissionsStore.setOrders(d?.orders ?? [], d?.palletWeightKg, d?.maxPalletsPerOrder);
+				adminMissionsStore.setTestRunOrderId(d?.testRunOrderId);
 				break;
 			}
 		case "newNotification":

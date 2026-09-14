@@ -176,6 +176,9 @@ export const useAdminMissionsStore = defineStore("adminMissions", {
     maxPalletsPerOrder: 10,
     saving: false,
     error: null as string | null,
+    // id of the QA test mission this admin currently has running, or null. Server-owned: refreshed
+    // from every adminListOrders / openAdminMissions payload, never inferred from local UI state.
+    testRunOrderId: null as string | null,
   }),
   getters: {
     palletPreview(state): number {
@@ -202,6 +205,9 @@ export const useAdminMissionsStore = defineStore("adminMissions", {
       this.orders = (rawOrders ?? []).map(mapRawOrder);
       if (palletWeightKg) this.palletWeightKg = palletWeightKg;
       if (maxPalletsPerOrder) this.maxPalletsPerOrder = maxPalletsPerOrder;
+    },
+    setTestRunOrderId(orderId: string | null | undefined) {
+      this.testRunOrderId = orderId ?? null;
     },
     selectOrder(id: string) {
       const order = this.orders.find((o) => o.id === id);
@@ -354,7 +360,18 @@ export const useAdminMissionsStore = defineStore("adminMissions", {
       }
     },
     async testRun(orderId: string) {
-      return await nuiCallbackAsync<{ ok: boolean }>("adminTestRunOrder", { orderId });
+      const res = await nuiCallbackAsync<{ ok: boolean; testRunOrderId?: string }>("adminTestRunOrder", { orderId });
+      if (res.ok) this.testRunOrderId = res.testRunOrderId ?? orderId;
+      return res;
+    },
+    async cancelTestRun() {
+      const res = await nuiCallbackAsync<{ ok: boolean; err?: string }>("adminCancelTestRun");
+      if (res.ok) {
+        this.testRunOrderId = null;
+      } else {
+        this.error = res.err ?? i18n.global.t("notify.test_cancel_failed");
+      }
+      return res;
     },
     async importSampleMissions() {
       const res = await nuiCallbackAsync<{ ok: boolean }>("adminImportSampleMissions");
@@ -362,8 +379,9 @@ export const useAdminMissionsStore = defineStore("adminMissions", {
       return res.ok;
     },
     async refetch() {
-      const res = await nuiCallbackAsync<{ ok: boolean; orders: any[] }>("adminListOrders");
+      const res = await nuiCallbackAsync<{ ok: boolean; orders: any[]; testRunOrderId?: string }>("adminListOrders");
       this.setOrders(res.orders ?? []);
+      this.setTestRunOrderId(res.testRunOrderId);
       if (this.form?.id) {
         const stillThere = this.orders.find((o) => o.id === this.form?.id);
         if (stillThere) this.selectOrder(stillThere.id as string);

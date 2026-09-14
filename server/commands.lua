@@ -7,5 +7,5 @@ RegisterCommand('truckeradmin', function(source)
         return
     end
     local orders = AdminMissions.ListForWeb()
-    TriggerClientEvent("polarix_trucker:openAdminEditor", source, orders)
+    TriggerClientEvent("polarix_trucker:openAdminEditor", source, orders, AdminMissions.ActiveTestRunOrderId(source))
 end, false)

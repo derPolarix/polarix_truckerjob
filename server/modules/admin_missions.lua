@@ -146,6 +146,7 @@ function AdminMissions.ImportSampleMissions(source)
 end
 
 -- QA-only test button: starts the mission for the calling admin, bypasses level/hazmat/long-hauler gates.
+-- isTest marks the entry so CancelTestRun can tell a QA run apart from a real accepted delivery.
 function AdminMissions.TestRun(source, orderId)
     local ok, err = requireAdmin(source)
     if not ok then return false, err end
@@ -161,8 +162,31 @@ function AdminMissions.TestRun(source, orderId)
 
     local total = cargo.CalcPalletCount(order.weight_kg)
     local deliveryId = DB.InsertDelivery(orderId, pData.identifier)
-    ActiveDeliveries[source] = { deliveryId = deliveryId, orderId = orderId, totalPallets = total, remainingPallets = total, deliveredPallets = 0, cargoDamageTotal = 0 }
+    ActiveDeliveries[source] = { deliveryId = deliveryId, orderId = orderId, totalPallets = total, remainingPallets = total, deliveredPallets = 0, cargoDamageTotal = 0, isTest = true }
     return true, order
+end
+
+-- Order id of the admin's running test mission, or nil. Drives the editor button's end/start state.
+function AdminMissions.ActiveTestRunOrderId(source)
+    local delivery = ActiveDeliveries[source]
+    if delivery and delivery.isTest then return delivery.orderId end
+    return nil
+end
+
+-- Counterpart of TestRun: drops the delivery row entirely instead of failing/abandoning it, so a QA
+-- run leaves no stats, no failed_deliveries bump and no delivery_count that would block a plain delete.
+-- Refuses on a normally accepted delivery - admins abort those the same way every player does.
+function AdminMissions.CancelTestRun(source)
+    local ok, err = requireAdmin(source)
+    if not ok then return false, err end
+
+    local delivery = ActiveDeliveries[source]
+    if not delivery then return false, Locale("error.no_active_test_mission") end
+    if not delivery.isTest then return false, Locale("error.active_delivery_is_not_a_test") end
+
+    DB.DeleteDelivery(delivery.deliveryId)
+    ActiveDeliveries[source] = nil
+    return true, delivery.orderId
 end
 
 -- Global, not local: server/commands.lua needs the same array/delivery_count shaping
@@ -178,7 +202,7 @@ end
 
 lib.callback.register("polarix_trucker:adminListOrders", function(source)
     if not Framework.IsAdmin(source) then return {} end
-    return AdminMissions.ListForWeb()
+    return AdminMissions.ListForWeb(), AdminMissions.ActiveTestRunOrderId(source)
 end)
 
 lib.callback.register("polarix_trucker:adminCreateOrder", function(source, order) return AdminMissions.Create(source, order) end)
@@ -188,4 +212,5 @@ lib.callback.register("polarix_trucker:adminDeleteOrder", function(source, order
 lib.callback.register("polarix_trucker:adminForceDeleteOrder", function(source, orderId) return AdminMissions.ForceDelete(source, orderId) end)
 lib.callback.register("polarix_trucker:adminCloneOrder", function(source, orderId) return AdminMissions.Clone(source, orderId) end)
 lib.callback.register("polarix_trucker:adminTestRunOrder", function(source, orderId) return AdminMissions.TestRun(source, orderId) end)
+lib.callback.register("polarix_trucker:adminCancelTestRun", function(source) return AdminMissions.CancelTestRun(source) end)
 lib.callback.register("polarix_trucker:adminImportSampleMissions", function(source) return AdminMissions.ImportSampleMissions(source) end)

@@ -150,17 +150,26 @@
           </div>
         </div>
 
-        <footer v-if="store.form" style="flex-shrink:0;padding:12px 16px;border-top:1px solid #dfe2e6;display:flex;gap:8px;flex-wrap:wrap">
-          <button @click="onSave" class="accent-btn" style="padding:10px 16px;font-size:12.5px" :disabled="store.saving || !store.canSave">{{ store.saving ? t('admin.saving') : t('admin.save_button') }}</button>
-          <button v-if="!store.isNew" @click="store.clone(store.form.id!)" class="mini-btn">{{ t('admin.duplicate_button') }}</button>
-          <button v-if="!store.isNew" @click="store.setActive(store.form.id!, !store.form.is_active)" class="mini-btn">{{ store.form.is_active ? t('admin.deactivate_button') : t('admin.activate_button') }}</button>
-          <button
-            v-if="!store.isNew"
-            @click="onDelete"
-            class="mini-btn danger"
-          >{{ store.form.delivery_count > 0 ? t('admin.force_delete_button') : t('admin.delete_button') }}</button>
+        <!-- also rendered with no mission open, so a running test run stays endable after reopening the editor -->
+        <footer v-if="store.form || isTestRunActive" style="flex-shrink:0;padding:12px 16px;border-top:1px solid #dfe2e6;display:flex;gap:8px;flex-wrap:wrap">
+          <template v-if="store.form">
+            <button @click="onSave" class="accent-btn" style="padding:10px 16px;font-size:12.5px" :disabled="store.saving || !store.canSave">{{ store.saving ? t('admin.saving') : t('admin.save_button') }}</button>
+            <button v-if="!store.isNew" @click="store.clone(store.form.id!)" class="mini-btn">{{ t('admin.duplicate_button') }}</button>
+            <button v-if="!store.isNew" @click="store.setActive(store.form.id!, !store.form.is_active)" class="mini-btn">{{ store.form.is_active ? t('admin.deactivate_button') : t('admin.activate_button') }}</button>
+            <button
+              v-if="!store.isNew"
+              @click="onDelete"
+              class="mini-btn danger"
+            >{{ store.form.delivery_count > 0 ? t('admin.force_delete_button') : t('admin.delete_button') }}</button>
+          </template>
           <div style="flex:1"></div>
-          <button v-if="!store.isNew" @click="onTestRun" class="mini-btn" style="border-color:#e8b408;color:#8a6a00">{{ t('admin.test_mission_button') }}</button>
+          <button
+            v-if="isTestRunActive || (store.form && !store.isNew)"
+            @click="onTestRun"
+            :disabled="testRunBusy"
+            class="mini-btn"
+            :style="isTestRunActive ? 'border-color:#dc2626;color:#b91c1c' : 'border-color:#e8b408;color:#8a6a00'"
+          >{{ isTestRunActive ? t('admin.end_test_mission_button') : t('admin.test_mission_button') }}</button>
         </footer>
       </main>
     </div>
@@ -214,6 +223,8 @@ const importing = ref(false);
 const showDeleteConfirm = ref(false);
 const deleting = ref(false);
 const isForceDelete = computed(() => (store.form?.delivery_count ?? 0) > 0);
+const testRunBusy = ref(false);
+const isTestRunActive = computed(() => store.testRunOrderId !== null);
 
 const filteredOrders = computed(() => {
   const term = search.value.trim().toLowerCase();
@@ -299,10 +310,22 @@ async function onImportSampleMissions() {
   }
 }
 
+// One button, two states: with a QA run going it ends that run (whatever mission it belongs to)
+// and keeps the editor open; otherwise it starts a run for the open mission and closes the editor.
 async function onTestRun() {
-  if (!store.form?.id) return;
-  const res = await store.testRun(store.form.id);
-  if (res.ok) await closeEditor();
+  if (testRunBusy.value) return;
+  testRunBusy.value = true;
+  try {
+    if (isTestRunActive.value) {
+      await store.cancelTestRun();
+      return;
+    }
+    if (!store.form?.id) return;
+    const res = await store.testRun(store.form.id);
+    if (res.ok) await closeEditor();
+  } finally {
+    testRunBusy.value = false;
+  }
 }
 
 async function closeEditor() {

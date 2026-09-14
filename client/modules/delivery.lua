@@ -64,13 +64,15 @@ function Delivery.RequestTripClaim()
     return lib.callback.await("polarix_trucker:claimTripPallets", false)
 end
 
+-- Client-side teardown only: no failDelivery event, no notify. Callers decide how the server side
+-- is settled (the admin test run deletes its delivery row via adminCancelTestRun) and what to tell
+-- the player. Same cleanup set as ForceFailure, minus the failure bookkeeping.
 function Delivery.Cancel()
-    ClearBlips()
-    if ResetMissionCargo then ResetMissionCargo(nil) end
-    DeliveryState.status = "idle"
-    DeliveryState.orderData = nil
-    TriggerServerEvent("polarix_trucker:failDelivery")
-    Framework.Notify(Locale("notify.delivery_cancelled"), "error")
+    if DeliveryState.status == "idle" then return false end
+    Delivery.HUD.Stop()
+    Delivery.StopDamageMonitor()
+    Delivery.Reset()
+    return true
 end
 
 function Delivery.EnterTransitPhase()

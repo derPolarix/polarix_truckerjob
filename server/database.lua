@@ -109,6 +109,11 @@ function DB.CountDeliveriesForOrder(orderId)
     return MySQL.scalar.await(("SELECT COUNT(*) FROM %s WHERE order_id = ?"):format(T.deliveries), { orderId })
 end
 
+-- Only used to wipe an admin test-run delivery on cancel, so QA runs leave no history row behind.
+function DB.DeleteDelivery(deliveryId)
+    MySQL.query.await(("DELETE FROM %s WHERE id = ?"):format(T.deliveries), { deliveryId })
+end
+
 function DB.DeleteDeliveriesForOrder(orderId)
     MySQL.query.await(("DELETE FROM %s WHERE order_id = ?"):format(T.deliveries), { orderId })
 end

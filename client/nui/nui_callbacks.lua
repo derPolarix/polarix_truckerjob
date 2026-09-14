@@ -402,8 +402,8 @@ end)
 -- Admin mission editor: pure server forwarders — each server callback re-checks Framework.IsAdmin itself.
 
 RegisterNUICallback('adminListOrders', function(_, cb)
-    lib.callback('polarix_trucker:adminListOrders', false, function(orders)
-        cb({ ok = true, orders = orders or {} })
+    lib.callback('polarix_trucker:adminListOrders', false, function(orders, testRunOrderId)
+        cb({ ok = true, orders = orders or {}, testRunOrderId = testRunOrderId })
     end)
 end)
 
@@ -475,6 +475,20 @@ RegisterNUICallback('adminTestRunOrder', function(data, cb)
         else
             Framework.Notify(result or Locale("notify.test_failed"), 'error')
         end
-        cb({ ok = success })
+        cb({ ok = success, testRunOrderId = success and data.orderId or nil })
     end, data.orderId)
+end)
+
+-- Ends the running test mission. The server drops the delivery row first; only then does the client
+-- tear down blips/HUD/cargo, so a refused cancel (e.g. a real accepted delivery) leaves state intact.
+RegisterNUICallback('adminCancelTestRun', function(_, cb)
+    lib.callback('polarix_trucker:adminCancelTestRun', false, function(success, result)
+        if success then
+            Delivery.Cancel()
+            Framework.Notify(Locale("notify.delivery_cancelled"), 'info')
+        else
+            Framework.Notify(result or Locale("notify.test_cancel_failed"), 'error')
+        end
+        cb({ ok = success, err = not success and result or nil })
+    end)
 end)
