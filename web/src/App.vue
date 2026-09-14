@@ -19,6 +19,7 @@ import { getCurrentInstance, onMounted } from "vue";
 import type { NuiMessage } from "./type";
 import { isDev } from "./main";
 import { i18n } from "./i18n";
+import { money, setCurrency } from "./currency";
 import Sidebar from "@/components/app/Sidebar.vue";
 import GameHud from "@/components/app/GameHud.vue";
 import RentalPromptModal from "@/components/app/RentalPromptModal.vue";
@@ -46,8 +47,8 @@ function buildDriverSlots(defs: DriverSlotDef[], owned: any[], level: number): D
 		hired: ownedSlots.has(d.slot),
 		locked: level < d.levelRequired,
 		levelRequired: d.levelRequired,
-		price: `$${d.price.toLocaleString()}`,
-		income: `$${d.income.toLocaleString()}`,
+		price: money(d.price),
+		income: money(d.income),
 	}));
 }
 
@@ -67,7 +68,7 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 	const xpThresholds: number[] = data.xpThresholds ?? [];
 	const levelTitles: string[] = data.levelTitles ?? [];
 
-	const fmtMoney = (v: number) => `$${(v ?? 0).toLocaleString()}`;
+	const fmtMoney = (v: number) => money(v);
 	const fmtDate = (v: unknown, withTime = false): string => {
 		if (!v) return '—';
 		const d = typeof v === 'number'
@@ -312,10 +313,10 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 		companyFoundedDate:     '',
 		companyMembers:         0,
 		companyServerRank:      '—',
-		companyEarnings:        '$0',
+		companyEarnings:        money(0),
 		companyDeliveries:      '0',
 		companyDistance:        '—',
-		companyTreasury:        '$0',
+		companyTreasury:        money(0),
 		companyOpenRecruitment: false,
 		companyTaxRate:         0,
 		companyMinLevelToJoin:  1,
@@ -379,6 +380,9 @@ const handleMessage = (event: MessageEvent) => {
 	if (lang && (i18n.global.availableLocales as string[]).includes(lang)) {
 		i18n.global.locale.value = lang as "de" | "en";
 	}
+
+	// same deal for Config.Currency - money() must never render a stale symbol
+	setCurrency((raw.data as any)?.currency);
 
 	switch (action) {
 		case "openNui": {

@@ -61,7 +61,7 @@
 
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px">
             <label class="field-label">{{ t('admin.weight_kg_label') }}<input type="number" v-model.number="store.form.weight_kg" class="fld" /></label>
-            <label class="field-label">{{ t('admin.reward_label') }}<input type="number" v-model.number="store.form.reward_base" class="fld" /></label>
+            <label class="field-label">{{ t('admin.reward_label', { currency: currencySymbol() }) }}<input type="number" v-model.number="store.form.reward_base" class="fld" /></label>
             <label class="field-label">{{ t('admin.xp_label') }}<input type="number" v-model.number="store.form.xp_base" class="fld" /></label>
             <label class="field-label">{{ t('admin.time_min_label') }}<input type="number" v-model.number="store.form.time_minutes" class="fld" /></label>
           </div>
@@ -188,6 +188,7 @@ import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAdminMissionsStore, CARGO_TYPE_PRESETS } from "@/stores/adminMissionsStore";
 import { usePersistantStore } from "@/stores/persistantStore";
+import { currencySymbol } from "@/currency";
 
 const store = useAdminMissionsStore();
 const persistantStore = usePersistantStore();

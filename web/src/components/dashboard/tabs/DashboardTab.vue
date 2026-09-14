@@ -53,7 +53,7 @@
           <div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
             <div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t('dashboard.pickup_label') }}</span><span style="color:#1b1f24;font-weight:600">{{ hud.pickupLabel }}</span></div>
             <div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t('dashboard.dropoff_label') }}</span><span style="color:#1b1f24;font-weight:600">{{ hud.dropoffLabel }}</span></div>
-            <div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t('dashboard.reward_label') }}</span><span style="color:#2f9e63;font-weight:700">${{ hud.reward.toLocaleString() }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t('dashboard.reward_label') }}</span><span style="color:#2f9e63;font-weight:700">{{ money(hud.reward) }}</span></div>
             <div v-if="hud.palletsRequired > 0" style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t('dashboard.pallets_label') }}</span><span style="color:#1b1f24;font-weight:600">{{ hud.palletsLoaded }} / {{ hud.palletsRequired }}</span></div>
           </div>
         </div>
@@ -99,6 +99,7 @@
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
+import { money } from "@/currency";
 import { useGameHudStore } from "@/stores/gameHudStore";
 
 const store = useDashboardStore();

@@ -12,7 +12,7 @@
       <div style="font-size:13px;color:#6b7280;margin-top:8px;line-height:1.6">
         {{ t('app.rental_prompt_intro') }}
         <strong>{{ store.rentalPrompt.vehicleName }}</strong> + <strong>{{ store.rentalPrompt.trailerName }}</strong>
-        {{ t('app.rental_prompt_cost', { cost: store.rentalPrompt.intervalCost.toLocaleString(), minutes: store.rentalPrompt.intervalMinutes }) }}
+        {{ t('app.rental_prompt_cost', { cost: money(store.rentalPrompt.intervalCost), minutes: store.rentalPrompt.intervalMinutes }) }}
       </div>
       <div style="display:flex;gap:10px;margin-top:20px">
         <button
@@ -40,6 +40,7 @@ import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { usePersistantStore } from "@/stores/persistantStore";
 import { nuiCallback } from "@/nui/nuiCallbacks";
+import { money } from "@/currency";
 
 const store = useDashboardStore();
 const persistantStore = usePersistantStore();

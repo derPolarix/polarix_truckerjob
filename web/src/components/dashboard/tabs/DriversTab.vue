@@ -20,7 +20,7 @@
         </div>
         <div style="padding:15px 16px;display:flex;flex-direction:column;flex:1">
           <div style="font-size:15px;font-weight:700;color:#1b1f24;line-height:1.2">{{ slotLabel(d.slot) }}</div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:5px">{{ t('drivers.income_per_interval', { amount: d.income.replace('$', ''), minutes: store.config.driverIncomeIntervalMinutes }) }}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:5px">{{ t('drivers.income_per_interval', { amount: d.income, minutes: store.config.driverIncomeIntervalMinutes }) }}</div>
 
           <div style="margin-top:auto;padding-top:14px">
             <div v-if="d.hired" style="width:100%;text-align:center;padding:10px;border-radius:10px;background:rgba(47,158,99,0.12);color:#2f9e63;font-weight:700;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:7px">

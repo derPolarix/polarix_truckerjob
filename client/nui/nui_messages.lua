@@ -13,7 +13,7 @@ function OpenNui()
     SetFocus(true)
     SendNUIMessage({
         action = 'openNui',
-        data = { language = sharedConfig.Language }
+        data = { language = sharedConfig.Language, currency = sharedConfig.Currency }
     })
 end
 
@@ -24,11 +24,12 @@ function CloseNui()
     })
 end
 
--- every NUI message carries the current language so App.vue can keep vue-i18n
--- in sync with Config.Language regardless of which message opens/updates the UI
+-- every NUI message carries the current language and currency so App.vue can keep
+-- vue-i18n and the money formatter in sync regardless of which message opens/updates the UI
 function SendMessage(action, data)
     data = data or {}
     data.language = sharedConfig.Language
+    data.currency = sharedConfig.Currency
     SendNUIMessage({
         action = action,
         data = data

@@ -13,7 +13,7 @@
         </div>
         <div>
           <div style="font-size:14px;font-weight:700;color:#1b1f24">{{ t('vehicles.active_rental') }} · {{ store.config.rentalVehicleName }} + {{ store.config.rentalTrailerName }}</div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:3px">{{ t('vehicles.rental_interval_cost', { cost: store.config.rentalIntervalCost.toLocaleString(), minutes: store.config.rentalIntervalMinutes }) }}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:3px">{{ t('vehicles.rental_interval_cost', { cost: money(store.config.rentalIntervalCost), minutes: store.config.rentalIntervalMinutes }) }}</div>
         </div>
       </div>
       <button class="park-btn" style="padding:10px 18px;border-radius:10px;border:1px solid #dfe2e6;background:#fff;color:#dc2626;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="returnRental()">{{ t('vehicles.return_rental') }}</button>
@@ -86,7 +86,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
         <div>
           <div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24">{{ t('vehicles.vehicle_shop') }}</div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">{{ t('vehicles.balance_label', { balance: store.config.balance.toLocaleString() }) }}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">{{ t('vehicles.balance_label', { balance: money(store.config.balance) }) }}</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
@@ -151,7 +151,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
         <div>
           <div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24">{{ t('vehicles.trailer_shop') }}</div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">{{ t('vehicles.balance_label', { balance: store.config.balance.toLocaleString() }) }}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">{{ t('vehicles.balance_label', { balance: money(store.config.balance) }) }}</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
@@ -187,6 +187,7 @@ import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallback } from "@/nui/nuiCallbacks";
+import { money } from "@/currency";
 
 const store = useDashboardStore();
 const { t } = useI18n();

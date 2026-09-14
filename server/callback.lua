@@ -34,6 +34,7 @@ local function buildDashboardData(source, pData)
 
     return {
         language = sharedConfig.Language,
+        currency = sharedConfig.Currency,
         player = {
             name              = pData.name,
             level             = pData.level,
