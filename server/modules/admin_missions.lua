@@ -154,7 +154,11 @@ function AdminMissions.TestRun(source, orderId)
     if ActiveDeliveries[source] then return false, Locale("error.already_active_delivery") end
     if type(order.pickup_pallet_coords) == "string" then order.pickup_pallet_coords = json.decode(order.pickup_pallet_coords) end
 
-    local pData = Player.GetData(source)
+    -- PlayerCache is only filled by Framework.OnPlayerLoaded, which does not refire on a resource
+    -- restart while players are online - so load on demand here, same as the openDashboard callback.
+    local pData = Player.GetData(source) or Player.Load(source)
+    if not pData then return false, Locale("error.player_data_not_found") end
+
     local total = cargo.CalcPalletCount(order.weight_kg)
     local deliveryId = DB.InsertDelivery(orderId, pData.identifier)
     ActiveDeliveries[source] = { deliveryId = deliveryId, orderId = orderId, totalPallets = total, remainingPallets = total, deliveredPallets = 0, cargoDamageTotal = 0 }
