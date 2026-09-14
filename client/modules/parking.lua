@@ -50,9 +50,18 @@ local function DrawParkingRectangle(order, correct)
     DrawOutlineRectangle(center, order.dropoff_heading or 0.0, length, width, correct)
 end
 
+-- Normally the outline only exists in the transit phase, i.e. once the cargo is actually loaded.
+-- An admin test run is meant to check the dropoff itself, so there it shows from the start - no
+-- pallet run needed just to see whether the parking spot sits right.
+local function ShouldDrawDropoff()
+    if not DeliveryState or not DeliveryState.orderData then return false end
+    if DeliveryState.isTest then return DeliveryState.status ~= "idle" end
+    return DeliveryState.status == "delivering"
+end
+
 CreateThread(function()
     while true do
-        if DeliveryState and DeliveryState.status == "delivering" and DeliveryState.orderData then
+        if ShouldDrawDropoff() then
             local o = DeliveryState.orderData
             local dist = #(GetEntityCoords(PlayerPedId()) - vector3(o.dropoff_x, o.dropoff_y, o.dropoff_z))
             if dist < 25.0 then

@@ -471,7 +471,7 @@ end)
 RegisterNUICallback('adminTestRunOrder', function(data, cb)
     lib.callback('polarix_trucker:adminTestRunOrder', false, function(success, result)
         if success then
-            Delivery.Start(result)
+            Delivery.Start(result, "solo", true)
         else
             Framework.Notify(result or Locale("notify.test_failed"), 'error')
         end

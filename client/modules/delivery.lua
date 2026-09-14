@@ -5,6 +5,7 @@ local Money = require("shared.currency")
 DeliveryState = {
     status = "idle", -- idle | awaiting_pickup | delivering
     mode = "solo", -- solo | party
+    isTest = false, -- admin QA run (AdminMissions.TestRun) - relaxes the phase gates, see parking.lua
     orderData = nil,
     pickupBlip = nil,
     dropoffBlip = nil,
@@ -37,13 +38,15 @@ function Delivery.Reset()
     ClearBlips()
     if ResetMissionCargo then ResetMissionCargo(nil) end
     DeliveryState.status = "idle"
+    DeliveryState.isTest = false
     DeliveryState.orderData = nil
     DeliveryState.cargoDamage = nil
 end
 
-function Delivery.Start(orderData, mode)
+function Delivery.Start(orderData, mode, isTest)
     DeliveryState.status = "awaiting_pickup"
     DeliveryState.mode = mode or "solo"
+    DeliveryState.isTest = isTest or false
     DeliveryState.orderData = orderData
 
     DeliveryState.pickupBlip  = CreateBlip(orderData.pickup_x, orderData.pickup_y, orderData.pickup_z, 1, 2, "Pickup: " .. orderData.pickup_label)
