@@ -2,6 +2,7 @@ local shared = require("config.shared")
 local cargo  = require("shared.cargo")
 local Locale = require("shared.locale")
 local debug  = require("shared.debug")
+local Keybinds = require("client.lib.keybinds")
 
 MissionCargo = { requiredCount = 0, loadedCount = 0, pickupSpawned = false }
 MissionPallets = {}       -- slotIndex -> ground entity (both solo and party, same indexing)
@@ -242,7 +243,7 @@ local function SetForkliftPickupPrompt(visible)
     SetHeldAction({
         name = "Palette bereit",
         hint = "Gabel unter der Palette",
-        primaryKey = "G",
+        primaryKey = Keybinds.GetKey("PalletPickup"),
         primaryAction = "Aufheben",
     })
 end
@@ -268,16 +269,11 @@ CreateThread(function()
     end
 end)
 
-lib.addKeybind({
-    name = "polarix_trucker_pallet_pickup",
-    description = "Palette aufnehmen",
-    defaultKey = "G",
-    onPressed = function()
-        if currentPickupCandidate then
-            PickupPalletWithForklift(currentPickupCandidate, currentPickupCandidateSlot)
-        end
-    end,
-})
+Keybinds.Register("PalletPickup", function()
+    if currentPickupCandidate then
+        PickupPalletWithForklift(currentPickupCandidate, currentPickupCandidateSlot)
+    end
+end)
 
 local function GetTrailerModelNameFor(trailer)
     if not trailer then return nil end

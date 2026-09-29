@@ -1,5 +1,6 @@
 local clientConfig = require("config.client")
 local Locale = require("shared.locale")
+local Keybinds = require("client.lib.keybinds")
 
 local depotNpc = nil
 
@@ -65,11 +66,17 @@ local function setupTarget(ped)
         return
     end
 
-    -- Fallback when no target system is available: 3D marker + TextUI + E key
+    -- Fallback when no target system is available: 3D marker + TextUI + keybind
     local coords = clientConfig.TruckDepotCoords
     local npcPos = vector3(coords.x, coords.y, coords.z)
     local promptVisible = false
     local INTERACT_DIST = 2.5
+
+    Keybinds.Register("OpenDepot", function()
+        if promptVisible then
+            openDashboard()
+        end
+    end)
 
     CreateThread(function()
         while DoesEntityExist(ped) do
@@ -77,7 +84,7 @@ local function setupTarget(ped)
             local dist = #(GetEntityCoords(PlayerPedId()) - npcPos)
             if dist < INTERACT_DIST and not promptVisible then
                 promptVisible = true
-                lib.showTextUI(Locale("ui.e_open_trucker_job"), { position = "top-center", icon = "truck" })
+                lib.showTextUI(Keybinds.Prompt("OpenDepot", "ui.open_trucker_job"), { position = "top-center", icon = "truck" })
             elseif dist >= INTERACT_DIST and promptVisible then
                 promptVisible = false
                 lib.hideTextUI()
@@ -94,10 +101,6 @@ local function setupTarget(ped)
             if dist < 15.0 then
                 DrawMarker(2, npcPos.x, npcPos.y, npcPos.z, 0, 0, 0, 0, 0, 0,
                     0.8, 0.8, 0.4, 232, 180, 8, 150, false, true, 2, false, nil, nil, false)
-            end
-
-            if promptVisible and IsControlJustReleased(0, 38) then -- E
-                openDashboard()
             end
         end
     end)

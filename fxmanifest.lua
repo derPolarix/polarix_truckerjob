@@ -50,6 +50,7 @@ server_scripts {
 
 files {
     'locales/*.json',
+    'client/lib/*.lua',
     "html/*",
     "html/assets/*",
     "html/img/*",

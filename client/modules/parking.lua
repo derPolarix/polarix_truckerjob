@@ -1,4 +1,5 @@
 local shared = require("config.shared")
+local Keybinds = require("client.lib.keybinds")
 
 local function NormalizeHeadingDelta(a, b)
     local diff = (a - b) % 360.0
@@ -88,7 +89,7 @@ CreateThread(function()
                 SetHeldAction({
                     name = "Bereit zum Entladen",
                     hint = "Trailer korrekt geparkt",
-                    primaryKey = "E",
+                    primaryKey = Keybinds.GetKey("UnloadDropoff"),
                     primaryAction = "Entladen",
                 })
             end
@@ -99,13 +100,8 @@ CreateThread(function()
     end
 end)
 
-lib.addKeybind({
-    name = "polarix_trucker_unload_dropoff",
-    description = "Cargo entladen (Dropoff)",
-    defaultKey = "E",
-    onPressed = function()
-        if promptVisible then
-            Delivery.StartUnloading()
-        end
-    end,
-})
+Keybinds.Register("UnloadDropoff", function()
+    if promptVisible then
+        Delivery.StartUnloading()
+    end
+end)

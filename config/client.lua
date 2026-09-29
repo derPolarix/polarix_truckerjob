@@ -17,4 +17,14 @@ return {
 
     ForkliftInteractionRadiusFoot    = 3.0,
     ForkliftInteractionRadiusVehicle = 5.5,
+
+    -- Default keys, using FiveM keyboard names: https://docs.fivem.net/docs/game-references/input-mapper-parameter-ids/keyboard/
+    -- Players can rebind them in Settings > Key Bindings > FiveM. A default only applies to players who
+    -- never had that binding saved, so changing it later won't affect players who already joined.
+    Keybinds = {
+        OpenDepot     = "E", -- open the job at the depot NPC (only without a target system)
+        ForkliftDock  = "E", -- deploy/stow forklift and load pallet at the trailer (only without a target system)
+        PalletPickup  = "G", -- pick up a pallet with the forklift
+        UnloadDropoff = "E", -- unload cargo once the trailer is parked at the dropoff
+    },
 }

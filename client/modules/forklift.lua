@@ -1,6 +1,7 @@
 local clientConfig = require("config.client")
 local sharedConfig = require("config.shared")
 local Locale = require("shared.locale")
+local Keybinds = require("client.lib.keybinds")
 
 ForkliftDockState = {}
 
@@ -218,11 +219,11 @@ local lastLabel = nil
 
 local function GetForkliftDockLabel()
     if GetForkliftPalletPayload and GetForkliftPalletPayload() then
-        return Locale("ui.e_load_pallet")
+        return Keybinds.Prompt("ForkliftDock", "ui.load_pallet")
     elseif IsForkliftDeployed(GetTrailerNetId()) then
-        return Locale("ui.e_stow_forklift")
+        return Keybinds.Prompt("ForkliftDock", "ui.stow_forklift")
     else
-        return Locale("ui.e_unload_forklift")
+        return Keybinds.Prompt("ForkliftDock", "ui.unload_forklift")
     end
 end
 
@@ -349,13 +350,8 @@ CreateThread(function()
     end
 end)
 
-lib.addKeybind({
-    name = "polarix_trucker_forklift_dock",
-    description = "Gabelstapler / Palette (am Trailer)",
-    defaultKey = "E",
-    onPressed = function()
-        if not usingTarget and promptVisible then
-            RunForkliftDockInteraction()
-        end
-    end,
-})
+Keybinds.Register("ForkliftDock", function()
+    if not usingTarget and promptVisible then
+        RunForkliftDockInteraction()
+    end
+end)
