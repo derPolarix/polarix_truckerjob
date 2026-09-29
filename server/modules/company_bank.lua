@@ -14,7 +14,8 @@ function Bank.Deposit(source, amount)
 
     Framework.RemoveMoney(source, amount)
     DB.UpdateCompanyTreasury(membership.company_id, amount)
-    DB.InsertTransaction(membership.company_id, "Einzahlung von " .. pData.name, amount, true, "tabler:arrow-down-left")
+    DB.InsertTransaction(membership.company_id, "Einzahlung von " .. pData.name, amount, true, "tabler:arrow-down-left",
+        "deposit", { name = pData.name })
     return true
 end
 
@@ -37,7 +38,8 @@ function Bank.Withdraw(source, amount)
 
     DB.UpdateCompanyTreasury(membership.company_id, -amount)
     Framework.AddMoney(source, amount)
-    DB.InsertTransaction(membership.company_id, "Auszahlung an " .. pData.name, amount, false, "tabler:arrow-up-right")
+    DB.InsertTransaction(membership.company_id, "Auszahlung an " .. pData.name, amount, false, "tabler:arrow-up-right",
+        "withdrawal", { name = pData.name })
     return true
 end
 

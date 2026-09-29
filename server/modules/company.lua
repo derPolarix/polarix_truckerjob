@@ -343,7 +343,8 @@ function Company.ApplyTax(source, reward)
     DB.InsertTransaction(
         membership.company_id,
         ("Abgabe von %s (%d%%)"):format(pData.name, taxRate),
-        taxAmount, true, "tabler:receipt-tax"
+        taxAmount, true, "tabler:receipt-tax",
+        "tax", { name = pData.name, rate = taxRate }
     )
 
     return reward - taxAmount, taxAmount

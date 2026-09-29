@@ -118,7 +118,10 @@ export interface Member {
 }
 
 export interface Transaction {
+  id?: number;
   label: string;
+  type?: string | null;
+  params?: Record<string, string | number> | null;
   amt: string;
   when: string;
   pos: boolean;

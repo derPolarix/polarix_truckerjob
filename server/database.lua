@@ -282,18 +282,23 @@ function DB.UpdateCompanyTreasury(companyId, delta)
     )
 end
 
-function DB.InsertTransaction(companyId, label, amount, isPositive, icon)
+-- label is kept as a readable fallback; the UI translates by txType + params when set
+function DB.InsertTransaction(companyId, label, amount, isPositive, icon, txType, params)
     MySQL.insert.await(
-        ("INSERT INTO %s (company_id, label, amount, is_positive, icon) VALUES (?,?,?,?,?)"):format(T.transactions),
-        { companyId, label, amount, isPositive and 1 or 0, icon }
+        ("INSERT INTO %s (company_id, label, amount, is_positive, icon, type, params) VALUES (?,?,?,?,?,?,?)"):format(T.transactions),
+        { companyId, label, amount, isPositive and 1 or 0, icon, txType, params and json.encode(params) or nil }
     )
 end
 
 function DB.GetCompanyTransactions(companyId, limit)
-    return MySQL.query.await(
+    local rows = MySQL.query.await(
         ("SELECT * FROM %s WHERE company_id = ? ORDER BY created_at DESC LIMIT ?"):format(T.transactions),
         { companyId, limit or 20 }
-    )
+    ) or {}
+    for _, row in ipairs(rows) do
+        if type(row.params) == "string" then row.params = json.decode(row.params) end
+    end
+    return rows
 end
 
 function DB.UpdateCompanyStats(companyId, earnings)

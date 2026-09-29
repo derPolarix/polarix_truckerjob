@@ -391,12 +391,12 @@
           </div>
           <div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:18px">
             <div style="font-size:15px;font-weight:700;color:#1b1f24;margin-bottom:6px">{{ t('company.recent_transactions') }}</div>
-            <div v-for="tx in store.config.transactions" :key="tx.label" style="display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid #eef0f2">
+            <div v-for="(tx, i) in store.config.transactions" :key="tx.id ?? i" style="display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid #eef0f2">
               <div style="width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0" :style="{ background: tx.pos ? 'rgba(47,158,99,0.12)' : 'rgba(210,75,58,0.10)' }">
                 <iconify-icon :icon="tx.icon" width="17" :style="{ color: tx.pos ? '#2f9e63' : '#d24b3a' }"></iconify-icon>
               </div>
               <div style="flex:1;min-width:0">
-                <div style="font-size:13px;font-weight:600;color:#1b1f24">{{ tx.label }}</div>
+                <div style="font-size:13px;font-weight:600;color:#1b1f24">{{ txLabel(tx) }}</div>
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:2px">{{ tx.when }}</div>
               </div>
               <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600" :style="{ color: tx.pos ? '#2f9e63' : '#d24b3a' }">{{ tx.amt }}</div>
@@ -520,7 +520,7 @@
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
-import type { OpenCompanyEntry, NearbyRecruit } from "@/stores/dashboardStore";
+import type { OpenCompanyEntry, NearbyRecruit, Transaction } from "@/stores/dashboardStore";
 import { nuiCallback } from "@/nui/nuiCallbacks";
 
 const store = useDashboardStore();
@@ -528,6 +528,17 @@ const { t } = useI18n();
 const accentDark = "#b58a05";
 const isOwner = computed(() => store.config.companyMyRole === 'owner');
 const canInvite = computed(() => store.config.companyMyRole === 'owner' || store.config.companyMyRole === 'manager');
+
+// Transactions written before types existed have no type and keep their stored label
+const TX_LABEL_KEYS: Record<string, string> = {
+  deposit:    'company.tx_deposit',
+  withdrawal: 'company.tx_withdrawal',
+  tax:        'company.tx_tax',
+};
+function txLabel(tx: Transaction) {
+  const key = tx.type ? TX_LABEL_KEYS[tx.type] : undefined;
+  return key ? t(key, tx.params ?? {}) : tx.label;
+}
 
 // --- No-company state ---
 const showCreate    = ref(false);

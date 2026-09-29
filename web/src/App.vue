@@ -283,7 +283,10 @@ function mapServerResponse(data: any): Partial<DashboardConfig> {
 				sent: fmtDate(inv.created_at),
 			})),
 			transactions: (rawCompany.transactions ?? []).map((t: any) => ({
-				label: t.label ?? '',
+				id:     t.id,
+				label:  t.label ?? '',
+				type:   t.type ?? null,
+				params: t.params ?? null,
 				amt:   (isTruthy(t.is_positive) ? '+' : '-') + fmtMoney(Math.abs(t.amount ?? 0)),
 				when:  fmtDate(t.created_at),
 				pos:   isTruthy(t.is_positive),

@@ -142,6 +142,9 @@ AddEventHandler('onResourceStart', function(resourceName)
         icon        VARCHAR(60),
         created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )]]):format(T.transactions))
+    -- type + params let the UI translate the label; rows from before only have label
+    MySQL.query.await(([[ALTER TABLE %s ADD COLUMN IF NOT EXISTS type   VARCHAR(30) DEFAULT NULL]]):format(T.transactions))
+    MySQL.query.await(([[ALTER TABLE %s ADD COLUMN IF NOT EXISTS params JSON        DEFAULT NULL]]):format(T.transactions))
 
     MySQL.query.await(([[CREATE TABLE IF NOT EXISTS %s (
         id         INT AUTO_INCREMENT PRIMARY KEY,
