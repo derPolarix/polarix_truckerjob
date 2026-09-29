@@ -1,4 +1,5 @@
 local shared = require("config.shared")
+local Locale = require("shared.locale")
 local Keybinds = require("client.lib.keybinds")
 
 local function NormalizeHeadingDelta(a, b)
@@ -87,10 +88,10 @@ CreateThread(function()
             if not promptVisible then
                 promptVisible = true
                 SetHeldAction({
-                    name = "Bereit zum Entladen",
-                    hint = "Trailer korrekt geparkt",
+                    name = Locale("ui.ready_to_unload"),
+                    hint = Locale("ui.ready_to_unload_hint"),
                     primaryKey = Keybinds.GetKey("UnloadDropoff"),
-                    primaryAction = "Entladen",
+                    primaryAction = Locale("ui.unload"),
                 })
             end
         elseif promptVisible then

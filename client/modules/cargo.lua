@@ -241,10 +241,10 @@ local function SetForkliftPickupPrompt(visible)
     end
 
     SetHeldAction({
-        name = "Palette bereit",
-        hint = "Gabel unter der Palette",
+        name = Locale("ui.pallet_ready"),
+        hint = Locale("ui.pallet_ready_hint"),
         primaryKey = Keybinds.GetKey("PalletPickup"),
-        primaryAction = "Aufheben",
+        primaryAction = Locale("ui.pick_up"),
     })
 end
 
