@@ -73,7 +73,8 @@ end)
 
 -- dropoff preview: same pattern as parking.lua's DrawParkingRectangle, minus the green-state branch
 RegisterNUICallback('adminSetDropoffPreview', function(data, cb)
-    if data.active then
+    -- a hand-written route can leave coords partially empty; drawing with nil z throws every frame
+    if data.active and data.x and data.y and data.z then
         AdminEditorPreview.active = true
         AdminEditorPreview.dropoffX, AdminEditorPreview.dropoffY, AdminEditorPreview.dropoffZ = data.x, data.y, data.z
         AdminEditorPreview.dropoffHeading = data.heading or 0.0

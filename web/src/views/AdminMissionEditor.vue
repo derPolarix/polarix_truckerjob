@@ -261,7 +261,8 @@ function setCooldownPart(unit: "h" | "m" | "s", rawValue: number) {
 }
 
 function onDropoffCoordsChange() {
-  if (store.form?.dropoff_x != null) store.setDropoffPreview(true);
+  const f = store.form;
+  if (f?.dropoff_x != null && f?.dropoff_y != null && f?.dropoff_z != null) store.setDropoffPreview(true);
 }
 
 // Auto-recalculate distance unless the admin has manually overridden it. The override now lives on the
