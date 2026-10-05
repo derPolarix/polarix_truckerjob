@@ -90,6 +90,7 @@ function PartyMission.ClaimGroundPallet(source, slotIndex)
     local mission = partyId and PartyMissions[partyId]
     if not mission then return false end
     if type(slotIndex) ~= "number" or slotIndex < 1 or slotIndex > mission.totalPallets then return false end
+    if not Orders.IsNearZone(source, vector3(mission.order.pickup_x, mission.order.pickup_y, mission.order.pickup_z)) then return false end
 
     if mission.slots[slotIndex] then
         debug.DebugPrint(("PartyMission.ClaimGroundPallet: src=%s identifier=%s slot=%s already taken (state=%s)"):format(
@@ -225,6 +226,11 @@ function PartyMission.CompleteTrip(source, cargoDamage, clientReportedCount)
     local mission = partyId and PartyMissions[partyId]
     if not mission then return false, 0 end
 
+    if not Orders.IsNearZone(source, vector3(mission.order.dropoff_x, mission.order.dropoff_y, mission.order.dropoff_z)) then
+        debug.Warn(("PartyMission.CompleteTrip: rejected trip report from outside the drop-off for source %s"):format(source))
+        return false
+    end
+
     local deliveredThisTrip = 0
     for _, s in pairs(mission.slots) do
         if s and s.state == "loaded" and s.ownerIdentifier == pData.identifier then
@@ -234,7 +240,7 @@ function PartyMission.CompleteTrip(source, cargoDamage, clientReportedCount)
     end
 
     local c = mission.contributions[pData.identifier] or { damage = 0 }
-    c.damage = c.damage + (cargoDamage or 0)
+    c.damage = c.damage + Orders.SanitizeDamage(cargoDamage, mission.order.reward_base)
     mission.contributions[pData.identifier] = c
 
     local deliveredTotal, freeCount = 0, 0
@@ -404,7 +410,7 @@ lib.callback.register("polarix_trucker:confirmPartyMemberReady", function(source
 
 RegisterNetEvent("polarix_trucker:completePartyTrip", function(clientReportedCount, cargoDamage)
     local finished, remaining = PartyMission.CompleteTrip(source, cargoDamage, clientReportedCount)
-    if not finished then TriggerClientEvent("polarix_trucker:tripSettled", source, remaining) end
+    if not finished and remaining ~= nil then TriggerClientEvent("polarix_trucker:tripSettled", source, remaining) end
     -- on finished=true, "partyMissionFinished" already reaches everyone via Finish()'s broadcast,
     -- including the player who just delivered the last trip
 end)

@@ -160,9 +160,8 @@ function AdminMissions.TestRun(source, orderId)
     local pData = Player.GetData(source) or Player.Load(source)
     if not pData then return false, Locale("error.player_data_not_found") end
 
-    local total = cargo.CalcPalletCount(order.weight_kg)
     local deliveryId = DB.InsertDelivery(orderId, pData.identifier)
-    ActiveDeliveries[source] = { deliveryId = deliveryId, orderId = orderId, totalPallets = total, remainingPallets = total, deliveredPallets = 0, cargoDamageTotal = 0, isTest = true }
+    Orders.StartDelivery(source, deliveryId, order, true)
     return true, order
 end
 

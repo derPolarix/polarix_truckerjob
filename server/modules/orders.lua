@@ -1,8 +1,41 @@
 local cargo = require("shared.cargo")
+local config = require("config.server")
+local debug = require("shared.debug")
 local Locale = require("shared.locale")
 
 Orders = {}
-ActiveDeliveries = {} -- source -> { deliveryId, orderId, totalPallets, remainingPallets, deliveredPallets, cargoDamageTotal }
+ActiveDeliveries = {} -- source -> { deliveryId, orderId, totalPallets, remainingPallets, claimedPallets, deliveredPallets, cargoDamageTotal, pickup, dropoff, rewardBase }
+
+-- The one place a delivery entry is built (real accept and admin test run alike). pickup/dropoff/
+-- rewardBase are kept so the checks on client-reported values need no extra DB read.
+function Orders.StartDelivery(source, deliveryId, order, isTest)
+    local total = cargo.CalcPalletCount(order.weight_kg)
+
+    ActiveDeliveries[source] = {
+        deliveryId = deliveryId, orderId = order.id,
+        totalPallets = total, remainingPallets = total, claimedPallets = 0, deliveredPallets = 0, cargoDamageTotal = 0,
+        pickup = vector3(order.pickup_x, order.pickup_y, order.pickup_z),
+        dropoff = vector3(order.dropoff_x, order.dropoff_y, order.dropoff_z),
+        rewardBase = order.reward_base,
+        isTest = isTest or nil,
+    }
+end
+
+-- Position checks run against the server-known ped, never a client-reported coordinate.
+function Orders.IsNearZone(source, zone)
+    local ped = GetPlayerPed(source)
+    if not ped or ped == 0 then return false end
+
+    return #(GetEntityCoords(ped) - zone) <= config.ZoneMaxDistance
+end
+
+-- Cargo damage is client-measured; a negative or NaN value would otherwise turn the penalty into
+-- a bonus. Anything beyond the order's own reward is irrelevant (the penalty is capped at 30%).
+function Orders.SanitizeDamage(value, rewardBase)
+    if type(value) ~= "number" or value ~= value or value < 0 then return 0 end
+
+    return math.min(value, rewardBase or value)
+end
 
 -- oxmysql returns TINYINT(1) as Lua boolean, not integer 1
 local function isTruthy(v) return v == 1 or v == true end
@@ -89,12 +122,8 @@ local function accept(source, orderId)
         order.pickup_pallet_coords = json.decode(order.pickup_pallet_coords)
     end
 
-    local total = cargo.CalcPalletCount(order.weight_kg)
     local deliveryId = DB.InsertDelivery(orderId, pData.identifier)
-    ActiveDeliveries[source] = {
-        deliveryId = deliveryId, orderId = orderId,
-        totalPallets = total, remainingPallets = total, deliveredPallets = 0, cargoDamageTotal = 0,
-    }
+    Orders.StartDelivery(source, deliveryId, order)
     return true, order
 end
 
@@ -113,12 +142,16 @@ end
 -- the currently usable trailer capacity (own trailer or rental).
 function Orders.ClaimTripPallets(source)
     local delivery = ActiveDeliveries[source]
-    if not delivery or delivery.remainingPallets <= 0 then return 0 end
+    if not delivery or delivery.finishing or delivery.remainingPallets <= 0 then return 0 end
+    if not Orders.IsNearZone(source, delivery.pickup) then return 0 end
 
+    -- remainingPallets is read after the capacity lookup (it may yield on the DB) so concurrent
+    -- claims cannot both take the same pallets.
     local claim = math.min(Trailers.GetActiveMaxPallets(source) or 0, delivery.remainingPallets)
     if claim <= 0 then return 0 end
 
     delivery.remainingPallets = delivery.remainingPallets - claim
+    delivery.claimedPallets = delivery.claimedPallets + claim
     return claim
 end
 
@@ -128,8 +161,23 @@ function Orders.CompleteTrip(source, tripPalletCount, cargoDamage)
     local delivery = ActiveDeliveries[source]
     if not delivery or delivery.finishing then return false end
 
-    delivery.deliveredPallets = delivery.deliveredPallets + tripPalletCount
-    delivery.cargoDamageTotal = delivery.cargoDamageTotal + (cargoDamage or 0)
+    if not Orders.IsNearZone(source, delivery.dropoff) then
+        debug.Warn(("Orders.CompleteTrip: rejected trip report from outside the drop-off for source %s"):format(source))
+        return false
+    end
+
+    -- The client only says how many pallets it carried; the server credits at most what it handed
+    -- out for this trip in ClaimTripPallets.
+    if type(tripPalletCount) ~= "number" or tripPalletCount < 1 or tripPalletCount ~= math.floor(tripPalletCount) then
+        return false
+    end
+
+    local count = math.min(tripPalletCount, delivery.claimedPallets)
+    if count < 1 then return false end
+
+    delivery.claimedPallets = delivery.claimedPallets - count
+    delivery.deliveredPallets = delivery.deliveredPallets + count
+    delivery.cargoDamageTotal = delivery.cargoDamageTotal + Orders.SanitizeDamage(cargoDamage, delivery.rewardBase)
 
     if delivery.deliveredPallets >= delivery.totalPallets then
         -- Finish yields on DB awaits before it clears the delivery; without this a second
@@ -220,7 +268,7 @@ RegisterNetEvent("polarix_trucker:completeTrip", function(tripPalletCount, cargo
     local finished, a, b, c, d = Orders.CompleteTrip(src, tripPalletCount, cargoDamage)
     if finished then
         TriggerClientEvent("polarix_trucker:deliveryCompleted", src, a, b, c, d) -- a=reward, b=xp, c=penalty, d=tax
-    else
+    elseif a ~= nil then
         TriggerClientEvent("polarix_trucker:tripSettled", src, a) -- a=remainingPallets
     end
 end)
