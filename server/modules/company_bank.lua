@@ -2,6 +2,10 @@ local Locale = require("shared.locale")
 
 Bank = {}
 
+local function isValidAmount(amount)
+    return type(amount) == "number" and amount == amount and amount > 0 and amount < math.huge
+end
+
 function Bank.Deposit(source, amount)
     local pData = Player.GetData(source)
     if not pData then return false, Locale("error.player_data_missing") end
@@ -9,7 +13,7 @@ function Bank.Deposit(source, amount)
     local membership = Company.GetMembership(pData.identifier)
     if not membership then return false, Locale("error.no_company_membership") end
 
-    if type(amount) ~= "number" or amount <= 0 then return false, Locale("error.invalid_amount") end
+    if not isValidAmount(amount) then return false, Locale("error.invalid_amount") end
     if Framework.GetMoney(source) < amount then return false, Locale("error.not_enough_money") end
 
     Framework.RemoveMoney(source, amount)
@@ -29,14 +33,12 @@ function Bank.Withdraw(source, amount)
         return false, Locale("error.no_permission")
     end
 
-    if type(amount) ~= "number" or amount <= 0 then return false, Locale("error.invalid_amount") end
+    if not isValidAmount(amount) then return false, Locale("error.invalid_amount") end
 
-    local company = DB.GetCompanyById(membership.company_id)
-    if not company or company.treasury < amount then
+    if not DB.DebitCompanyTreasury(membership.company_id, amount) then
         return false, Locale("error.not_enough_money_company_account")
     end
 
-    DB.UpdateCompanyTreasury(membership.company_id, -amount)
     Framework.AddMoney(source, amount)
     DB.InsertTransaction(membership.company_id, "Auszahlung an " .. pData.name, amount, false, "tabler:arrow-up-right",
         "withdrawal", { name = pData.name })

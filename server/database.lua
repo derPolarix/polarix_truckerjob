@@ -282,6 +282,16 @@ function DB.UpdateCompanyTreasury(companyId, delta)
     )
 end
 
+-- One statement for the balance check and the debit, so concurrent withdrawals cannot all pass
+-- the check before any of them has been subtracted. False when the treasury cannot cover it.
+function DB.DebitCompanyTreasury(companyId, amount)
+    local affected = MySQL.update.await(
+        ("UPDATE %s SET treasury = treasury - ? WHERE id = ? AND treasury >= ?"):format(T.companies),
+        { amount, companyId, amount }
+    )
+    return (affected or 0) > 0
+end
+
 -- label is kept as a readable fallback; the UI translates by txType + params when set
 function DB.InsertTransaction(companyId, label, amount, isPositive, icon, txType, params)
     MySQL.insert.await(
