@@ -30,9 +30,4 @@ return {
     },
     -- Interval in minutes at which each hired driver pays out their `income`.
     DriverIncomeIntervalMinutes = 10,
-
-    -- How far from the pickup / drop-off a player's ped may be when claiming pallets or reporting a
-    -- finished trip. The client acts at 40 m from the pickup and parks the trailer within 1.5 m of
-    -- the drop-off, so this only adds slack for pallet layouts, trailer length and latency.
-    ZoneMaxDistance = 100.0,
 }

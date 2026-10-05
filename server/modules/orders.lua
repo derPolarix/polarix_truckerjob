@@ -1,5 +1,4 @@
 local cargo = require("shared.cargo")
-local config = require("config.server")
 local debug = require("shared.debug")
 local Locale = require("shared.locale")
 
@@ -21,12 +20,16 @@ function Orders.StartDelivery(source, deliveryId, order, isTest)
     }
 end
 
+-- The client acts at 40 m from the pickup and parks the trailer within 1.5 m of the drop-off, so
+-- this only adds slack for pallet layouts, trailer length and latency.
+local ZONE_MAX_DISTANCE = 100.0
+
 -- Position checks run against the server-known ped, never a client-reported coordinate.
 function Orders.IsNearZone(source, zone)
     local ped = GetPlayerPed(source)
     if not ped or ped == 0 then return false end
 
-    return #(GetEntityCoords(ped) - zone) <= config.ZoneMaxDistance
+    return #(GetEntityCoords(ped) - zone) <= ZONE_MAX_DISTANCE
 end
 
 -- Cargo damage is client-measured; a negative or NaN value would otherwise turn the penalty into
