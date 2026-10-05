@@ -61,7 +61,11 @@ function Orders.GetAvailableForPlayer(source)
     return filtered
 end
 
-function Orders.Accept(source, orderId)
+-- Accept yields on DB awaits between its active-delivery check and the insert, so two concurrent
+-- calls from one player would both pass it and open two deliveries.
+local accepting = {}
+
+local function accept(source, orderId)
     if ActiveDeliveries[source] then return false, Locale("error.already_active_delivery") end
 
     local pData = Player.GetData(source)
@@ -94,6 +98,17 @@ function Orders.Accept(source, orderId)
     return true, order
 end
 
+function Orders.Accept(source, orderId)
+    if accepting[source] then return false, Locale("error.already_active_delivery") end
+
+    accepting[source] = true
+    local ok, success, result = pcall(accept, source, orderId)
+    accepting[source] = nil
+
+    if not ok then error(success, 0) end
+    return success, result
+end
+
 -- Called on entering the pickup zone: claims as many pallets as still open, capped by
 -- the currently usable trailer capacity (own trailer or rental).
 function Orders.ClaimTripPallets(source)
@@ -111,12 +126,15 @@ end
 -- pipeline runs (Orders.Finish); otherwise the player heads back to pickup.
 function Orders.CompleteTrip(source, tripPalletCount, cargoDamage)
     local delivery = ActiveDeliveries[source]
-    if not delivery then return false end
+    if not delivery or delivery.finishing then return false end
 
     delivery.deliveredPallets = delivery.deliveredPallets + tripPalletCount
     delivery.cargoDamageTotal = delivery.cargoDamageTotal + (cargoDamage or 0)
 
     if delivery.deliveredPallets >= delivery.totalPallets then
+        -- Finish yields on DB awaits before it clears the delivery; without this a second
+        -- completeTrip would run the payout again.
+        delivery.finishing = true
         local _, reward, xp, penalty, taxAmount = Orders.Finish(source)
         return true, reward, xp, penalty, taxAmount
     end
@@ -162,7 +180,7 @@ end
 
 function Orders.Fail(source)
     local delivery = ActiveDeliveries[source]
-    if not delivery then return end
+    if not delivery or delivery.finishing then return end
 
     DB.FailDelivery(delivery.deliveryId)
 

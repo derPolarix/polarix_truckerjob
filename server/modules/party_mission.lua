@@ -325,6 +325,10 @@ function PartyMission.Finish(partyId)
     local party = Parties[partyId]
     if not mission or not party then return end
 
+    -- Dropped before the payout loop yields (Player.Save), so a second completePartyTrip finds no
+    -- mission instead of paying everyone again.
+    PartyMissions[partyId] = nil
+
     local deliveredByOwner = {}
     for _, s in pairs(mission.slots) do
         if s and s.state == "delivered" then
@@ -369,7 +373,6 @@ function PartyMission.Finish(partyId)
     for _, m in pairs(party.members) do
         if m.source then TriggerClientEvent("polarix_trucker:partyMissionFinished", m.source) end
     end
-    PartyMissions[partyId] = nil
 end
 
 -- called from Party.removeMember when a leave drops the party to 0 online members
