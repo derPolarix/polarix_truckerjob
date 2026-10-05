@@ -40,13 +40,13 @@ return {
     end,
 
     OnPlayerLoaded = function(callback)
-        RegisterNetEvent("QBCore:Server:PlayerLoaded", function(player)
+        AddEventHandler("QBCore:Server:PlayerLoaded", function(player)
             callback(player.PlayerData.source)
         end)
     end,
 
     OnPlayerUnload = function(callback)
-        RegisterNetEvent("QBCore:Server:OnPlayerUnload", function(source)
+        AddEventHandler("QBCore:Server:OnPlayerUnload", function(source)
             callback(source)
         end)
     end,
