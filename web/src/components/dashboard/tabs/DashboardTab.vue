@@ -40,7 +40,7 @@
           <div style="font-size:15px;font-weight:700;color:#1b1f24">{{ t('dashboard.active_delivery') }}</div>
           <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.06em;color:#9aa1ab;text-transform:uppercase">{{ hasActiveDelivery ? hud.phase : t('dashboard.idle') }}</span>
         </div>
-        <div v-if="hasActiveDelivery" style="display:flex;flex-direction:column;padding:16px 4px 30px;gap:14px">
+        <div v-if="hasActiveDelivery" style="flex:1;display:flex;flex-direction:column;padding:16px 4px 18px;gap:14px">
           <div style="display:flex;align-items:center;gap:14px">
             <div style="width:56px;height:56px;border-radius:16px;background:rgba(232,180,8,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0">
               <iconify-icon icon="tabler:truck-delivery" width="28" style="color:#b58a05"></iconify-icon>
@@ -56,7 +56,7 @@
             <div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t('dashboard.reward_label') }}</span><span style="color:#2f9e63;font-weight:700">{{ money(hud.reward) }}</span></div>
             <div v-if="hud.palletsRequired > 0" style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t('dashboard.pallets_label') }}</span><span style="color:#1b1f24;font-weight:600">{{ hud.palletsLoaded }} / {{ hud.palletsRequired }}</span></div>
           </div>
-          <button v-if="hud.mode === 'solo'" style="align-self:flex-start;background:#fff;color:#dc2626;border:1px solid #dfe2e6;border-radius:10px;padding:10px 18px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:8px" @click="showCancelConfirm = true">
+          <button v-if="hud.mode === 'solo'" style="align-self:flex-start;margin-top:auto;background:#fff;color:#dc2626;border:1px solid #dfe2e6;border-radius:10px;padding:10px 18px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:8px" @click="showCancelConfirm = true">
             <iconify-icon icon="tabler:x" width="16"></iconify-icon>{{ t('dashboard.cancel_delivery') }}
           </button>
         </div>
