@@ -32,6 +32,7 @@ CreateThread(function()
             SendMessage("gameHud", {
                 visible          = true,
                 phase            = isPickupPhase and "pickup" or "delivering",
+                mode             = DeliveryState.mode,
                 cargo            = o.cargo,
                 city             = isPickupPhase and o.pickup_city or o.dropoff_city,
                 distanceKm       = dist,

@@ -243,6 +243,25 @@ function Orders.Fail(source)
     ActiveDeliveries[source] = nil
 end
 
+-- Player-initiated cancel from the dashboard. Settled as 'abandoned' like a disconnect: no
+-- failed_deliveries bump, no cooldown. Rental/own vehicle state is not touched here.
+-- An admin test run drops its row instead (see AdminMissions.CancelTestRun).
+function Orders.Cancel(source)
+    local delivery = ActiveDeliveries[source]
+    if not delivery then return false, Locale("error.no_active_delivery") end
+    if delivery.finishing then return false, Locale("error.delivery_already_finishing") end
+
+    -- The DB write yields; block trip claims/completions meanwhile so none slips in mid-cancel.
+    delivery.finishing = true
+    if delivery.isTest then
+        DB.DeleteDelivery(delivery.deliveryId)
+    else
+        DB.AbandonDelivery(delivery.deliveryId)
+    end
+    ActiveDeliveries[source] = nil
+    return true
+end
+
 -- On player load: mark a delivery left open by a previous disconnect/restart as abandoned
 -- (not a real failure, so it doesn't count toward failed_deliveries)
 function Orders.CleanupStaleDelivery(source)
@@ -260,6 +279,10 @@ lib.callback.register("polarix_trucker:acceptOrder", function(source, orderId)
     local success, result = Orders.Accept(source, orderId)
     if not success then return false, nil, result end
     return true, result
+end)
+
+lib.callback.register("polarix_trucker:cancelDelivery", function(source)
+    return Orders.Cancel(source)
 end)
 
 lib.callback.register("polarix_trucker:claimTripPallets", function(source)

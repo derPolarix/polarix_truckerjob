@@ -56,6 +56,9 @@
             <div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t('dashboard.reward_label') }}</span><span style="color:#2f9e63;font-weight:700">{{ money(hud.reward) }}</span></div>
             <div v-if="hud.palletsRequired > 0" style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t('dashboard.pallets_label') }}</span><span style="color:#1b1f24;font-weight:600">{{ hud.palletsLoaded }} / {{ hud.palletsRequired }}</span></div>
           </div>
+          <button v-if="hud.mode === 'solo'" style="align-self:flex-start;background:#fff;color:#dc2626;border:1px solid #dfe2e6;border-radius:10px;padding:10px 18px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:8px" @click="showCancelConfirm = true">
+            <iconify-icon icon="tabler:x" width="16"></iconify-icon>{{ t('dashboard.cancel_delivery') }}
+          </button>
         </div>
         <div v-else style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 24px 30px">
           <div style="width:64px;height:64px;border-radius:18px;background:#f1f2f4;display:flex;align-items:center;justify-content:center">
@@ -92,20 +95,45 @@
         </div>
       </div>
     </div>
+
+    <!-- Cancel-delivery confirm -->
+    <div
+      v-if="showCancelConfirm"
+      style="position:fixed;inset:0;background:rgba(15,17,21,0.55);display:flex;align-items:center;justify-content:center;z-index:9999;font-family:'Archivo',system-ui,sans-serif"
+      @click.self="showCancelConfirm = false"
+    >
+      <div style="background:#fff;border-radius:16px;padding:26px 28px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.25)">
+        <div style="font-size:17px;font-weight:800;color:#1b1f24">{{ t('dashboard.cancel_delivery_confirm_title') }}</div>
+        <div style="font-size:13px;color:#6b7280;margin-top:8px;line-height:1.6">{{ t('dashboard.cancel_delivery_confirm_body') }}</div>
+        <div style="display:flex;gap:10px;margin-top:20px">
+          <button style="flex:1;background:#dc2626;color:#fff;border:none;border-radius:11px;padding:12px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer" @click="cancelDelivery()">{{ t('dashboard.cancel_delivery_confirm_action') }}</button>
+          <button style="flex:1;background:#fff;color:#6b7280;border:1px solid #e4e6e9;border-radius:11px;padding:12px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer" @click="showCancelConfirm = false">{{ t('app.cancel') }}</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { money } from "@/currency";
 import { useGameHudStore } from "@/stores/gameHudStore";
+import { nuiCallback } from "@/nui/nuiCallbacks";
 
 const store = useDashboardStore();
 const hud = useGameHudStore();
 const { t } = useI18n();
 const hasActiveDelivery = computed(() => hud.visible && hud.phase !== null);
+
+const showCancelConfirm = ref(false);
+
+// Lua tears the delivery down and sends a hidden gameHud, which flips hasActiveDelivery.
+async function cancelDelivery() {
+  showCancelConfirm.value = false;
+  await nuiCallback<{ ok: boolean }>("cancelDelivery");
+}
 
 function statusColor(status: string) {
   if (status === "failed") return "#d24b3a";

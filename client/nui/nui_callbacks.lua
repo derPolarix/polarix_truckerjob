@@ -148,6 +148,21 @@ RegisterNUICallback('returnRental', function(data, cb)
     cb({ ok = true })
 end)
 
+-- Server settles the delivery first; the client only tears down blips/HUD/cargo once it agreed.
+-- Vehicle and trailer stay where they are, so the player can drive on or park them normally.
+RegisterNUICallback('cancelDelivery', function(_, cb)
+    lib.callback('polarix_trucker:cancelDelivery', false, function(success, err)
+        if success then
+            Delivery.Cancel()
+            SendMessage('gameHud', { visible = false })
+            Framework.Notify(Locale("notify.delivery_cancelled"), 'info')
+        else
+            Framework.Notify(err or Locale("notify.failed_cancel_delivery"), 'error')
+        end
+        cb({ ok = success })
+    end)
+end)
+
 RegisterNUICallback('unlockSkill', function(data, cb)
     lib.callback('polarix_trucker:unlockSkill', false, function(success, err)
         if not success then

@@ -1,10 +1,12 @@
 import { defineStore } from "pinia";
 
 export type GameHudPhase = "pickup" | "delivering" | null;
+export type GameHudMode = "solo" | "party";
 
 export interface GameHudPayload {
   visible: boolean;
   phase?: GameHudPhase;
+  mode?: GameHudMode;
   cargo?: string;
   city?: string;
   distanceKm?: number;
@@ -25,6 +27,7 @@ export interface GameHudPayload {
 type GameHudState = {
   visible: boolean;
   phase: GameHudPhase;
+  mode: GameHudMode;
   cargo: string;
   city: string;
   distanceKm: number;
@@ -46,6 +49,7 @@ export const useGameHudStore = defineStore("gameHud", {
   state: (): GameHudState => ({
     visible: false,
     phase: null,
+    mode: "solo",
     cargo: "",
     city: "",
     distanceKm: 0,
@@ -70,6 +74,7 @@ export const useGameHudStore = defineStore("gameHud", {
       }
       this.visible = true;
       this.phase = payload.phase ?? null;
+      this.mode = payload.mode ?? "solo";
       this.cargo = payload.cargo ?? "";
       this.city = payload.city ?? "";
       this.distanceKm = payload.distanceKm ?? 0;
